@@ -3,7 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client'; // ★ Supabaseクライアントをインポート
+import { createClient } from '@/utils/supabase/client';
+import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect"; // ★ Supabaseクライアントをインポート
 
 // Define the Creator Interface
 interface CreatorData {
@@ -464,10 +465,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* Status (Approved) */}
-                                                <td className="px-6 py-4 text-right">
-                                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold border border-green-200">
-                                                        <Check size={10} /> Approved
-                                                    </span>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                    <ReviewStatusSelect
+                                                        creatorId={creator.id}
+                                                        initialStatus={creator.review_status}
+                                                    />
                                                 </td>
                                             </tr>
                                         ))}
