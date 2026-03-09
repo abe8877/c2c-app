@@ -1,0 +1,45 @@
+[
+    {
+        "id": "1",
+        "product_category": "和食・居酒屋",
+        "creator_name": "Sarah Jenkins",
+        "tiktok_url": "https://www.tiktok.com/@sarah_j",
+        "hit_keywords": [
+            "#izakaya",
+            "#tokyofood",
+            "#sashimi"
+        ],
+        "hit_video_urls": [
+            "https://tiktok.com/video/123",
+            "https://tiktok.com/video/456"
+        ],
+        "region_type": "✈️ Tabimae (US)",
+        "followers": 123700,
+        "hit_videos_count": 12,
+        "total_saves": 5400,
+        "median_views": 45000,
+        "engagement_rate": 8.5,
+        "is_public": true
+    },
+    {
+        "id": "2",
+        "product_category": "カフェ・スイーツ",
+        "creator_name": "Li Wei",
+        "tiktok_url": "https://www.tiktok.com/@li_wei_eat",
+        "hit_keywords": [
+            "#matcha",
+            "#kyotocafe",
+            "#sweets"
+        ],
+        "hit_video_urls": [
+            "https://tiktok.com/video/789"
+        ],
+        "region_type": "🌏 Both",
+        "followers": 89000,
+        "hit_videos_count": 8,
+        "total_saves": 3200,
+        "median_views": 22000,
+        "engagement_rate": 6.2,
+        "is_public": true
+    }
+]
