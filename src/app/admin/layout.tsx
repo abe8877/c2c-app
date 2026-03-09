@@ -5,6 +5,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sparkles, MessageCircle, BarChart3, Settings } from 'lucide-react';
 
+export const metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
+
 export default function AdminLayout({
     children,
 }: {
