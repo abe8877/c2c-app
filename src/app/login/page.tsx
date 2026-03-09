@@ -1,6 +1,14 @@
 import { login } from './actions';
 
-export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
+// Next.js 15仕様: searchParams は Promise になりました
+export default async function LoginPage({
+    searchParams
+}: {
+    searchParams: Promise<{ error?: string }>
+}) {
+    // パラメータを非同期で展開する
+    const params = await searchParams;
+
     return (
         <div className="flex h-screen w-full items-center justify-center bg-gray-50">
             <form className="w-full max-w-sm flex flex-col p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
@@ -30,9 +38,10 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
                     Sign In
                 </button>
 
-                {searchParams?.error && (
+                {/* 認証エラー時のメッセージ表示 */}
+                {params?.error && (
                     <p className="mt-4 p-4 bg-red-50 text-red-600 text-sm text-center rounded-md">
-                        {searchParams.error}
+                        {params.error}
                     </p>
                 )}
             </form>

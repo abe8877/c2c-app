@@ -5,6 +5,7 @@ import {
     User, Bell, Shield, CreditCard,
     Globe, Database, Mail, Save
 } from "lucide-react";
+import RoleSelect from '@/app/admin/settings/RoleSelect';
 
 export default function AdminSettings() {
     return (
