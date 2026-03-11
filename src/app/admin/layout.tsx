@@ -5,7 +5,8 @@ import AdminLayoutClient from './AdminLayoutClient';
 
 // ここで安全にSEO（noindex）を設定
 export const metadata: Metadata = {
-    title: 'NOTS Admin | MANEKEY',
+    metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://insiders-hub.jp'),
+    title: 'NOTS Admin | INSIDERS',
     robots: {
         index: false,
         follow: false,
