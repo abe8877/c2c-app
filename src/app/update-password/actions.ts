@@ -16,6 +16,6 @@ export async function updatePassword(formData: FormData) {
         return redirect('/update-password?error=パスワードの更新に失敗しました');
     }
 
-    // パスワード設定が完了したら、いざダッシュボードへ！
+    // パスワード設定が完了したらダッシュボードへ
     redirect('/admin');
 }

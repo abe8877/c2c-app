@@ -1,0 +1,95 @@
+'use client';
+
+import React, { useState } from 'react';
+import { X, Mail, Shield, Loader2 } from 'lucide-react';
+import { inviteAdminMember } from '@/app/admin/settings/actions';
+
+interface AddMemberModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+export default function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const formData = new FormData(e.currentTarget);
+        try {
+            await inviteAdminMember(formData);
+            onClose();
+            alert('招待を送信しました');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : '招待に失敗しました');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                        <Shield size={18} className="text-blue-600" />
+                        Add New Team Member
+                    </h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && (
+                        <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg font-medium border border-red-100">
+                            {error}
+                        </div>
+                    )}
+
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Email Address</label>
+                        <div className="relative">
+                            <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                name="email"
+                                type="email"
+                                required
+                                placeholder="name@example.com"
+                                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1">Assign Role</label>
+                        <select
+                            name="role"
+                            required
+                            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
+                        >
+                            <option value="ops_member">OPS MEMBER</option>
+                            <option value="ops_manager">OPS MANAGER</option>
+                            <option value="super_admin">SUPER ADMIN</option>
+                        </select>
+                    </div>
+
+                    <div className="pt-2">
+                        <button
+                            disabled={loading}
+                            type="submit"
+                            className="w-full bg-black text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 disabled:bg-slate-400 transition-all shadow-lg active:scale-[0.98]"
+                        >
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : 'Send Invitation'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}

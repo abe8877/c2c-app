@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Play, Check, AlertCircle, ArrowRight, Instagram, Video, Upload } from 'lucide-react';
+import { Play, Check, AlertCircle, ArrowRight, Instagram, Video, Upload, ChevronRight, Globe, Shield } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const VIBE_OPTIONS = [
     'Cinematic', 'Luxury', 'Street', 'Minimal', 'Kawaii',
@@ -16,6 +17,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const [step, setStep] = useState(1); // 1: Ticket, 2: Form
 
     const [formData, setFormData] = useState({
         portfolio_video_url: creator.portfolio_video_url || creator.scouted_video_url,
@@ -64,7 +66,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
             setFormData({ ...formData, avatar_url: publicUrl });
         } catch (error) {
             alert('Error uploading image!');
-            console.error(error);
         } finally {
             setUploading(false);
         }
@@ -103,7 +104,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
             if (updateError) throw updateError;
             router.push('/dashboard?welcome=true');
         } catch (err: any) {
-            console.error(err);
             setError('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
@@ -111,220 +111,300 @@ export function OnboardingForm({ creator }: { creator: any }) {
     };
 
     return (
-        <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-10 shadow-2xl">
-            <div className="mb-12">
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <Video className="text-yellow-400" size={20} />
-                    Your Best Asset
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">
-                    Advertisers will see this video first. Is this your best work?
-                </p>
+        <div className="relative">
+            <AnimatePresence mode="wait">
+                {step === 1 ? (
+                    <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex flex-col items-center"
+                    >
+                        {/* Apple Wallet Style Ticket */}
+                        <div className="w-full max-w-sm aspect-[2/3] relative bg-[#0a0a0a] rounded-[2rem] border border-white/10 overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] flex flex-col">
+                            {/* Texture/Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-zinc-500/5 via-transparent to-zinc-500/5 pointer-events-none" />
+                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-white/5 blur-[60px] rounded-full pointer-events-none" />
 
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
-                            Portfolio Video URL
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.portfolio_video_url}
-                            onChange={(e) => setFormData({ ...formData, portfolio_video_url: e.target.value })}
-                            className="w-full bg-black/50 border border-white/20 text-white rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none transition-colors font-mono text-sm"
-                            placeholder="https://www.tiktok.com/@..."
-                        />
-                    </div>
-
-                    <div className="mb-6">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                            Profile / Vibe Photo
-                        </label>
-                        <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 bg-black/50 shrink-0">
-                                {formData.avatar_url ? (
-                                    <img src={formData.avatar_url} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-600">
-                                        No Img
-                                    </div>
-                                )}
+                            {/* Header */}
+                            <div className="p-8 border-b border-white/5 flex justify-between items-start z-10">
+                                <div>
+                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-1">Pass Status</p>
+                                    <p className="text-xs font-semibold text-white uppercase tracking-tighter">Verified Insider</p>
+                                </div>
+                                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40">
+                                    <Shield size={14} />
+                                </div>
                             </div>
 
-                            <label className="cursor-pointer bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
-                                <Upload size={16} />
-                                {uploading ? 'Uploading...' : 'Upload Best Shot'}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    disabled={uploading}
-                                    className="hidden"
-                                />
-                            </label>
+                            {/* Content */}
+                            <div className="flex-1 p-8 flex flex-col justify-center space-y-10 z-10">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Identity</p>
+                                    <h2 className="text-3xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle}</h2>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Access Code</p>
+                                    <p className="text-2xl font-mono text-white/90 tracking-tighter">{creator.invite_code}</p>
+                                </div>
+
+                                <div className="pt-4">
+                                    <div className="flex items-center gap-3 text-zinc-400">
+                                        <Globe size={14} className="opacity-50" />
+                                        <span className="text-[10px] tracking-widest uppercase font-medium">Tokyo Network</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-8 bg-zinc-900/50 border-t border-white/5 z-10">
+                                <p className="text-[9px] text-zinc-600 text-center leading-relaxed">
+                                    THIS PASS IS CONFIDENTIAL AND INTENDED ONLY FOR THE RECIPIENT. UNAUTHORIZED SHARING IS PROHIBITED.
+                                </p>
+                            </div>
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-2">
-                            *This will be shown to advertisers. Choose a photo that represents your style.
-                        </p>
-                    </div>
 
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                            Refine Your Vibe (Max 3)
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {VIBE_OPTIONS.map(tag => (
-                                <button
-                                    key={tag}
-                                    onClick={() => toggleTag(tag)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${formData.vibe_tags.includes(tag)
-                                        ? 'bg-yellow-400 text-black border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]'
-                                        : 'bg-transparent text-gray-400 border-white/10 hover:border-white/30'
-                                        }`}
-                                >
-                                    #{tag}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mb-12">
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <Instagram className="text-yellow-400" size={20} />
-                    Contact Info
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">
-                    We coordinate dates via Chat, not Email.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
-                            Real Name (Private)
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.real_name}
-                            onChange={(e) => setFormData({ ...formData, real_name: e.target.value })}
-                            className="w-full bg-black/50 border border-white/20 text-white rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
-                            placeholder="Used for reservations"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
-                            Nationality
-                        </label>
-                        <select
-                            value={formData.nationality}
-                            onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                            className="w-full bg-black/50 border border-white/20 text-white rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none appearance-none"
+                        <button
+                            onClick={() => setStep(2)}
+                            className="mt-12 group flex flex-col items-center gap-4 transition-all"
                         >
-                            <option value="Japan">Japan 🇯🇵</option>
-                            <option value="USA">USA 🇺🇸</option>
-                            <option value="China">China 🇨🇳</option>
-                            <option value="Korea">Korea 🇰🇷</option>
-                            <option value="Other">Other 🌏</option>
-                        </select>
-                    </div>
-                </div>
+                            <span className="text-sm font-medium tracking-[0.2em] text-white/80 uppercase">Accept the Mission</span>
+                            <div className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white group-hover:bg-white group-hover:text-black transition-all">
+                                <ChevronRight className="group-hover:translate-x-0.5 transition-transform" />
+                            </div>
+                        </button>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                        className="bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-3xl"
+                    >
+                        <div className="mb-12">
+                            <h3 className="text-2xl font-light font-playfair italic text-white mb-2 flex items-center gap-3">
+                                Focus Asset
+                            </h3>
+                            <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
+                                Advertisers will perceive your perspective through this choice.
+                            </p>
 
-                <div className="mt-4">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                        Preferred Messenger
-                    </label>
-                    <div className="flex gap-4 mb-2">
-                        {['Instagram', 'LINE', 'WhatsApp'].map(app => (
-                            <label key={app} className="flex items-center cursor-pointer">
+                            <div className="space-y-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                        Portfolio URL
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.portfolio_video_url}
+                                        onChange={(e) => setFormData({ ...formData, portfolio_video_url: e.target.value })}
+                                        className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all font-mono text-xs placeholder:text-zinc-700"
+                                        placeholder="https://www.tiktok.com/@..."
+                                    />
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                        Perspective / Vibe Shot
+                                    </label>
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-inner">
+                                            {formData.avatar_url ? (
+                                                <img src={formData.avatar_url} className="w-full h-full object-cover grayscale brightness-90 hover:grayscale-0 transition-all duration-500" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-zinc-800">
+                                                    <Upload size={20} />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <label className="cursor-pointer group">
+                                            <div className="bg-zinc-900 border border-white/5 hover:border-white/20 text-white px-6 py-3 rounded-xl text-xs font-medium tracking-wide flex items-center gap-2 transition-all">
+                                                <Upload size={14} className="text-zinc-500 group-hover:text-white transition-colors" />
+                                                {uploading ? 'Processing...' : 'Upload Best Shot'}
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                disabled={uploading}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                        Curation Keywords (Max 3)
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {VIBE_OPTIONS.map(tag => (
+                                            <button
+                                                key={tag}
+                                                onClick={() => toggleTag(tag)}
+                                                className={`px-4 py-2 rounded-lg text-[10px] font-medium tracking-widest uppercase border transition-all ${formData.vibe_tags.includes(tag)
+                                                    ? 'bg-white text-black border-white'
+                                                    : 'bg-transparent text-zinc-600 border-white/5 hover:border-white/10 hover:text-zinc-400'
+                                                    }`}
+                                            >
+                                                {tag}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-12 pt-8 border-t border-white/5">
+                            <h3 className="text-2xl font-light font-playfair italic text-white mb-2">
+                                Connection
+                            </h3>
+                            <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
+                                Coordination is handled through direct intelligence channels.
+                            </p>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                            Signature Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.real_name}
+                                            onChange={(e) => setFormData({ ...formData, real_name: e.target.value })}
+                                            className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
+                                            placeholder="Confidential"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                            Nationality
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                value={formData.nationality}
+                                                onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                                                className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
+                                            >
+                                                <option value="Japan">Japan 🇯🇵</option>
+                                                <option value="USA">USA 🇺🇸</option>
+                                                <option value="China">China 🇨🇳</option>
+                                                <option value="Korea">Korea 🇰🇷</option>
+                                                <option value="Other">Other 🌏</option>
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                                <ChevronRight size={14} className="rotate-90" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                        Communication Mode
+                                    </label>
+                                    <div className="flex gap-4">
+                                        {['Instagram', 'LINE', 'WhatsApp'].map(app => (
+                                            <label key={app} className="flex-1 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="contact_app"
+                                                    value={app}
+                                                    checked={formData.contact_app === app}
+                                                    onChange={() => setFormData({ ...formData, contact_app: app })}
+                                                    className="hidden"
+                                                />
+                                                <div className={`px-4 py-3 rounded-xl text-[10px] text-center font-medium tracking-widest uppercase border transition-all ${formData.contact_app === app
+                                                    ? 'bg-zinc-100 text-black border-zinc-100'
+                                                    : 'bg-zinc-900/30 text-zinc-600 border-white/5 hover:border-white/10'
+                                                    }`}>
+                                                    {app}
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.contact_id}
+                                        onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
+                                        className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
+                                        placeholder={`${formData.contact_app} Identification`}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-10 space-y-6">
+                            <h3 className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.3em] mb-4">Terms of Curation</h3>
+
+                            <label className="flex gap-4 cursor-pointer group">
+                                <div className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all ${formData.agreed_to_asset ? 'bg-white border-white' : 'border-zinc-800 group-hover:border-zinc-600'}`}>
+                                    {formData.agreed_to_asset && <Check size={12} className="text-black stroke-[3]" />}
+                                </div>
                                 <input
-                                    type="radio"
-                                    name="contact_app"
-                                    value={app}
-                                    checked={formData.contact_app === app}
-                                    onChange={() => setFormData({ ...formData, contact_app: app })}
+                                    type="checkbox"
                                     className="hidden"
+                                    checked={formData.agreed_to_asset}
+                                    onChange={(e) => setFormData({ ...formData, agreed_to_asset: e.target.checked })}
                                 />
-                                <span className={`px-4 py-2 rounded-lg text-sm font-bold border transition-colors ${formData.contact_app === app
-                                    ? 'bg-white text-black border-white'
-                                    : 'bg-black/30 text-gray-500 border-white/10'
-                                    }`}>
-                                    {app}
-                                </span>
+                                <div className="space-y-1">
+                                    <div className="text-white text-xs font-medium tracking-wide">
+                                        Asset Utilization
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-light">
+                                        Permission for Merchant partners to utilize created assets across official digital infrastructure.
+                                    </p>
+                                </div>
                             </label>
-                        ))}
-                    </div>
-                    <input
-                        type="text"
-                        value={formData.contact_id}
-                        onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
-                        className="w-full bg-black/50 border border-white/20 text-white rounded-lg px-4 py-3 focus:border-yellow-400 focus:outline-none"
-                        placeholder={`Your ${formData.contact_app} ID or Handle`}
-                    />
-                </div>
-            </div>
 
-            <div className="mb-10 p-6 bg-white/5 rounded-2xl border border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4">Partner Agreement</h3>
-
-                <label className="flex gap-4 cursor-pointer mb-6 group">
-                    <div className={`mt-1 w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${formData.agreed_to_asset ? 'bg-yellow-400 border-yellow-400' : 'border-gray-500 group-hover:border-white'}`}>
-                        {formData.agreed_to_asset && <Check size={16} className="text-black" />}
-                    </div>
-                    <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={formData.agreed_to_asset}
-                        onChange={(e) => setFormData({ ...formData, agreed_to_asset: e.target.checked })}
-                    />
-                    <div>
-                        <div className="text-white font-bold text-sm mb-1">
-                            Allow "Official Asset" Usage
+                            <label className="flex gap-4 cursor-pointer group">
+                                <div className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all ${formData.agreed_to_noshow ? 'bg-white border-white' : 'border-zinc-800 group-hover:border-zinc-600'}`}>
+                                    {formData.agreed_to_noshow && <Check size={12} className="text-black stroke-[3]" />}
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    className="hidden"
+                                    checked={formData.agreed_to_noshow}
+                                    onChange={(e) => setFormData({ ...formData, agreed_to_noshow: e.target.checked })}
+                                />
+                                <div className="space-y-1">
+                                    <div className="text-white text-xs font-medium tracking-wide">
+                                        Curation Integrity
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-light">
+                                        Understanding that confirmed curation is a singular commitment. Non-compliance results in permanent removal.
+                                    </p>
+                                </div>
+                            </label>
                         </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                            I grant permission for the Merchant to feature my content on their <span className="text-white font-medium">Official Google Maps & Website</span>.
-                        </p>
-                    </div>
-                </label>
 
-                <label className="flex gap-4 cursor-pointer group">
-                    <div className={`mt-1 w-6 h-6 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${formData.agreed_to_noshow ? 'bg-yellow-400 border-yellow-400' : 'border-gray-500 group-hover:border-white'}`}>
-                        {formData.agreed_to_noshow && <Check size={16} className="text-black" />}
-                    </div>
-                    <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={formData.agreed_to_noshow}
-                        onChange={(e) => setFormData({ ...formData, agreed_to_noshow: e.target.checked })}
-                    />
-                    <div>
-                        <div className="text-white font-bold text-sm mb-1">
-                            No "No-Show" Policy
-                        </div>
-                        <p className="text-xs text-gray-400 leading-relaxed">
-                            I understand that a confirmed seat is reserved for me. Cancellation within 24h or No-Show will result in a ban.
-                        </p>
-                    </div>
-                </label>
-            </div>
+                        {error && (
+                            <div className="flex items-center gap-3 text-red-400 text-[10px] font-medium tracking-wider uppercase mb-8 bg-red-950/20 px-4 py-3 rounded-xl border border-red-900/20">
+                                <AlertCircle size={14} />
+                                {error}
+                            </div>
+                        )}
 
-            {error && (
-                <div className="flex items-center gap-2 text-red-400 text-sm mb-4 bg-red-900/20 p-3 rounded-lg border border-red-900/50">
-                    <AlertCircle size={16} />
-                    {error}
-                </div>
-            )}
-
-            <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black text-lg py-4 rounded-xl shadow-[0_0_20px_rgba(250,204,21,0.4)] transition-all flex items-center justify-center gap-2 group"
-            >
-                {loading ? 'Activating...' : (
-                    <>
-                        ACTIVATE PARTNERSHIP <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                    </>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="w-full bg-white hover:bg-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed text-black font-semibold text-sm tracking-[0.2em] py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group uppercase shadow-xl"
+                        >
+                            {loading ? 'Processing...' : (
+                                <>
+                                    Join the Network <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
+                        </button>
+                    </motion.div>
                 )}
-            </button>
+            </AnimatePresence>
         </div>
     );
 }

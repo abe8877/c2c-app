@@ -7,52 +7,30 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
     const { code: rawCode } = await params;
     const code = decodeURIComponent(rawCode).trim(); // URLデコードと空白除去
 
-    console.log("--------------------------------------------------");
-    console.log("🔍 [Debug] Join Page Accessed");
-    console.log(`👉 Raw Params: ${rawCode}`);
-    console.log(`👉 Processed Code: '${code}'`);
-
     const supabase = await createClient();
 
-    // 1. まず全件取得して接続確認（1件だけ取る）
-    const { data: checkData, error: checkError } = await supabase.from('creators').select('id').limit(1);
-    if (checkError) {
-        console.error("❌ [Fatal] DB Connection Failed:", checkError.message);
-        return <div>Error: Database connection failed. Check server logs.</div>;
-    }
-    console.log("✅ [Debug] DB Connection OK. Rows available:", checkData?.length ?? 0);
-
-    // 2. 本命の検索
-    const { data: creator, error } = await supabase
+    const { data: creator } = await supabase
         .from('creators')
         .select('*')
-        .eq('invite_code', code) // 完全一致検索
+        .eq('invite_code', code)
         .single();
-
-    if (error) {
-        console.error("❌ [Debug] Query Error:", error.message, error.details);
-
-        // ヒント: 似たコードがあるか探す（デバッグ用）
-        const { data: similar } = await supabase.from('creators').select('invite_code').ilike('invite_code', `%${code}%`);
-        if (similar && similar.length > 0) {
-            console.log("💡 [Hint] Did you mean one of these?", similar);
-        }
-    }
-
-    if (creator) {
-        console.log(`✅ [Debug] Creator Found: ${creator.name} (ID: ${creator.id})`);
-    } else {
-        console.log("⚠️ [Debug] Creator NOT found.");
-    }
-    console.log("--------------------------------------------------");
 
     if (!creator) {
         return (
-            <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-neutral-900 p-8 rounded-2xl border border-red-900/50">
-                    <h1 className="text-xl font-bold text-red-500 mb-4">Invitation Not Found</h1>
-                    <p className="text-gray-400 mb-4">The code <strong>'{code}'</strong> is invalid or expired.</p>
-                    <p className="text-xs text-gray-600 font-mono">Debug: Check terminal for details.</p>
+            <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 selection:bg-zinc-800">
+                <div className="max-w-md w-full bg-zinc-950 p-10 rounded-[2.5rem] border border-white/5 text-center space-y-6">
+                    <div className="space-y-2">
+                        <p className="text-[10px] tracking-[0.4em] font-medium text-zinc-600 uppercase">System Notice</p>
+                        <h1 className="text-3xl font-playfair italic font-light tracking-tight text-white">Invitation Not Found</h1>
+                    </div>
+                    <p className="text-xs text-zinc-500 font-light tracking-wide leading-relaxed">
+                        The access code <strong className="text-zinc-300">'{code}'</strong> is invalid, expired, or has already been utilized.
+                    </p>
+                    <div className="pt-6 border-t border-white/5">
+                        <a href="/join" className="text-[10px] tracking-[0.2em] font-medium uppercase text-zinc-400 hover:text-white transition-colors">
+                            Return to Application
+                        </a>
+                    </div>
                 </div>
             </div>
         );
@@ -64,32 +42,32 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
     // データが見つかったら表示
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-yellow-500 selection:text-black">
-            <section className="relative h-[60vh] flex flex-col justify-end p-8 border-b border-white/10">
-                <div className="absolute inset-0 opacity-40 overflow-hidden pointer-events-none">
+        <div className="min-h-screen bg-black text-white selection:bg-zinc-800 selection:text-white font-sans">
+            <section className="relative h-[50vh] flex flex-col justify-end p-8 border-b border-white/5">
+                <div className="absolute inset-0 opacity-30 overflow-hidden pointer-events-none">
                     {/* 動画があれば表示、なければ画像 */}
                     {creator.scouted_video_url ? (
-                        <video src={creator.scouted_video_url} className="w-full h-full object-cover grayscale" muted autoPlay loop playsInline />
+                        <video src={creator.scouted_video_url} className="w-full h-full object-cover grayscale brightness-50" muted autoPlay loop playsInline />
                     ) : (
-                        <img src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale" />
+                        <img src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale brightness-50" />
                     )}
                 </div>
 
-                <div className="relative z-10 max-w-2xl mx-auto w-full">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-400 text-black text-xs font-bold uppercase tracking-wider rounded-full mb-4">
-                        ✨ Scouted for {creator.genre || 'You'}
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-2">
-                        Hi, @{creator.tiktok_handle}
+                <div className="relative z-10 max-w-4xl mx-auto w-full text-center">
+                    <p className="text-[10px] tracking-[0.3em] font-medium text-zinc-500 uppercase mb-6">
+                        Confidential Invitation
+                    </p>
+                    <h1 className="text-5xl md:text-7xl font-light font-playfair tracking-tight mb-4">
+                        Welcome, <span className="italic">@{creator.tiktok_handle}</span>
                     </h1>
-                    <p className="text-xl text-gray-300 font-light">
-                        We discovered your unique vibe via this video. <br />
-                        Top brands in Tokyo are waiting for <span className="text-white font-bold underline decoration-yellow-400">{creator.vibe_tags?.[0] || 'Talented'}</span> creators like you.
+                    <p className="text-sm md:text-base text-zinc-400 font-light tracking-wide max-w-xl mx-auto leading-relaxed">
+                        We discovered your perspective via your unique vision. <br />
+                        Selected brands in Tokyo are seeking <span className="text-white font-medium border-b border-zinc-700 pb-0.5">{creator.vibe_tags?.[0] || 'Exclusive'}</span> creators of your caliber.
                     </p>
                 </div>
             </section>
 
-            <section className="max-w-2xl mx-auto px-8 py-12">
+            <section className="max-w-xl mx-auto px-8 py-16">
                 <OnboardingForm creator={creator} />
             </section>
         </div>

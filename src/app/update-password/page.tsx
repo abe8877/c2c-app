@@ -2,35 +2,53 @@ import { updatePassword } from './actions';
 
 export default function UpdatePasswordPage({ searchParams }: { searchParams: { error?: string } }) {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-            <form className="w-full max-w-sm flex flex-col p-8 bg-white rounded-2xl shadow-lg border border-gray-100">
-                <h1 className="text-2xl font-bold mb-2 text-center">Welcome to MANEKEY</h1>
-                <p className="text-sm text-gray-500 mb-6 text-center">
-                    招待ありがとうございます。<br />あなた専用のパスワードを設定してください。
-                </p>
+        <div className="min-h-screen w-full flex items-center justify-center bg-black text-white selection:bg-zinc-800">
+            {/* Subtle Texture */}
+            <div className="fixed inset-0 pointer-events-none opacity-20">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,transparent_70%)]" />
+            </div>
 
-                <label className="text-sm font-medium text-gray-700 mb-1" htmlFor="password">新しいパスワード</label>
-                <input
-                    className="rounded-md px-4 py-2 bg-gray-100 border mb-6 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    type="password"
-                    name="password"
-                    placeholder="6文字以上で入力"
-                    required
-                    minLength={6}
-                />
+            <form className="relative z-10 w-full max-w-md p-10 md:p-14 bg-zinc-950 border border-white/5 rounded-[2.5rem] shadow-3xl space-y-12">
+                <div className="space-y-4 text-center">
+                    <p className="text-[10px] tracking-[0.4em] font-medium text-zinc-500 uppercase">the network</p>
+                    <h1 className="text-4xl font-playfair italic font-light tracking-tight">Welcome to INSIDERS.</h1>
+                    <p className="text-xs text-zinc-500 font-light tracking-wide leading-relaxed px-4">
+                        招待ありがとうございます。<br />あなた専用のパスワードを設定してください。
+                    </p>
+                </div>
 
-                <button
-                    formAction={updatePassword}
-                    className="bg-black hover:bg-gray-800 text-white rounded-md px-4 py-2 font-medium transition-colors"
-                >
-                    設定してダッシュボードへ
-                </button>
+                <div className="space-y-10">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block pl-1" htmlFor="password">
+                            Private Password
+                        </label>
+                        <input
+                            className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all font-mono text-sm placeholder:text-zinc-800"
+                            type="password"
+                            name="password"
+                            placeholder="......"
+                            required
+                            minLength={6}
+                        />
+                    </div>
+
+                    <button
+                        formAction={updatePassword}
+                        className="w-full bg-white hover:bg-zinc-200 text-black font-semibold text-sm tracking-[0.2em] py-5 rounded-2xl transition-all uppercase shadow-xl"
+                    >
+                        Initialize Signature
+                    </button>
+                </div>
 
                 {searchParams?.error && (
-                    <p className="mt-4 p-4 bg-red-50 text-red-600 text-sm text-center rounded-md">
+                    <div className="p-4 bg-red-950/20 text-red-400 text-[10px] text-center rounded-xl border border-red-900/20 font-medium tracking-wider uppercase">
                         {searchParams.error}
-                    </p>
+                    </div>
                 )}
+
+                <div className="pt-8 text-center border-t border-white/5">
+                    <p className="text-[9px] text-zinc-700 tracking-[0.1em] uppercase font-medium">Verified Curation Infrastructure</p>
+                </div>
             </form>
         </div>
     );
