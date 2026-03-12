@@ -37,20 +37,26 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
         // 不足しているタグの計算
         const missingTags = data.shopRequirements.filter((tag: string) => !data.creatorTags.includes(tag));
 
-        // 2. Supabase の asset_insights テーブルに保存
-        const { error } = await supabase
-            .from('asset_insights')
-            .upsert({ // 既に存在する場合は更新
-                asset_id: data.assetId,
-                creator_id: data.creatorId,
-                shop_id: data.shopId,
-                missing_tags: missingTags,
-                creator_ai_hint: object.creatorAiHint,
-                upsell_plan: object.shopUpsellPlan,
-                shop_upsell_message: object.shopUpsellMessage,
-            }, { onConflict: 'asset_id' });
+        // 2. Supabase の asset_insights テーブルに保存 (失敗してもレスポンスは返す)
+        try {
+            const { error: dbError } = await supabase
+                .from('asset_insights')
+                .upsert({
+                    asset_id: data.assetId,
+                    creator_id: data.creatorId,
+                    shop_id: data.shopId,
+                    missing_tags: missingTags,
+                    creator_ai_hint: object.creatorAiHint,
+                    upsell_plan: object.shopUpsellPlan,
+                    shop_upsell_message: object.shopUpsellMessage,
+                }, { onConflict: 'asset_id' });
 
-        if (error) throw new Error(`Failed to save insights: ${error.message}`);
+            if (dbError) {
+                console.warn('Supabase save failed (ignoring for UX):', dbError.message);
+            }
+        } catch (err) {
+            console.warn('DB persistence error (skipping):', err);
+        }
 
         return { success: true, insight: object, missingTags };
     });
