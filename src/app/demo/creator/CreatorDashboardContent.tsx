@@ -3,6 +3,16 @@
 import { motion } from "framer-motion";
 import { Crown, ArrowRight, Star, PlayCircle } from "lucide-react";
 import Image from "next/image";
+import CreatorAiFeedback from "./_components/CreatorAiFeedback";
+
+interface Asset {
+    id: string;
+    shopName: string;
+    status: 'pending' | 'approved' | 'rejected';
+    date: string;
+    shopRequirements: string[];
+    creatorTags: string[];
+}
 
 interface CreatorData {
     name: string;
@@ -23,11 +33,13 @@ interface ExclusiveInvite {
 interface CreatorDashboardContentProps {
     creatorData: CreatorData;
     exclusiveInvites: ExclusiveInvite[];
+    assets: Asset[];
 }
 
 export default function CreatorDashboardContent({
     creatorData,
-    exclusiveInvites
+    exclusiveInvites,
+    assets
 }: CreatorDashboardContentProps) {
     return (
         <div className="min-h-screen bg-zinc-950 flex justify-center selection:bg-amber-500/30">
@@ -155,6 +167,54 @@ export default function CreatorDashboardContent({
                                     </button>
                                 </div>
                             </motion.div>
+                        ))}
+                    </div>
+                </motion.section>
+
+                {/* 4. Asset History (Vertical List) */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="px-6 pb-12"
+                >
+                    <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                        Asset History
+                    </h3>
+
+                    <div className="space-y-4">
+                        {assets.map((asset) => (
+                            <div
+                                key={asset.id}
+                                className={`border rounded-2xl p-4 transition-all ${asset.status === 'rejected'
+                                        ? 'bg-zinc-900/30 border-zinc-800/50 opacity-80'
+                                        : 'bg-zinc-900 border-zinc-800'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="text-left">
+                                        <h4 className="font-bold text-sm">{asset.shopName}</h4>
+                                        <p className="text-[10px] text-zinc-500">{asset.date}</p>
+                                    </div>
+                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${asset.status === 'approved' ? 'bg-teal-500/20 text-teal-500' :
+                                            asset.status === 'rejected' ? 'bg-zinc-800 text-zinc-500' :
+                                                'bg-amber-500/20 text-amber-500'
+                                        }`}>
+                                        {asset.status}
+                                    </span>
+                                </div>
+
+                                {asset.status === 'rejected' && (
+                                    <CreatorAiFeedback
+                                        assetId={asset.id}
+                                        creatorId="demo-creator-id"
+                                        shopId="demo-shop-id"
+                                        shopName={asset.shopName}
+                                        shopRequirements={asset.shopRequirements}
+                                        creatorTags={asset.creatorTags}
+                                    />
+                                )}
+                            </div>
                         ))}
                     </div>
                 </motion.section>

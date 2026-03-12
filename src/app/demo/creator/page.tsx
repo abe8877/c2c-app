@@ -35,10 +35,38 @@ export default async function CreatorDashboard() {
         },
     ];
 
+    const mockAssets = [
+        {
+            id: "asset_1",
+            shopName: "Sushi Ginza Onodera",
+            status: "approved" as const,
+            date: "2024-03-01",
+            shopRequirements: ["Traditional", "Elegant", "Quiet"],
+            creatorTags: ["Traditional", "Elegant"]
+        },
+        {
+            id: "asset_2",
+            shopName: "Harajuku Kawaii Cafe",
+            status: "rejected" as const,
+            date: "2024-02-15",
+            shopRequirements: ["Colorful", "Pop", "Energetic", "Kawaii"],
+            creatorTags: ["Moody", "Cinematic", "Elegant"] // Vibe mismatch
+        },
+        {
+            id: "asset_3",
+            shopName: "Shinjuku Golden Gai Bar",
+            status: "pending" as const,
+            date: "2024-03-10",
+            shopRequirements: ["Retro", "Gritty", "Authentic"],
+            creatorTags: ["Retro", "Gritty"]
+        }
+    ];
+
     return (
         <CreatorDashboardContent
             creatorData={creatorData}
             exclusiveInvites={exclusiveInvites}
+            assets={mockAssets}
         />
     );
 }

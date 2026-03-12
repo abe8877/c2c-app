@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Instagram, Sparkles, CheckCircle, ArrowRight, MapPin, RefreshCw, Play, Send, X, MessageSquareQuote, DollarSign, Gift, Check, Trash2, MessageSquare, MessageCircle, Menu, ChevronLeft, Map, Calendar, AlertTriangle, Info, Search, TrendingUp, Camera, Home, Users, ChevronRight, Clock, Globe, BarChart3, Layers, UploadCloud, Plus, Bell, User, ChevronDown } from 'lucide-react';
+import { Instagram, Sparkles, CheckCircle, ArrowRight, MapPin, RefreshCw, Play, Send, X, MessageSquareQuote, DollarSign, Gift, Check, Trash2, MessageSquare, MessageCircle, Menu, ChevronLeft, Map, Calendar, AlertTriangle, Info, Search, TrendingUp, Camera, Home, Users, ChevronRight, Clock, Globe, BarChart3, Layers, UploadCloud, Plus, Bell, User, ChevronDown, Trash } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
+import { analyzeAssetInsight } from "@/app/actions/analyze-asset-insight";
+import ShopUpsellBanner from "./ShopUpsellBanner";
 
 export interface Asset {
     id: string;
@@ -136,7 +138,19 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
     );
 };
 
-const CreatorCard = ({ creator, onOffer, onPlayVideo }: { creator: Creator; onOffer: (c: Creator) => void; onPlayVideo: (urls: string[]) => void }) => {
+const CreatorCard = ({
+    creator,
+    onOffer,
+    onPlayVideo,
+    onReject,
+    isRejecting
+}: {
+    creator: Creator;
+    onOffer: (c: Creator) => void;
+    onPlayVideo: (urls: string[]) => void;
+    onReject: (c: Creator) => void;
+    isRejecting?: boolean;
+}) => {
     const hasVideos = creator.portfolio_video_urls && creator.portfolio_video_urls.length > 0;
     return (
         <motion.div
@@ -202,6 +216,15 @@ const CreatorCard = ({ creator, onOffer, onPlayVideo }: { creator: Creator; onOf
                         <Play className="w-3 h-3 fill-current" /> 動画をチェックする {creator.portfolio_video_urls!.length > 1 ? `(${creator.portfolio_video_urls!.length})` : ''}
                     </button>
                 )}
+
+                <button
+                    onClick={(e) => { e.stopPropagation(); onReject(creator); }}
+                    disabled={isRejecting}
+                    className="mt-2 text-white/40 hover:text-white transition-colors text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 duration-500 delay-150 transform translate-y-4 group-hover:translate-y-0"
+                >
+                    {isRejecting ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash className="w-3 h-3" />}
+                    Not Interested
+                </button>
             </div>
         </motion.div>
     );
@@ -703,6 +726,12 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
     const [selectedGenre, setSelectedGenre] = useState(initialGenre || 'FOOD');
     const [shopVibe, setShopVibe] = useState<string[]>(initialGenre ? ['#和モダン', '#シズル感', '#インバウンド人気'] : []);
     const [invitedCreatorIds, setInvitedCreatorIds] = useState<Set<string>>(new Set());
+    const [rejectedCreatorIds, setRejectedCreatorIds] = useState<Set<string>>(new Set());
+    const [upsellInsight, setUpsellInsight] = useState<{
+        upsellPlan: "AI_AUTO_TUNE" | "PREMIUM_BOOST" | "NONE";
+        upsellMessage: string;
+    } | null>(null);
+    const [isPending, startTransition] = useTransition();
     const [filterGenre, setFilterGenre] = useState<string>(initialGenre || 'ALL');
     const [filterRegion, setFilterRegion] = useState<string>('ALL');
     const [isChatOpen, setIsChatOpen] = useState(false);
@@ -755,6 +784,31 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
             setIsSent(false);
             setTimeout(() => setIsChatOpen(true), 300);
         }, 2000);
+    };
+
+    const handleReject = (creator: Creator) => {
+        setRejectedCreatorIds(prev => new Set(prev).add(creator.id));
+
+        startTransition(async () => {
+            try {
+                const result = await analyzeAssetInsight({
+                    assetId: `reject_${creator.id}_${Date.now()}`,
+                    creatorId: creator.id,
+                    shopId: clientTag || "demo-shop",
+                    shopRequirements: shopVibe,
+                    creatorTags: creator.vibe_tags
+                });
+
+                if (result.success && result.insight.shopUpsellPlan !== "NONE") {
+                    setUpsellInsight({
+                        upsellPlan: result.insight.shopUpsellPlan,
+                        upsellMessage: result.insight.shopUpsellMessage
+                    });
+                }
+            } catch (error) {
+                console.error("Failed to analyze reject insight:", error);
+            }
+        });
     };
 
     return (
@@ -931,38 +985,25 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
                                             ))}
                                         </div>
 
-                                        {/* Target Region UI (Hidden as requested)
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Target Region</span>
-                                            <div className="flex gap-1 bg-stone-100 p-1 rounded-full">
-                                                {[
-                                                    { key: 'ALL', label: '🌍 All' },
-                                                    { key: 'WESTERN', label: '🇺🇸 Western' },
-                                                    { key: 'ASIAN', label: '🌏 Asian' },
-                                                ].map(tab => (
-                                                    <button
-                                                        key={tab.key}
-                                                        onClick={() => setFilterRegion(tab.key)}
-                                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${filterRegion === tab.key
-                                                            ? 'bg-white text-black shadow-sm'
-                                                            : 'text-stone-400 hover:text-stone-600'
-                                                            }`}
-                                                    >
-                                                        {tab.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        */}
+                                        <AnimatePresence>
+                                            {upsellInsight && (
+                                                <ShopUpsellBanner
+                                                    upsellPlan={upsellInsight.upsellPlan}
+                                                    upsellMessage={upsellInsight.upsellMessage}
+                                                />
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
-                                        {filteredCreators.map((creator) => (
+                                        {filteredCreators.filter(c => !rejectedCreatorIds.has(c.id)).map((creator) => (
                                             <CreatorCard
                                                 key={creator.id}
                                                 creator={creator}
                                                 onOffer={(c) => openInviteModal(c)}
                                                 onPlayVideo={(urls) => setSelectedVideo({ urls, name: creator.name })}
+                                                onReject={handleReject}
+                                                isRejecting={isPending}
                                             />
                                         ))}
                                     </div>
