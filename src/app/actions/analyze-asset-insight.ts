@@ -21,7 +21,7 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
 
         // 1. Geminiを使用して、B2C/B2B両方のインサイトを同時に生成 (高速な Flash モデルを使用)
         const { object } = await generateObject({
-            model: google('gemini-3-flash-preview'), // 安定した最新モデルを使用
+            model: google('gemini-1.5-flash'), // 安定した最新モデルを使用
             schema: z.object({
                 creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
                 shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
