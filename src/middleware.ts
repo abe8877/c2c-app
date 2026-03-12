@@ -10,7 +10,9 @@ const ratelimit = new Ratelimit({
 });
 
 export async function middleware(request: NextRequest) {
-    const ip = request.ip ?? request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for') ?? '127.0.0.1';
+    // IPアドレスはVercelが付与するヘッダーから取得（Web標準 Request API 準拠）
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0] : request.headers.get('x-real-ip') ?? '127.0.0.1';
 
 
     // APIルートとServer Actions (POST) を保護
