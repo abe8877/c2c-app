@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Play, Check, AlertCircle, ArrowRight, Instagram, Video, Upload, ChevronRight, Globe, Shield } from 'lucide-react';
+import { submitCreatorApplication } from '../actions';
+
 import { motion, AnimatePresence } from 'framer-motion';
 
 const VIBE_OPTIONS = [
@@ -27,9 +29,12 @@ export function OnboardingForm({ creator }: { creator: any }) {
         nationality: 'Japan',
         contact_app: 'Instagram',
         contact_id: '',
+        email: '',
+        password: '',
         agreed_to_asset: false,
         agreed_to_noshow: false,
     });
+
 
     const toggleTag = (tag: string) => {
         setFormData(prev => {
@@ -73,8 +78,12 @@ export function OnboardingForm({ creator }: { creator: any }) {
 
     const handleSubmit = async () => {
         setError('');
-        if (!formData.real_name || !formData.contact_id) {
-            setError('Please fill in your Name and Contact ID.');
+        if (!formData.real_name || !formData.contact_id || !formData.email || !formData.password) {
+            setError('Please fill in all required fields including Account Creation.');
+            return;
+        }
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters.');
             return;
         }
         if (!formData.agreed_to_asset || !formData.agreed_to_noshow) {
@@ -84,31 +93,27 @@ export function OnboardingForm({ creator }: { creator: any }) {
 
         setLoading(true);
         try {
-            const { error: updateError } = await supabase
-                .from('creators')
-                .update({
-                    portfolio_video_url: formData.portfolio_video_url,
-                    avatar_url: formData.avatar_url,
-                    vibe_tags: formData.vibe_tags,
-                    real_name: formData.real_name,
-                    nationality: formData.nationality,
-                    contact_app: formData.contact_app,
-                    contact_id: formData.contact_id,
-                    agreed_to_terms: true,
-                    is_onboarded: true,
-                    status: 'onboarded',
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', creator.id);
+            const serverFormData = new FormData();
+            serverFormData.append('inviteCode', creator.invite_code);
+            serverFormData.append('email', formData.email);
+            serverFormData.append('password', formData.password);
+            serverFormData.append('portfolio_video_url', formData.portfolio_video_url);
+            serverFormData.append('avatar_url', formData.avatar_url);
+            serverFormData.append('real_name', formData.real_name);
+            serverFormData.append('nationality', formData.nationality);
+            serverFormData.append('contact_app', formData.contact_app);
+            serverFormData.append('contact_id', formData.contact_id);
+            serverFormData.append('vibe_tags', JSON.stringify(formData.vibe_tags));
 
-            if (updateError) throw updateError;
-            router.push('/dashboard?welcome=true');
+            await submitCreatorApplication(serverFormData);
         } catch (err: any) {
-            setError('Something went wrong. Please try again.');
+            console.error(err);
+            setError(err.message || 'Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="relative">
@@ -337,8 +342,51 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                         placeholder={`${formData.contact_app} Identification`}
                                     />
                                 </div>
+
+                                {/* Account Creation Section */}
+                                <div className="mt-8 pt-8 border-t border-zinc-900/50">
+                                    <h3 className="text-2xl font-light font-playfair italic text-white mb-2">
+                                        Account Creation
+                                    </h3>
+                                    <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
+                                        Access your exclusive dashboard and tracking tools.
+                                    </p>
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                                Email Address (Login ID)
+                                            </label>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
+                                                placeholder="your@email.com"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                                Set Password
+                                            </label>
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                required
+                                                minLength={6}
+                                                value={formData.password}
+                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
+                                                placeholder="Min. 6 characters"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
 
                         <div className="mb-10 space-y-6">
                             <h3 className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.3em] mb-4">Terms of Curation</h3>

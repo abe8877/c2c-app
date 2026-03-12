@@ -27,14 +27,23 @@ const playfairDisplay = Playfair_Display({
 export const metadata: Metadata = {
   title: "INSIDERS - Beyond the Buzz",
   description: "Viral is cheap. Insight is priceless. Apply for the exclusive curation network.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'INSIDERS',
+  },
 };
 
+
 export const viewport: Viewport = {
-  themeColor: '#000000',
+  themeColor: '#0f172a', // Dark Slate
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1, // iOSで入力フォームフォーカス時のズームを防ぐ（アプリ感の維持）
+  maximumScale: 1,
+  userScalable: false, // ズーム禁止（ネイティブアプリ感）
+  viewportFit: 'cover', // ノッチ領域まで背景を広げる
 };
+
 
 
 export default function RootLayout({

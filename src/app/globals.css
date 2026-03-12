@@ -1,2 +1,10 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
+
+/* iOS Safariのバウンススクロールを無効化し、ネイティブアプリのような操作感を実現 */
+html, body {
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  background-color: #0f172a; /* iOSのステータスバーと同化させる（Dark Slate） */
+}

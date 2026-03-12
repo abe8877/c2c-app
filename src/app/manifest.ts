@@ -2,16 +2,16 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'MANEKEY - VIBE to ASSET',
-        short_name: 'MANEKEY',
-        description: 'Elevate Your Creator Career. Exclusive invites for Tier-S creators.',
+        name: 'INSIDERS - Beyond the Buzz',
+        short_name: 'INSIDERS',
+        description: 'Elite Curation Network. For those who define the vibe.',
         start_url: '/demo/creator',
-        display: 'standalone', // ブラウザのUIを隠し、ネイティブアプリのように見せる
-        background_color: '#000000',
-        theme_color: '#000000',
+        display: 'standalone',
+        background_color: '#0f172a',
+        theme_color: '#0f172a',
         icons: [
             {
-                src: '/icons/icon-192x192.png', // ※public/icons/配下に画像を配置してください
+                src: '/icons/icon-192x192.png',
                 sizes: '192x192',
                 type: 'image/png',
             },
@@ -23,3 +23,4 @@ export default function manifest(): MetadataRoute.Manifest {
         ],
     };
 }
+
