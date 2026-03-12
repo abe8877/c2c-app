@@ -1,10 +1,36 @@
 @import "tailwindcss";
-@config "../../tailwind.config.ts";
+
+@theme {
+    --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+    --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+    --animate-blob: blob 7s infinite;
+    --animate-bounce-slow: bounce 3s infinite;
+
+    @keyframes blob {
+        0% {
+            transform: translate(0px, 0px) scale(1);
+        }
+
+        33% {
+            transform: translate(30px, -50px) scale(1.1);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+
+        100% {
+            transform: translate(0px, 0px) scale(1);
+        }
+    }
+}
 
 /* iOS Safariのバウンススクロールを無効化し、ネイティブアプリのような操作感を実現 */
-html, body {
-  overscroll-behavior-y: none;
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-  background-color: #0f172a; /* iOSのステータスバーと同化させる（Dark Slate） */
+html,
+body {
+    overscroll-behavior-y: none;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    background-color: #0f172a;
+    /* iOSのステータスバーと同化させる（Dark Slate） */
 }
