@@ -69,7 +69,8 @@ export default async function AdvertiserPage() {
                 ? c.avatar_url
                 : getImageForGenre(genreKey, i),
 
-            portfolio_video_urls: c.portfolio_video_urls || (c.portfolio_video_url ? [c.portfolio_video_url] : [])
+            portfolio_video_urls: c.portfolio_video_urls || (c.portfolio_video_url ? [c.portfolio_video_url] : []),
+            tier: c.tier || '-'
         };
     });
 

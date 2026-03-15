@@ -15,7 +15,7 @@ type AnalyzePayload = {
     creatorTags: string[];
 };
 
-export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
+export async function analyzeAssetInsight(payload: AnalyzePayload) {
     return publicAction(payload, async (data: AnalyzePayload, _context) => {
         const supabase = await createClient();
 
@@ -33,8 +33,9 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
 
         let object;
         try {
+            console.log('Starting Asset Insight AI Analysis using model: gemini-1.5-flash');
             const result = await generateObject({
-                model: google('gemini-3-flash-preview'), // 安定した最新モデルを使用
+                model: google('gemini-1.5-flash'), // 安定した最新モデルを使用
                 schema: z.object({
                     creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
                     shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),

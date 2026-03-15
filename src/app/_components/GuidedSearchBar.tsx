@@ -48,7 +48,7 @@ export function GuidedSearchBar({ defaultValue = '', defaultGenre = 'FOOD', clas
                     type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    placeholder="Instagram または GoogleマップのURL"
+                    placeholder="Googleマップ または InstagramのURL"
                     className="w-full py-3 outline-none text-stone-700 placeholder:text-stone-300 font-medium"
                     onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
                 />

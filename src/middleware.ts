@@ -15,8 +15,8 @@ export async function middleware(request: NextRequest) {
     const ip = forwardedFor ? forwardedFor.split(',')[0] : request.headers.get('x-real-ip') ?? '127.0.0.1';
 
 
-    // APIルートとServer Actions (POST) を保護
-    if (request.nextUrl.pathname.startsWith('/api') || request.method === 'POST') {
+    // APIルートのみを保護（Server Actions は各アクション内で個別にレートリミットをかける）
+    if (request.nextUrl.pathname.startsWith('/api')) {
         const { success } = await ratelimit.limit(ip);
         if (!success) {
             return new NextResponse('Too Many Requests', { status: 429 });

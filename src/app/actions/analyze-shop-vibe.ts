@@ -1,111 +1,114 @@
 'use server'
 
-import { publicAction } from '@/lib/actions/safe-action';
 import { createClient } from '@/utils/supabase/server';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
-import * as cheerio from 'cheerio'; // 軽量なスクレイピング用
+import * as cheerio from 'cheerio';
+import { Ratelimit } from '@upstash/ratelimit';
+import { kv } from '@vercel/kv';
+import { headers } from 'next/headers';
 
-export const analyzeShopVibe = async (url: string) => {
-    return publicAction({ url }, async ({ url }, _context) => {
+export async function analyzeShopVibe(url: string, genre?: string) {
+    try {
         const supabase = await createClient();
 
-        // 1. URLから最低限のメタデータ（OGP）を抽出
-        let siteMetadata = '';
+        // 1. IPベースのレートリミット（KVが設定されている場合のみ実行）
+        if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+            try {
+                const ratelimit = new Ratelimit({
+                    redis: kv,
+                    limiter: Ratelimit.slidingWindow(5, '60 s'),
+                });
+
+                const headersList = await headers();
+                const ip = headersList.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+
+                const { success: limitSuccess } = await ratelimit.limit(`vibe_analysis_${ip}`);
+                if (!limitSuccess) {
+                    return { success: false, error: 'Too many requests. Please try again in a minute.' };
+                }
+            } catch (rlError) {
+                console.warn('Ratelimit skip due to error:', rlError);
+            }
+        }
+
+        // 2. メタデータ抽出
+        let siteMetadata = `URL: ${url}`;
         try {
             const response = await fetch(url, {
                 headers: { 'User-Agent': 'VibeBot/1.0' },
                 next: { revalidate: 3600 }
             });
-            const html = await response.text();
-            const $ = cheerio.load(html);
-            const title = $('title').text() || $('meta[property="og:title"]').attr('content') || '';
-            const description = $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content') || '';
-            siteMetadata = `Title: ${title}\nDescription: ${description}\nURL: ${url}`;
+            if (response.ok) {
+                const html = await response.text();
+                const $ = cheerio.load(html);
+                const title = $('title').text() || '';
+                const desc = $('meta[name="description"]').attr('content') || '';
+                siteMetadata = `Title: ${title}\nDescription: ${desc}\nURL: ${url}`;
+            }
         } catch (e) {
-            console.warn('Scraping failed, falling back to URL only', e);
-            siteMetadata = `URL: ${url}`; // 取得失敗時もURLだけでGeminiに推測させる
+            console.warn('Metadata fetch failed:', e);
         }
 
-        // 2. Gemini 1.5 に「VIBEプロデューサー」としてタグを生成させる
-        let object = {
-            shopName: '不明な店舗',
-            vibeTags: ['和モダン', '落ち着いた雰囲気', 'フォトジェニック', '隠れ家', '伝統的']
-        };
+        // 3. AI 解析 (gemini-3-flash-preview)
+        let vibeTags = ['和モダン', '落ち着いた雰囲気', '隠れ家', 'フォトジェニック', '体験'];
+        let shopName = '不明な店舗';
+        let mappedVibeClusters: string[] = ['Modern', 'Authentic'];
 
         try {
-            console.log('Starting AI Analysis for:', url);
-            const result = await generateObject({
+            console.log('AI Analysis starting with gemini-3-flash-preview...');
+            const { object } = await generateObject({
                 model: google('gemini-3-flash-preview'),
                 schema: z.object({
-                    shopName: z.string().describe('推測される店舗名'),
-                    vibeTags: z.array(z.string()).describe('#和モダン, #自然光 のようなハッシュタグ形式のVIBE要素を5つ')
+                    shopName: z.string().describe('Name of the shop'),
+                    vibeTags: z.array(z.string()).describe('5 VIBE tags in Japanese without hashtags'),
+                    mappedVibeClusters: z.array(z.string()).describe('Up to 3 clusters from: Cinematic, Luxury, Street, Kawaii, Vlog, Traditional, Modern, Authentic')
                 }),
-                system: `あなたは日本の店舗の魅力をインバウンド（海外観光客）向けに言語化するトッププロデューサーです。
-          提供されたWebサイトの情報（またはURLの文字列）から、その店舗の強み、空間の雰囲気、提供価値を読み取り、
-          Instagram等で映えるVIBEタグ（日本語、ハッシュタグ記号なし）を5つ生成してください。`,
-                prompt: `以下の店舗情報を分析してください:\n${siteMetadata}`
+                system: `店舗の魅力(VIBE)を分析し、以下の3つの情報を生成してください。
+1. 店舗名 (shopName)
+2. VIBEタグ: ハッシュタグなしの日本語で5つ (vibeTags)
+3. VIBEクラスター: 以下のリストから店舗の魅力に最も近いものを最大3つ選んでください (mappedVibeClusters)
+   選択肢: [Cinematic, Luxury, Street, Kawaii, Vlog, Traditional, Modern, Authentic]`,
+                prompt: `店舗情報:\n${siteMetadata}`
             });
-
-            if (result && result.object) {
-                object = result.object;
-                // タグが空だったり不十分な場合の補正
-                if (!object.vibeTags || object.vibeTags.length === 0) {
-                    object.vibeTags = ['素敵', '日本', 'おすすめ', '観光', '体験'];
-                }
-                console.log('AI Analysis Succeeded:', object.shopName);
+            if (object) {
+                vibeTags = object.vibeTags || vibeTags;
+                shopName = object.shopName || shopName;
+                mappedVibeClusters = object.mappedVibeClusters?.slice(0, 3) || mappedVibeClusters;
             }
-        } catch (error: any) {
-            // AI-SDKのエラー内容をより詳細にログ出力
-            console.error('AI Analysis Error Detail:', {
-                name: error.name,
-                message: error.message,
-                url: error.url,
-                status: error.status,
-                data: error.data
-            });
-            // フォールバックデータで継続（エラーを投げない）
+        } catch (aiError: any) {
+            console.error('AI Analysis Critical Error:', aiError.message);
         }
 
-        // 3. 推薦クリエイター数（親和性）の計算
+        // 4. マッチング数 (指定されたジャンルでフィルタリング)
         let matchCount = 0;
         try {
-            const { data: creators } = await supabase.from('creators').select('id, tags');
-            if (creators && object.vibeTags) {
-                matchCount = creators.filter(creator =>
-                    creator.tags?.some((tag: string) =>
-                        object.vibeTags.some((vTag: string) =>
-                            (tag && vTag && (tag.includes(vTag) || vTag.includes(tag)))
-                        )
-                    )
-                ).length;
+            let query = supabase.from('creators').select('*', { count: 'exact', head: true });
+
+            if (genre && genre !== 'ALL') {
+                // 配列カラムに特定の値が含まれているかチェック
+                query = query.contains('genre', [genre.toUpperCase()]);
             }
-        } catch (err) {
-            console.error('Match count calculation failed:', err);
-            matchCount = 12; // 完全に失敗した時のモック
+
+            const { count, error } = await query;
+            if (error) throw error;
+            matchCount = count || 0;
+        } catch (dbError) {
+            console.warn('DB count failed:', dbError);
+            matchCount = 16;
         }
 
-        // 4. 店舗情報としてDBに保存（ログインしている場合のみ）
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                await supabase.from('shops').upsert({
-                    id: user.id,
-                    name: object.shopName,
-                    requirements: object.vibeTags,
-                    updated_at: new Date().toISOString()
-                });
-            }
-        } catch (dbErr) {
-            console.warn('DB upsert skipped or failed:', dbErr);
-        }
-
-        // フロントエンドに結果を返す
         return {
             success: true,
-            tags: object.vibeTags,
-            matchCount: matchCount || 10
+            tags: vibeTags,
+            matchCount: matchCount,
+            shopName: shopName,
+            mappedVibeClusters: mappedVibeClusters
         };
-    });
-};
+
+    } catch (err: any) {
+        console.error('analyzeShopVibe Top Level Error:', err);
+        return { success: false, error: 'Internal Server Error' };
+    }
+}
