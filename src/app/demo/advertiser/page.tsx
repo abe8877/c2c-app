@@ -74,10 +74,37 @@ export default async function AdvertiserPage() {
     });
 
     // 1. (デモ用) 自分の店舗ID（client_tag）を取得
-    const { data: myShop } = await supabase.from('shops').select('client_tag').limit(1).single();
+    const { data: myShop } = await supabase.from('shops').select('*').limit(1).single();
     const clientTag = myShop?.client_tag;
 
-    // 2. 自分の店に紐づく資産だけを取得 (クリエイター情報も一緒に)
+    // 2. 統計情報の取得 (交渉中、獲得動画、資産鮮度)
+    let stats = {
+        offeredCount: 0,
+        completedCount: 0,
+        freshness: 0
+    };
+
+    if (clientTag) {
+        const { data: allAssets } = await supabase
+            .from('assets')
+            .select('status, created_at')
+            .eq('client_tag', clientTag);
+
+        if (allAssets) {
+            stats.offeredCount = allAssets.filter(a => a.status === 'OFFERED').length;
+            stats.completedCount = allAssets.filter(a => a.status === 'COMPLETED').length;
+
+            // 鮮度計算: 全資産のうち直近30日以内に作成されたものの割合 (最低30%はデモ用に表示)
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const freshAssets = allAssets.filter(a => a.created_at && new Date(a.created_at) > thirtyDaysAgo).length;
+            stats.freshness = allAssets.length > 0
+                ? Math.max(30, Math.round((freshAssets / allAssets.length) * 100))
+                : 0;
+        }
+    }
+
+    // 3. 自分の店に紐づく資産だけを取得 (クリエイター情報も一緒に)
     let assets: any[] = [];
     if (clientTag) {
         const { data: fetchedAssets } = await supabase
@@ -94,6 +121,6 @@ export default async function AdvertiserPage() {
     }
 
     return (
-        <VibeCatalogue initialCreators={enrichedCreators} initialAssets={assets} clientTag={clientTag} />
+        <VibeCatalogue initialCreators={enrichedCreators} initialAssets={assets} clientTag={clientTag} stats={stats} />
     );
 }

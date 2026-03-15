@@ -19,23 +19,47 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
     return publicAction(payload, async (data: AnalyzePayload, _context) => {
         const supabase = await createClient();
 
-        // 1. Geminiを使用して、B2C/B2B両方のインサイトを同時に生成 (高速な Flash モデルを使用)
-        const { object } = await generateObject({
-            model: google('gemini-3-flash-preview'), // 安定した最新モデルを使用
-            schema: z.object({
-                creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
-                shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
-                shopUpsellMessage: z.string().describe('店舗に対する有料機能のセールスコピー（短め）')
-            }),
-            system: `あなたはインバウンド向けショート動画の凄腕プロデューサー兼、広告主向けのトップ営業マンです。
-      クリエイターのVibeと店舗の要求Vibeのズレを分析し、
-      ①クリエイターには次回の案件獲得に向けたモチベーションの上がる具体的なヒントを、
-      ②店舗（広告主）にはAIオートチューンやプレミアムブースト等の有料プランで要件を最適化する提案を出力してください。`,
-            prompt: `店舗の要求Vibe: ${data.shopRequirements.join(', ')}\nクリエイターのVibe: ${data.creatorTags.join(', ')}`
-        });
+        // フェイルセーフ: タグが空またはundefinedの場合の処理
+        const requirements = (data.shopRequirements && data.shopRequirements.length > 0) 
+            ? data.shopRequirements 
+            : ['#General'];
+        const tags = (data.creatorTags && data.creatorTags.length > 0) 
+            ? data.creatorTags 
+            : ['#Undefined'];
+
+        // タグが両方とも実質的に空（フォールバックのみ）の場合、AI呼び出しをスキップする選択肢もあるが、
+        // ここでは「分析不可」という結果をAIに生成させるか、固定のレスポンスを返す。
+        // 要件に従い、ダミーのタグを代入して実行する。
+
+        let object;
+        try {
+            const result = await generateObject({
+                model: google('gemini-1.5-flash'), // 安定した最新モデルを使用
+                schema: z.object({
+                    creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
+                    shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
+                    shopUpsellMessage: z.string().describe('店舗に対する有料機能のセールスコピー（短め）')
+                }),
+                system: `あなたはインバウンド向けショート動画の凄腕プロデューサー兼、広告主向けのトップ営業マンです。
+          クリエイターのVibeと店舗の要求Vibeのズレを分析し、
+          ①クリエイターには次回の案件獲得に向けたモチベーションの上がる具体的なヒントを、
+          ②店舗（広告主）にはAIオートチューンやプレミアムブースト等の有料プランで要件を最適化する提案を出力してください。
+          もしタグ情報が不十分な場合は、一般的な改善アドバイスを提供してください。`,
+                prompt: `店舗の要求Vibe: ${requirements.join(', ')}\nクリエイターのVibe: ${tags.join(', ')}`
+            });
+            object = result.object;
+        } catch (error) {
+            console.error('Gemini API Error:', error);
+            // フォールバック用の固定メッセージ
+            object = {
+                creatorAiHint: "タグ情報が不足しているため、詳細な分析をスキップしました。プロフィールや動画のタグを充実させてください。",
+                shopUpsellPlan: 'NONE' as const,
+                shopUpsellMessage: "分析に必要なデータが不足しています。"
+            };
+        }
 
         // 不足しているタグの計算
-        const missingTags = data.shopRequirements.filter((tag: string) => !data.creatorTags.includes(tag));
+        const missingTags = requirements.filter((tag: string) => !tags.includes(tag));
 
         // 2. Supabase の asset_insights テーブルに保存 (失敗してもレスポンスは返す)
         try {

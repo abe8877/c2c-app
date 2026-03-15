@@ -18,7 +18,7 @@ function AnalyzingScreen() {
                 <div className="absolute inset-0 border-4 border-yellow-500 rounded-full border-t-transparent animate-spin"></div>
                 <Sparkles className="absolute inset-0 m-auto text-yellow-500 animate-pulse" size={48} />
             </div>
-            <h2 className="text-3xl font-black tracking-tighter mb-4 text-neutral-900 uppercase">店舗のVIBEを言語化中...</h2>
+            <h2 className="text-3xl font-black tracking-tighter mb-4 text-neutral-900 uppercase">店舗の魅力を言語化中...</h2>
             <div className="flex flex-col items-center gap-3 text-stone-400 font-black text-xs uppercase tracking-widest">
                 <p className="animate-pulse">Analyzing Instagram Assets...</p>
                 <p className="animate-pulse delay-700">Identifying Inbound Demographics...</p>
@@ -67,15 +67,11 @@ export function AnalysisView({ matchCount, genre, tags }: { matchCount: number, 
                         </h1>
 
                         <p className="text-gray-500 text-center mb-12 max-w-lg font-medium">
-                            解析の結果、貴店の強み（VIBE）は以下のように定義されました。
+                            解析の結果、貴店の魅力は以下のように定義されました。
                         </p>
 
                         {/* Detected Tags Card */}
                         <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-2xl border border-gray-100 mb-10 ring-1 ring-black/5">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center mb-8">
-                                DETECTED VIBE TAGS
-                            </p>
-
                             <div className="flex flex-wrap justify-center gap-4">
                                 {tags.map((tag, i) => (
                                     <span

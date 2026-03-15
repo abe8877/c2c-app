@@ -33,6 +33,36 @@ export interface Creator {
     portfolio_video_urls?: string[];
 }
 
+const AnimatedCounter = ({ value }: { value: number }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let start = 0;
+        const end = value;
+        if (start === end) {
+            setCount(end);
+            return;
+        }
+
+        const totalDuration = 1000;
+        const increment = end / (totalDuration / 16);
+
+        const timer = setInterval(() => {
+            start += increment;
+            if (start >= end) {
+                setCount(end);
+                clearInterval(timer);
+            } else {
+                setCount(Math.floor(start));
+            }
+        }, 16);
+
+        return () => clearInterval(timer);
+    }, [value]);
+
+    return <span>{count}</span>;
+};
+
 const genreEmoji: Record<string, string> = { FOOD: '🍣', BEAUTY: '💅', TRAVEL: '⛩️', EXPERIENCE: '🧖‍♀️', LIFESTYLE: '✨' };
 const ethnicityEmoji: Record<string, string> = { AMERICA: '🇺🇸', EUROPE: '🇪🇺', ASIA: '🌏', AFRICA: '🌍' };
 
@@ -409,7 +439,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag }: any) {
             <div className="text-center mb-12">
                 <div className="inline-flex p-4 bg-green-100 rounded-full text-green-700 mb-6 shadow-sm"><CheckCircle size={40} strokeWidth={3} /></div>
                 <h2 className="text-4xl font-black tracking-tighter mb-3 uppercase">Analysis Complete</h2>
-                <p className="text-stone-500 font-medium">解析の結果、貴店の強み（VIBE）は以下のように定義されました。</p>
+                <p className="text-stone-500 font-medium">解析の結果、貴店の魅力は以下のように定義されました。</p>
             </div>
             <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-stone-100 mb-8 ring-1 ring-stone-200/50">
                 <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-8 text-center">Detected Vibe Tags</h3>
@@ -715,7 +745,17 @@ const OfferModal = ({ isOpen, onClose, creatorName, onSend }: { isOpen: boolean;
     );
 };
 
-export default function VibeCatalogue({ initialCreators, initialAssets = [], clientTag }: { initialCreators: Creator[], initialAssets?: Asset[], clientTag?: string }) {
+export default function VibeCatalogue({
+    initialCreators,
+    initialAssets = [],
+    clientTag,
+    stats = { offeredCount: 0, completedCount: 0, freshness: 0 }
+}: {
+    initialCreators: Creator[],
+    initialAssets?: Asset[],
+    clientTag?: string,
+    stats?: { offeredCount: number; completedCount: number; freshness: number; }
+}) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const initialGenre = searchParams.get('genre')?.toUpperCase();
@@ -753,20 +793,12 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
 
     // mock data for UI fallback removed in favor of initialAssets
 
-    useEffect(() => {
-        if (activeTab === "search" && step === 'analyzing') {
-            const timer = setTimeout(() => {
-                setShopVibe(['#和モダン', '#自然光', '#隠れ家', '#抹茶スイーツ', '#フォトジェニック']);
-                setStep('vibe_check');
-            }, 2500);
-            return () => clearTimeout(timer);
-        }
-    }, [step, activeTab]);
+    // Mock analysis effect removed as we now use /demo/analyzing page with real server action
 
     const handleUrlSubmit = () => {
         if (!url) return;
-        // 解析画面へ遷移
-        router.push(`/demo/analyzing?genre=${selectedGenre}`);
+        // 解析画面へ遷移 (URLパラメータを付与してサーバーサイド解析を走らせる)
+        router.push(`/demo/analyzing?genre=${selectedGenre}&url=${encodeURIComponent(url)}`);
     };
 
     const openInviteModal = (creator: Creator) => {
@@ -866,7 +898,7 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
                                             インバウンド集客を開始
                                         </h1>
                                         <p className="text-stone-500 font-medium max-w-xl mx-auto">
-                                            あなたの店のVIBEを解析。
+                                            あなたの店の魅力を解析。
                                             「海外から見た日本」の文脈を理解したネイティブクリエイターをAIが即座に提案します。
                                         </p>
                                     </div>
@@ -901,24 +933,10 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
                                             onClick={handleUrlSubmit}
                                             className="w-full sm:w-auto bg-black text-white px-10 py-5 rounded-2xl font-black hover:bg-stone-800 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xl shrink-0"
                                         >
-                                            VIBE解析を開始 <span className="text-yellow-400 animate-pulse">✨</span>
+                                            魅力の解析を開始 <span className="text-yellow-400 animate-pulse">✨</span>
                                         </button>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mt-12 opacity-60 hover:opacity-100 transition-opacity cursor-pointer group">
-                                        <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm group-hover:shadow-md transition-all">
-                                            <div className="text-3xl font-black tracking-tighter">3</div>
-                                            <div className="text-[10px] font-black uppercase text-stone-400 tracking-wider">交渉中</div>
-                                        </div>
-                                        <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm group-hover:shadow-md transition-all">
-                                            <div className="text-3xl font-black tracking-tighter">12</div>
-                                            <div className="text-[10px] font-black uppercase text-stone-400 tracking-wider">獲得動画</div>
-                                        </div>
-                                        <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm group-hover:shadow-md transition-all">
-                                            <div className="text-3xl font-black tracking-tighter text-green-600">85%</div>
-                                            <div className="text-[10px] font-black uppercase text-stone-400 tracking-wider">資産鮮度</div>
-                                        </div>
-                                    </div>
                                 </div>
                             )}
 
@@ -947,7 +965,7 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-stone-400 text-sm font-medium">貴店のVIBEタグと高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名</span></p>
+                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名</span></p>
                                         </div>
                                         <button
                                             onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}
@@ -1031,13 +1049,53 @@ export default function VibeCatalogue({ initialCreators, initialAssets = [], cli
                         <main className="max-w-6xl mx-auto px-4 pt-8 pb-32 space-y-16">
                             <header className="flex justify-between items-end border-b border-stone-100 pb-8">
                                 <div className="space-y-1 text-left">
-                                    <h2 className="text-4xl font-black tracking-tighter">Asset Hub</h2>
+                                    <h2 className="text-4xl font-black tracking-tighter uppercase italic">Asset Hub</h2>
                                     <p className="text-stone-400 text-sm font-medium uppercase tracking-widest text-left">動画資産の一元管理と展開</p>
                                 </div>
-                                <button className="bg-white border-2 border-stone-100 hover:border-black text-black px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                                <button className="bg-white border-2 border-stone-100 hover:border-black text-black px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-sm transition-all active:scale-95 uppercase tracking-widest">
                                     <UploadCloud className="w-4 h-4" /> 外部動画を取り込む
                                 </button>
                             </header>
+
+                            {/* Dynamic KPI Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                >
+                                    <div className="text-5xl font-black text-stone-900 group-hover:text-blue-600 transition-colors">
+                                        <AnimatedCounter value={stats.offeredCount} />
+                                    </div>
+                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">交渉中</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                >
+                                    <div className="text-5xl font-black text-stone-900 group-hover:text-green-600 transition-colors">
+                                        <AnimatedCounter value={stats.completedCount} />
+                                    </div>
+                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">獲得動画</p>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                >
+                                    <div className="text-5xl font-black text-green-500 flex items-center gap-1">
+                                        <AnimatedCounter value={stats.freshness} />
+                                        <span className="text-2xl">%</span>
+                                    </div>
+                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">資産鮮度</p>
+                                </motion.div>
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {initialAssets.map((asset) => {

@@ -1,0 +1,69 @@
+// src/app/actions/analyze-shop-vibe.ts
+'use server'
+
+import { authAction } from '@/lib/actions/safe-action';
+import { createClient } from '@/utils/supabase/server';
+import { generateObject } from 'ai';
+import { google } from '@ai-sdk/google';
+import { z } from 'zod';
+import * as cheerio from 'cheerio'; // 軽量なスクレイピング用
+
+export const analyzeShopVibe = async (url: string) => {
+    return authAction({ url }, async ({ url }, { user }) => {
+        const supabase = await createClient();
+
+        // 1. URLから最低限のメタデータ（OGP）を抽出
+        let siteMetadata = '';
+        try {
+            const response = await fetch(url, { headers: { 'User-Agent': 'VibeBot/1.0' } });
+            const html = await response.text();
+            const $ = cheerio.load(html);
+            const title = $('title').text() || $('meta[property="og:title"]').attr('content') || '';
+            const description = $('meta[name="description"]').attr('content') || $('meta[property="og:description"]').attr('content') || '';
+            siteMetadata = `Title: ${title}\nDescription: ${description}\nURL: ${url}`;
+        } catch (e) {
+            console.warn('Scraping failed, falling back to URL only', e);
+            siteMetadata = `URL: ${url}`; // 取得失敗時もURLだけでGeminiに推測させる
+        }
+
+        // 2. Gemini 1.5 に「VIBEプロデューサー」としてタグを生成させる
+        const { object } = await generateObject({
+            model: google('gemini-1.5-flash'),
+            schema: z.object({
+                shopName: z.string().describe('推測される店舗名'),
+                vibeTags: z.array(z.string()).describe('#和モダン, #自然光 のようなハッシュタグ形式のVIBE要素を5つ')
+            }),
+            system: `あなたは日本の店舗の魅力をインバウンド（海外観光客）向けに言語化するトッププロデューサーです。
+      提供されたWebサイトの情報（またはURLの文字列）から、その店舗の強み、空間の雰囲気、提供価値を読み取り、
+      Instagram等で映えるVIBEタグ（日本語）を5つ生成してください。`,
+            prompt: `以下の店舗情報を分析してください:\n${siteMetadata}`
+        });
+
+        // 3. 推薦クリエイター数（親和性）の計算
+        // 現在のクリエイター一覧を取得し、タグの重複がある人数をカウント
+        const { data: creators } = await supabase.from('creators').select('id, tags');
+        let matchCount = 0;
+
+        if (creators) {
+            matchCount = creators.filter(creator =>
+                creator.tags?.some((tag: string) => object.vibeTags.includes(tag))
+            ).length;
+        }
+
+        // 4. 店舗情報としてDBに保存（または更新）
+        // ※ 実際の運用では認証ユーザーに紐づく shop_id を使用します
+        await supabase.from('shops').upsert({
+            id: user.id, // または既存の shopId
+            name: object.shopName,
+            requirements: object.vibeTags,
+            updated_at: new Date().toISOString()
+        });
+
+        // フロントエンドに結果を返す
+        return {
+            success: true,
+            tags: object.vibeTags,
+            matchCount
+        };
+    });
+};

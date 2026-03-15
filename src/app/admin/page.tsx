@@ -4,7 +4,9 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect"; // ★ Supabaseクライアントをインポート
+import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
+import { getAdminStats, getLostAssets } from '@/app/actions/admin';
+import { Info } from 'lucide-react';
 
 // Define the Creator Interface
 interface CreatorData {
@@ -59,6 +61,11 @@ function AdminDashboard() {
 
     // タブ管理
     const [activeTab, setActiveTab] = useState<'creators' | 'logs'>(initialTab);
+    const [logTab, setLogTab] = useState<'success' | 'lost'>('success');
+
+    // 統計データ管理
+    const [stats, setStats] = useState<any>(null);
+    const [lostAssets, setLostAssets] = useState<any[]>([]);
 
     // 編集保存の演出用
     const [isSaving, setIsSaving] = useState(false);
@@ -112,6 +119,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         const fetchData = async () => {
             try {
                 setLoading(true);
+
+                // クリエイター一覧
                 const { data, error } = await supabase
                     .from('creators')
                     .select('*')
@@ -121,7 +130,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
                 // 取得したデータをUI用に整形
                 const formattedData = (data || []).map((item, index) => ({
-                    id: item.id, // ★ DBのUUIDをセット
+                    id: item.id,
                     name: item.name || item.tiktok_handle || 'Unknown',
                     tier: item.tier || '-',
                     genre: item.genre || [],
@@ -129,14 +138,22 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     followers: (item.followers || 0).toLocaleString(),
                     tiktokUrl: item.tiktok_url || '',
                     vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
-                    vibeCluster: item.vibe_tags || [], // 手動設定済みならここに入る
+                    vibeCluster: item.vibe_tags || [],
                     bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
                     imgColor: getColorByIndex(index),
                     status: 'Approved',
-                    is_public: item.is_onboarded || false // 今回は is_onboarded を公開状態として扱う
+                    is_public: item.is_onboarded || false
                 }));
-
                 setCreators(formattedData);
+
+                // 統計情報 (Server Action)
+                const adminStats = await getAdminStats();
+                setStats(adminStats);
+
+                // Lost案件 (Server Action)
+                const lost = await getLostAssets();
+                setLostAssets(lost);
+
                 setLoading(false);
             } catch (error: any) {
                 console.error('Data Fetch Error:', error);
@@ -515,52 +532,120 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 </>
             ) : (
                 <div className="p-8 flex-1 overflow-auto bg-slate-50">
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <p className="text-slate-500 text-xs font-bold uppercase mb-1">今週の解析数</p>
-                            <div className="text-3xl font-black">1,280 <span className="text-sm text-green-500 font-bold ml-2">↑ 12%</span></div>
+                    <div className="flex items-center justify-between mb-8">
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 mr-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">今週の解析数</p>
+                                <div className="text-3xl font-black">
+                                    {stats?.weeklyAnalysis?.toLocaleString() || '1,280'}
+                                    <span className="text-sm text-green-500 font-bold ml-2">↑ 12%</span>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">平均マッチ率</p>
+                                <div className="text-3xl font-black">{stats?.avgMatchRate || '88.5'}%</div>
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">アクティブ店舗</p>
+                                <div className="text-3xl font-black">
+                                    {stats?.activeShops || '42'}
+                                    <span className="text-sm text-green-500 font-bold ml-2">↑ 5%</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <p className="text-slate-500 text-xs font-bold uppercase mb-1">平均マッチ率</p>
-                            <div className="text-3xl font-black">88.5%</div>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <p className="text-slate-500 text-xs font-bold uppercase mb-1">マッチング成功率</p>
-                            <div className="text-3xl font-black">24.3% <span className="text-sm text-green-500 font-bold ml-2">↑ 5%</span></div>
+
+                        {/* Tab Switcher */}
+                        <div className="flex bg-slate-200 p-1 rounded-xl h-fit">
+                            <button
+                                onClick={() => setLogTab('success')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'success' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Success
+                            </button>
+                            <button
+                                onClick={() => setLogTab('lost')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'lost' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                Lost / Unmatched
+                            </button>
                         </div>
                     </div>
 
                     {/* Logs Table */}
                     <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <table className="w-full text-left border-collapse text-sm">
-                            <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
-                                    <th className="px-6 py-4">Advertiser (Shop URL)</th>
-                                    <th className="px-6 py-4">Matched Creator</th>
-                                    <th className="px-6 py-4 text-center">Score</th>
-                                    <th className="px-6 py-4">Detected Vibes</th>
-                                    <th className="px-6 py-4 text-right">Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {mockLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-slate-50 transition">
-                                        <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
-                                        <td className="px-6 py-4 font-bold text-blue-600">{log.creator}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg font-black text-xs">{log.matchScore}%</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex gap-1">
-                                                {log.vibes.map(v => <span key={v} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{v}</span>)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.date}</td>
+                        {logTab === 'success' ? (
+                            <table className="w-full text-left border-collapse text-sm">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
+                                        <th className="px-6 py-4">Advertiser (Shop URL)</th>
+                                        <th className="px-6 py-4">Matched Creator</th>
+                                        <th className="px-6 py-4 text-center">Score</th>
+                                        <th className="px-6 py-4">Detected Vibes</th>
+                                        <th className="px-6 py-4 text-right">Timestamp</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {mockLogs.map((log) => (
+                                        <tr key={log.id} className="hover:bg-slate-50 transition">
+                                            <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
+                                            <td className="px-6 py-4 font-bold text-blue-600">{log.creator}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg font-black text-xs">{log.matchScore}%</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex gap-1">
+                                                    {log.vibes.map(v => <span key={v} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{v}</span>)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.date}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <table className="w-full text-left border-collapse text-sm">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
+                                        <th className="px-6 py-4">Advertiser</th>
+                                        <th className="px-6 py-4">Rejected Creator</th>
+                                        <th className="px-6 py-4">Missing Vibes</th>
+                                        <th className="px-6 py-4">AI Action</th>
+                                        <th className="px-6 py-4 text-right">Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {lostAssets.map((log) => (
+                                        <tr key={log.id} className="hover:bg-slate-50 transition">
+                                            <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
+                                            <td className="px-6 py-4 font-bold text-slate-400">{log.rejectedCreator}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex gap-1 flex-wrap">
+                                                    {log.missingVibes.map((v: string) => (
+                                                        <span key={v} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">
+                                                            #{v}
+                                                        </span>
+                                                    ))}
+                                                    {log.missingVibes.length === 0 && <span className="text-slate-300 text-[10px]">None</span>}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 max-w-xs transition-all">
+                                                <div className="flex items-center gap-2 group relative">
+                                                    <span className="truncate text-slate-600 italic">
+                                                        {log.aiAction}
+                                                    </span>
+                                                    <div className="opacity-0 group-hover:opacity-100 absolute left-full ml-2 z-50 p-3 bg-slate-900 text-white rounded-lg shadow-xl w-64 text-xs font-medium leading-relaxed transition-opacity">
+                                                        {log.aiAction}
+                                                    </div>
+                                                    <Info size={14} className="text-slate-300 shrink-0" />
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.timestamp}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
             )}
