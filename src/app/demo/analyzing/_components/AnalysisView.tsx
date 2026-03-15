@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle, Sparkles, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function AnalyzingScreen() {
@@ -27,9 +27,10 @@ function AnalyzingScreen() {
     );
 }
 
-export function AnalysisView({ matchCount, genre, tags }: { matchCount: number, genre: string, tags: string[] }) {
+export function AnalysisView({ matchCount, genre, tags: initialTags }: { matchCount: number, genre: string, tags: string[] }) {
     const router = useRouter();
     const [isAnalyzing, setIsAnalyzing] = useState(true);
+    const [activeTags, setActiveTags] = useState<string[]>(initialTags);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -37,6 +38,14 @@ export function AnalysisView({ matchCount, genre, tags }: { matchCount: number, 
         }, 2500);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        setActiveTags(initialTags);
+    }, [initialTags]);
+
+    const handleRemoveTag = (tagToRemove: string) => {
+        setActiveTags(prev => prev.filter(t => t !== tagToRemove));
+    };
 
     const handleProceed = () => {
         router.push(`/demo/advertiser?genre=${genre}`);
@@ -73,14 +82,24 @@ export function AnalysisView({ matchCount, genre, tags }: { matchCount: number, 
                         {/* Detected Tags Card */}
                         <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-2xl border border-gray-100 mb-10 ring-1 ring-black/5">
                             <div className="flex flex-wrap justify-center gap-4">
-                                {tags.map((tag, i) => (
-                                    <span
+                                {activeTags.map((tag, i) => (
+                                    <div
                                         key={i}
-                                        className="px-8 py-4 bg-neutral-50 text-neutral-800 font-black text-lg rounded-2xl border border-neutral-200 shadow-sm transition-transform hover:scale-105"
+                                        className="group relative px-6 py-4 bg-neutral-50 text-neutral-800 font-black text-lg rounded-2xl border border-neutral-200 shadow-sm transition-all hover:pr-12"
                                     >
                                         {tag}
-                                    </span>
+                                        <button
+                                            onClick={() => handleRemoveTag(tag)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 bg-stone-200 hover:bg-red-500 hover:text-white rounded-full transition-all text-stone-500"
+                                            title="削除"
+                                        >
+                                            <X size={14} strokeWidth={3} />
+                                        </button>
+                                    </div>
                                 ))}
+                                {activeTags.length === 0 && (
+                                    <p className="text-stone-300 italic font-medium">タグが選択されていません</p>
+                                )}
                             </div>
 
                             <div className="mt-12 pt-10 border-t border-gray-100 text-center">

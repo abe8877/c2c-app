@@ -37,7 +37,7 @@ export const analyzeShopVibe = async (url: string) => {
         try {
             console.log('Starting AI Analysis for:', url);
             const result = await generateObject({
-                model: google('gemini-1.5-flash'),
+                model: google('gemini-3-flash-preview'),
                 schema: z.object({
                     shopName: z.string().describe('推測される店舗名'),
                     vibeTags: z.array(z.string()).describe('#和モダン, #自然光 のようなハッシュタグ形式のVIBE要素を5つ')

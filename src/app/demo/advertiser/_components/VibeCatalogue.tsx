@@ -933,7 +933,7 @@ export default function VibeCatalogue({
                                             onClick={handleUrlSubmit}
                                             className="w-full sm:w-auto bg-black text-white px-10 py-5 rounded-2xl font-black hover:bg-stone-800 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xl shrink-0"
                                         >
-                                            魅力の解析を開始 <span className="text-yellow-400 animate-pulse">✨</span>
+                                            分析を開始 <span className="text-yellow-400 animate-pulse">✨</span>
                                         </button>
                                     </div>
 

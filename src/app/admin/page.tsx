@@ -5,7 +5,7 @@ import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Load
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
-import { getAdminStats, getLostAssets } from '@/app/actions/admin';
+import { getAdminStats, getLostAssets, getSuccessLogs } from '@/app/actions/admin';
 import { Info } from 'lucide-react';
 
 // Define the Creator Interface
@@ -66,6 +66,7 @@ function AdminDashboard() {
     // 統計データ管理
     const [stats, setStats] = useState<any>(null);
     const [lostAssets, setLostAssets] = useState<any[]>([]);
+    const [successLogs, setSuccessLogs] = useState<any[]>([]);
 
     // 編集保存の演出用
     const [isSaving, setIsSaving] = useState(false);
@@ -149,6 +150,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 // 統計情報 (Server Action)
                 const adminStats = await getAdminStats();
                 setStats(adminStats);
+
+                // Success案件 (Server Action)
+                const success = await getSuccessLogs();
+                setSuccessLogs(success);
 
                 // Lost案件 (Server Action)
                 const lost = await getLostAssets();
@@ -275,7 +280,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 <h1 className="text-xl font-bold flex items-center gap-2">
                     {activeTab === 'creators' ? 'Creator Database' : 'Matching Analysis Logs'}
                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
-                        {activeTab === 'creators' ? creators.length : mockLogs.length} Total
+                        {activeTab === 'creators' ? creators.length : (logTab === 'success' ? successLogs.length : lostAssets.length)} Total
                     </span>
                 </h1>
                 <div className="flex gap-4">
@@ -586,7 +591,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {mockLogs.map((log) => (
+                                    {successLogs.map((log) => (
                                         <tr key={log.id} className="hover:bg-slate-50 transition">
                                             <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
                                             <td className="px-6 py-4 font-bold text-blue-600">{log.creator}</td>
@@ -595,7 +600,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex gap-1">
-                                                    {log.vibes.map(v => <span key={v} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{v}</span>)}
+                                                    {log.vibes.map((v: string) => <span key={v} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{v}</span>)}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.date}</td>
