@@ -20,11 +20,11 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
         const supabase = await createClient();
 
         // フェイルセーフ: タグが空またはundefinedの場合の処理
-        const requirements = (data.shopRequirements && data.shopRequirements.length > 0) 
-            ? data.shopRequirements 
+        const requirements = (data.shopRequirements && data.shopRequirements.length > 0)
+            ? data.shopRequirements
             : ['#General'];
-        const tags = (data.creatorTags && data.creatorTags.length > 0) 
-            ? data.creatorTags 
+        const tags = (data.creatorTags && data.creatorTags.length > 0)
+            ? data.creatorTags
             : ['#Undefined'];
 
         // タグが両方とも実質的に空（フォールバックのみ）の場合、AI呼び出しをスキップする選択肢もあるが、
@@ -34,7 +34,7 @@ export const analyzeAssetInsight = async (payload: AnalyzePayload) => {
         let object;
         try {
             const result = await generateObject({
-                model: google('gemini-1.5-flash'), // 安定した最新モデルを使用
+                model: google('gemini-3-flash-preview'), // 安定した最新モデルを使用
                 schema: z.object({
                     creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
                     shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
