@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from 'react';
-import { createClient } from '../../../../utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Play, Check, AlertCircle, ArrowRight, Instagram, Video, Upload, ChevronRight, Globe, Shield } from 'lucide-react';
+import { Check, AlertCircle, ArrowRight, Upload, ChevronRight, Globe, Shield } from 'lucide-react';
 import { submitCreatorApplication } from '../actions';
-
 import { motion, AnimatePresence } from 'framer-motion';
+
+// 新しく作成した規約コンポーネントをインポート
+import TermsOfCuration from './TermsOfCuration';
 
 const VIBE_OPTIONS = [
     'Cinematic', 'Luxury', 'Street', 'Minimal', 'Kawaii',
@@ -14,16 +15,18 @@ const VIBE_OPTIONS = [
 ];
 
 export function OnboardingForm({ creator }: { creator: any }) {
-    const supabase = createClient();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [step, setStep] = useState(1); // 1: Ticket, 2: Form
 
+    // 画像ファイル自体を保持するStateを追加
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+    // 古い agreed_to_asset 等を削除
     const [formData, setFormData] = useState({
-        portfolio_video_url: creator.portfolio_video_url || creator.scouted_video_url,
-        avatar_url: creator.avatar_url || '',
+        portfolio_video_url: creator.portfolio_video_url || creator.scouted_video_url || '',
+        avatar_url: creator.avatar_url || '', // 既存のURL、またはローカルプレビュー用
         vibe_tags: creator.vibe_tags || [],
         real_name: '',
         nationality: 'Japan',
@@ -31,10 +34,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
         contact_id: '',
         email: '',
         password: '',
-        agreed_to_asset: false,
-        agreed_to_noshow: false,
     });
-
 
     const toggleTag = (tag: string) => {
         setFormData(prev => {
@@ -47,35 +47,26 @@ export function OnboardingForm({ creator }: { creator: any }) {
         });
     };
 
-    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        try {
-            setUploading(true);
-            if (!event.target.files || event.target.files.length === 0) {
-                throw new Error('You must select an image to upload.');
-            }
-            const file = event.target.files[0];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${creator.id}-${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
+    // 変更: アップロードはせず、ローカルでプレビューURLを生成してFileをStateに保存するだけ
+    const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files || event.target.files.length === 0) return;
 
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file);
+        const file = event.target.files[0];
 
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            setFormData({ ...formData, avatar_url: publicUrl });
-        } catch (error) {
-            alert('Error uploading image!');
-        } finally {
-            setUploading(false);
+        // 簡易的なファイルサイズチェック (例: 5MB以下)
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Image must be less than 5MB.');
+            return;
         }
+
+        const previewUrl = URL.createObjectURL(file);
+
+        setAvatarFile(file); // 送信用にFileを保存
+        setFormData({ ...formData, avatar_url: previewUrl }); // プレビュー表示用にURLをセット
+        setError('');
     };
 
+    // 変更: TermsOfCuration で「Agree」された時に呼ばれる
     const handleSubmit = async () => {
         setError('');
         if (!formData.real_name || !formData.contact_id || !formData.email || !formData.password) {
@@ -86,10 +77,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
             setError('Password must be at least 6 characters.');
             return;
         }
-        if (!formData.agreed_to_asset || !formData.agreed_to_noshow) {
-            setError('You must agree to the Partner Terms to join.');
-            return;
-        }
 
         setLoading(true);
         try {
@@ -98,14 +85,24 @@ export function OnboardingForm({ creator }: { creator: any }) {
             serverFormData.append('email', formData.email);
             serverFormData.append('password', formData.password);
             serverFormData.append('portfolio_video_url', formData.portfolio_video_url);
-            serverFormData.append('avatar_url', formData.avatar_url);
             serverFormData.append('real_name', formData.real_name);
             serverFormData.append('nationality', formData.nationality);
             serverFormData.append('contact_app', formData.contact_app);
             serverFormData.append('contact_id', formData.contact_id);
             serverFormData.append('vibe_tags', JSON.stringify(formData.vibe_tags));
 
+            // Fileが選択されていればFormDataに追加してServer Actionに送る
+            if (avatarFile) {
+                serverFormData.append('avatar_file', avatarFile);
+            } else if (formData.avatar_url && !formData.avatar_url.startsWith('blob:')) {
+                // 既存のURLがあればそのまま送る
+                serverFormData.append('avatar_url', formData.avatar_url);
+            }
+
             await submitCreatorApplication(serverFormData);
+
+            // Routerの遷移等は Server Action 側で redirect() するか、ここで router.push() します
+
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Something went wrong. Please try again.');
@@ -148,7 +145,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
                             <div className="flex-1 p-8 flex flex-col justify-center space-y-10 z-10">
                                 <div className="space-y-1">
                                     <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Identity</p>
-                                    <h2 className="text-3xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle}</h2>
+                                    <h2 className="text-3xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle || 'Creator'}</h2>
                                 </div>
 
                                 <div className="space-y-1">
@@ -230,13 +227,12 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                         <label className="cursor-pointer group">
                                             <div className="bg-zinc-900 border border-white/5 hover:border-white/20 text-white px-6 py-3 rounded-xl text-xs font-medium tracking-wide flex items-center gap-2 transition-all">
                                                 <Upload size={14} className="text-zinc-500 group-hover:text-white transition-colors" />
-                                                {uploading ? 'Processing...' : 'Upload Best Shot'}
+                                                {avatarFile ? 'Change Best Shot' : 'Upload Best Shot'}
                                             </div>
                                             <input
                                                 type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                disabled={uploading}
+                                                accept="image/jpeg, image/png, image/webp"
+                                                onChange={handleImageSelect}
                                                 className="hidden"
                                             />
                                         </label>
@@ -387,51 +383,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
                             </div>
                         </div>
 
-
-                        <div className="mb-10 space-y-6">
-                            <h3 className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.3em] mb-4">Terms of Curation</h3>
-
-                            <label className="flex gap-4 cursor-pointer group">
-                                <div className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all ${formData.agreed_to_asset ? 'bg-white border-white' : 'border-zinc-800 group-hover:border-zinc-600'}`}>
-                                    {formData.agreed_to_asset && <Check size={12} className="text-black stroke-[3]" />}
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    className="hidden"
-                                    checked={formData.agreed_to_asset}
-                                    onChange={(e) => setFormData({ ...formData, agreed_to_asset: e.target.checked })}
-                                />
-                                <div className="space-y-1">
-                                    <div className="text-white text-xs font-medium tracking-wide">
-                                        Asset Utilization
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-light">
-                                        Permission for Merchant partners to utilize created assets across official digital infrastructure.
-                                    </p>
-                                </div>
-                            </label>
-
-                            <label className="flex gap-4 cursor-pointer group">
-                                <div className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-all ${formData.agreed_to_noshow ? 'bg-white border-white' : 'border-zinc-800 group-hover:border-zinc-600'}`}>
-                                    {formData.agreed_to_noshow && <Check size={12} className="text-black stroke-[3]" />}
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    className="hidden"
-                                    checked={formData.agreed_to_noshow}
-                                    onChange={(e) => setFormData({ ...formData, agreed_to_noshow: e.target.checked })}
-                                />
-                                <div className="space-y-1">
-                                    <div className="text-white text-xs font-medium tracking-wide">
-                                        Curation Integrity
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 leading-relaxed font-light">
-                                        Understanding that confirmed curation is a singular commitment. Non-compliance results in permanent removal.
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
-
                         {error && (
                             <div className="flex items-center gap-3 text-red-400 text-[10px] font-medium tracking-wider uppercase mb-8 bg-red-950/20 px-4 py-3 rounded-xl border border-red-900/20">
                                 <AlertCircle size={14} />
@@ -439,17 +390,15 @@ export function OnboardingForm({ creator }: { creator: any }) {
                             </div>
                         )}
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="w-full bg-white hover:bg-zinc-200 disabled:opacity-20 disabled:cursor-not-allowed text-black font-semibold text-sm tracking-[0.2em] py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group uppercase shadow-xl"
-                        >
-                            {loading ? 'Processing...' : (
-                                <>
-                                    Join the Network <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </button>
+                        {/* 古いチェックボックスとボタンを削除し、TermsOfCuration コンポーネントに置き換え */}
+                        {loading ? (
+                            <div className="w-full bg-white/10 text-white/50 font-semibold text-sm tracking-[0.2em] py-5 rounded-2xl flex items-center justify-center uppercase">
+                                Processing...
+                            </div>
+                        ) : (
+                            <TermsOfCuration onAccept={handleSubmit} />
+                        )}
+
                     </motion.div>
                 )}
             </AnimatePresence>

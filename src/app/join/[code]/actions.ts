@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient as createServerClient } from '@/utils/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 import { publicAction } from '@/lib/actions/safe-action';
 
@@ -20,8 +21,29 @@ export const submitCreatorApplication = async (formData: FormData) => {
         const contactId = payload.get('contact_id') as string;
         const vibeTagsJson = payload.get('vibe_tags') as string;
         const vibeTags = vibeTagsJson ? JSON.parse(vibeTagsJson) : [];
+        const avatarFile = payload.get('avatar_file') as File | null;
 
-        // 2. Supabaseでアカウント作成（サインアップ）
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        // 2. 招待コードの有効性を検証 (Auth作成前に必ず実行)
+        const { data: creatorData, error: creatorCheckError } = await supabaseAdmin
+            .from('creators')
+            .select('id, is_onboarded, status')
+            .eq('invite_code', inviteCode)
+            .single();
+
+        if (creatorCheckError || !creatorData) {
+            console.error("Invite code check error:", creatorCheckError);
+            throw new Error("無効な招待コードです。URLが正しいかご確認ください。");
+        }
+        if (creatorData.is_onboarded || creatorData.status === 'onboarded') {
+            throw new Error("この招待コードは既に使用されています。");
+        }
+
+        // 3. Supabaseでアカウント作成（サインアップ）
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -32,20 +54,61 @@ export const submitCreatorApplication = async (formData: FormData) => {
             throw new Error("アカウントの作成に失敗しました。既に登録済みのメールアドレスの可能性があります。");
         }
 
-        // 3. creatorsテーブル（440人の名簿）の既存行をUPDATE
-        const { error: updateError } = await supabase
+
+        // 3. 厳格なRBAC適用（user_rolesへcreatorとしてINSERT）
+        const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
+            user_id: authData.user.id,
+            role: 'creator'
+        });
+
+        if (roleError) {
+            console.error("Role insert error:", roleError);
+            throw new Error("権限の付与に失敗しました。");
+        }
+
+        let finalAvatarUrl = avatarUrl;
+
+        // 4. Storageへの安全な画像アップロード (Service Role)
+        if (avatarFile && avatarFile.size > 0) {
+            if (!avatarFile.type.startsWith('image/')) {
+                throw new Error("画像ファイルを選択してください。");
+            }
+            const extension = avatarFile.name.split('.').pop() || 'png';
+            const filePath = `creator_${authData.user.id}_${Date.now()}.${extension}`;
+
+            const { error: uploadError } = await supabaseAdmin.storage
+                .from('avatars')
+                .upload(filePath, avatarFile, {
+                    contentType: avatarFile.type,
+                });
+
+            if (uploadError) {
+                console.error("Upload error:", uploadError);
+                throw new Error("画像のアップロードに失敗しました。");
+            }
+
+            const { data: { publicUrl } } = supabaseAdmin.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            finalAvatarUrl = publicUrl;
+        }
+
+        // 5. creatorsテーブルの既存行をUPDATE
+        const { error: updateError } = await supabaseAdmin
             .from('creators')
             .update({
                 user_id: authData.user.id,
-                is_onboarded: true,
+                email: email,
                 portfolio_video_url: portfolioUrl,
-                avatar_url: avatarUrl,
+                avatar_url: finalAvatarUrl,
                 real_name: realName,
                 nationality: nationality,
                 contact_app: contactApp,
                 contact_id: contactId,
                 vibe_tags: vibeTags,
                 status: 'onboarded',
+                is_onboarded: true,
                 updated_at: new Date().toISOString(),
             })
             .eq('invite_code', inviteCode);
@@ -55,7 +118,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
             throw new Error("プロフィールの更新に失敗しました。");
         }
 
-        // 4. 完了ページ（Success）へリダイレクト
-        redirect(`/join/${inviteCode}/success`);
+        // 6. ダッシュボードへリダイレクト
+        redirect('/creator/dashboard');
     });
 };
