@@ -1,76 +1,279 @@
-import React from 'react';
-import Link from 'next/link';
-import { Search, CheckCircle2, ArrowRight, Sparkles, Send, ShieldCheck, Zap, Wallet, Building2, Crown, Star, PlayCircle, ChevronDown, Check } from 'lucide-react';
+"use client";
 
-export default function CreatorLandingPage() {
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Search, CheckCircle2, ArrowRight, Sparkles, ShieldCheck, Zap, Wallet, Building2, Star, PlayCircle, Check, Globe, TrendingUp, Target, Activity, Send, ChevronDown } from 'lucide-react';
+
+// --- i18n Dictionary ---
+const dict = {
+    en: {
+        hero: {
+            badge: "For Tier S/A Creators",
+            title1: "The world seeks buzz.",
+            title2: "We seek your ",
+            titleHighlight: "truth.",
+            desc: "Tired of mass-produced PR campaigns judged only by follower counts? INSIDERS. is an invite-only network connecting your aesthetic (VIBE) with local Japanese hidden gems that seek your authentic truth.",
+            cta: "ENTER THE INSIDERS."
+        },
+        benefit: {
+            title: "The Perfect Match, Zero Friction.",
+            desc: "You create stunning content, but get overlooked because of follower metrics. We fix that mismatch with AI.",
+            points: [
+                {
+                    title: "No More \"Follower Count\" Game",
+                    desc: "Brands send offers based on your VIBE (aesthetic and tone), not your vanity metrics. Your style is your currency."
+                },
+                {
+                    title: "Aligned Expectations",
+                    desc: "Our partners seek permanent assets, not fleeting buzz. No unreasonable revisions or forced scripts that ruin your feed."
+                },
+                {
+                    title: "Local Hidden Gems",
+                    desc: "Receive direct offers from authentic Wagyu restaurants, retro bathhouses, and hidden bars that you actually want to introduce to the world."
+                }
+            ]
+        },
+        transparency: {
+            badge: "Complete Transparency",
+            title: "How We Match You",
+            desc: "We never sell your 'follower count'. Our AI analyzes the brand's unique VIBE and recommends you as the creator with the perfect aesthetic. That's why painful mismatches never happen.",
+            advUi: "ADVERTISER UI",
+            creatorUi: "CREATOR UI"
+        },
+        objection: {
+            title1: "Focus on your art.",
+            title2: "We handle the friction.",
+            items: [
+                {
+                    title: "No Exclusivity",
+                    desc: "We don't tie you down. You are completely free to work with other platforms or take direct clients while being on INSIDERS."
+                },
+                {
+                    title: "Guaranteed Payment",
+                    desc: "Zero risk of unpaid invoices or late payments from direct clients. INSIDERS. guarantees and processes your payment securely."
+                },
+                {
+                    title: "Zero Negotiation",
+                    desc: "No stressful rate negotiations. Budgets and terms are pre-negotiated by us. You simply click 'Accept' if the offer feels right."
+                },
+                {
+                    title: "Quality Clients Only",
+                    desc: "You will only receive offers from vetted, high-literacy brands and local gems that respect your art and understand the value of VIBE."
+                }
+            ]
+        },
+        gamification: {
+            badge: "Hack the Algorithm",
+            title: "Control Your Destiny.",
+            desc: "In INSIDERS., you don't wait for luck. You train the AI, build your professional metrics, and unlock the highest tier of clients.",
+            items: [
+                {
+                    icon: <Target className="w-5 h-5 text-white" />,
+                    title: "VIBE Training",
+                    desc: "Feed the AI your best work. The deeper it understands your unique cinematic style or color grading, the more exclusive matches you unlock."
+                },
+                {
+                    icon: <Activity className="w-5 h-5 text-white" />,
+                    title: "Professional Metrics",
+                    desc: "Maintain a high Response Rate (under 24h) and Completion Rate to earn the [PRIORITY] badge, boosting your visibility to top advertisers."
+                },
+                {
+                    icon: <TrendingUp className="w-5 h-5 text-white" />,
+                    title: "Secret Signal",
+                    desc: "Send a 'Secret Signal' to your dream brands without annoying them. When they search, you'll be prioritized as 'Highly Interested'."
+                }
+            ]
+        },
+        cta: {
+            title: "Stop Pitching. Start Accepting.",
+            desc: "No more cold DMs. No more rate negotiations. Just create your best work.",
+            btn: "ENTER THE INSIDERS.",
+            note: "*Currently invite-only. Accounts are issued only to creators who pass our curation."
+        }
+    },
+    ja: {
+        hero: {
+            badge: "Tier S/A クリエイター専用",
+            title1: "世間はバズを求める。",
+            title2: "私たちは、あなたの",
+            titleHighlight: "真実を求めている。",
+            desc: "フォロワー数だけで評価される量産型のPR案件に疲れていませんか？ INSIDERS.は、あなたが愛する「日本のローカルな真実（Hidden Gem）」を求める名店と、あなたの審美眼（VIBE）を繋ぐ招待制ネットワークです。",
+            cta: "ENTER THE INSIDERS."
+        },
+        benefit: {
+            title: "期待値が完全に一致した、ストレスのないクリエイティブを。",
+            desc: "素晴らしい発信をしているのに、フォロワー数が足りないだけで評価されない。私たちはその理不尽なミスマッチをAIで解消します。",
+            points: [
+                {
+                    title: "フォロワー数至上主義の終わり",
+                    desc: "企業はあなたのフォロワー数ではなく、あなたの「VIBE（映像のトーンや美学）」に惚れ込んでオファーを出します。あなたのスタイルそのものが価値になります。"
+                },
+                {
+                    title: "期待値の完全一致",
+                    desc: "INSIDERS.に参加する広告主は、「量産型のバズ」ではなく「永続的な資産」を求めています。理不尽な修正要求や、あなたの世界観に合わない台本を強要されることはありません。"
+                },
+                {
+                    title: "ローカルな名店からの直接オファー",
+                    desc: "誰もが知るチェーン店ではなく、あなたが本当に世界に紹介したいと思える、こだわりの和牛レストランやローカルな銭湯、隠れ家バーからのオファーが直接届きます。"
+                }
+            ]
+        },
+        transparency: {
+            badge: "完全な透明性",
+            title: "私たちがあなたをどう推薦するか",
+            desc: "私たちはあなたの「フォロワー数」を企業に売ることはしません。独自のAIが企業の強み（VIBE）を解析し、それに最もマッチする審美眼を持つクリエイターとしてあなたを推薦します。だからこそ、無理な案件やミスマッチは起こりません。",
+            advUi: "広告主の画面",
+            creatorUi: "あなたの画面"
+        },
+        objection: {
+            title1: "あなたは創るだけ。",
+            title2: "すべての摩擦は私たちが吸収する。",
+            items: [
+                {
+                    title: "専属契約なし (No Exclusivity)",
+                    desc: "あなたの活動を縛ることは一切ありません。INSIDERS.に登録しながら、他の案件やプラットフォームを利用することも完全に自由です。"
+                },
+                {
+                    title: "報酬完全保証 (Guaranteed Payment)",
+                    desc: "企業との直接のやり取りによる未払い・遅延リスクはゼロです。案件完了後、INSIDERS.がクリエイターへ確実・迅速に報酬をお支払いします。"
+                },
+                {
+                    title: "交渉ストレスゼロ (Zero Negotiation)",
+                    desc: "面倒な単価交渉は発生しません。予算や条件はすべてプラットフォーム側で調整済み。「この条件で受けるか」をボタン1つで決めるだけです。"
+                },
+                {
+                    title: "優良企業のみ (Quality Clients Only)",
+                    desc: "INSIDERS.の理念（VIBEの資産化）に賛同し、事前審査を通過したリテラシーの高いブランド・名店からのオファーのみが届きます。"
+                }
+            ]
+        },
+        gamification: {
+            badge: "アルゴリズムをハックする",
+            title: "運を待つな、自ら最適化せよ。",
+            desc: "INSIDERS.では、ただオファーを待つ必要はありません。AIを育て、プロとしての実績を積むことで、最高峰のクライアント層へのアクセスを自ら切り開くことができます。",
+            items: [
+                {
+                    icon: <Target className="w-5 h-5 text-white" />,
+                    title: "VIBE Training (AIの育成)",
+                    desc: "あなたの最高傑作を追加し、AIに学習させましょう。シズル感やカラーグレーディングの癖を深く理解させるほど、よりニッチで高単価な案件が優先的に届きます。"
+                },
+                {
+                    icon: <Activity className="w-5 h-5 text-white" />,
+                    title: "Professional Metrics (プロの証明)",
+                    desc: "24時間以内の高い返信率と完了率を維持することで [PRIORITY] バッジを獲得。広告主の検索結果でアルゴリズム的に最上位にブーストされます。"
+                },
+                {
+                    icon: <TrendingUp className="w-5 h-5 text-white" />,
+                    title: "Secret Signal (熱意の送信)",
+                    desc: "憧れの名店へ、通知を飛ばさずに「シークレット・シグナル」を送れます。相手がAI検索を利用した際、あなたは「熱量高」としてトップ推薦されます。"
+                }
+            ]
+        },
+        cta: {
+            title: "営業は終わり。オファーを受け取ろう。",
+            desc: "面倒な単価交渉も、DMでの営業も、もう必要ありません。あなたは極上のコンテンツを作るだけ。",
+            btn: "ENTER THE INSIDERS.",
+            note: "※現在は招待制（Waitlist）となっております。審査を通過した方のみアカウントが発行されます。"
+        }
+    }
+};
+
+type Lang = 'en' | 'ja';
+
+export default function CreatorJoinLandingPage() {
+    const [lang, setLang] = useState<Lang>('en');
+    const t = dict[lang];
+
     return (
         <div className="min-h-screen bg-black text-slate-50 font-sans selection:bg-white selection:text-black">
+
+            {/* --- Language Toggle --- */}
+            <div className="fixed top-6 right-6 z-50">
+                <div className="bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-full p-1 flex items-center gap-1 shadow-2xl">
+                    <button
+                        onClick={() => setLang('en')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${lang === 'en' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        EN
+                    </button>
+                    <button
+                        onClick={() => setLang('ja')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${lang === 'ja' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        JP
+                    </button>
+                </div>
+            </div>
 
             {/* 1. HERO SECTION */}
             <section className="relative pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center">
                 <div className="inline-block border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-8 text-slate-300">
-                    For Tier S/A Creators
+                    {t.hero.badge}
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
-                    Beyond the <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-100">Buzz.</span>
+                <h1 className={`text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6 ${lang === 'ja' ? 'font-serif' : ''}`}>
+                    {t.hero.title1}<br />
+                    {t.hero.title2}<span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-100">{t.hero.titleHighlight}</span>
                 </h1>
                 <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light mb-12 leading-relaxed">
-                    バズは消費され、VIBEは資産になる。<br className="hidden md:block" />
-                    日本のローカルビジネスと真の価値を繋ぐ、プロフェッショナル・クリエイターのための招待制ネットワーク。
+                    {t.hero.desc}
                 </p>
                 <Link
-                    href="/join"
+                    href="/join/D277KA3X"
                     className="bg-white text-black px-8 py-4 rounded-full font-bold tracking-wide hover:bg-slate-200 transition-colors duration-300 flex items-center gap-2"
                 >
-                    Apply for Invitation <ArrowRight className="w-4 h-4" />
+                    {t.hero.cta} <ArrowRight className="w-4 h-4" />
                 </Link>
             </section>
 
-            {/* 2. THE PROBLEM & SOLUTION (The Missing Link) */}
+            {/* 2. THE MISMATCH & BENEFIT */}
             <section className="py-24 bg-zinc-950 px-6 border-y border-white/5">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-8 leading-tight">
-                        Japan has the best spots.<br />
-                        You have the best content.<br />
-                        <span className="text-slate-500">But something is missing.</span>
-                    </h2>
-                    <div className="space-y-6 text-slate-400 text-lg font-light leading-relaxed">
-                        <p>
-                            素晴らしい発信をするインバウンドクリエイターと、それを求める日本の名店。両者は「言語の壁」「日本の独特な商習慣」「条件交渉のリテラシー不足」によって、すれ違っています。
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight leading-tight">
+                            {t.benefit.title}
+                        </h2>
+                        <p className="text-slate-400 text-lg font-light max-w-2xl mx-auto leading-relaxed">
+                            {t.benefit.desc}
                         </p>
-                        <p className="text-white font-medium text-xl border-l-2 border-white pl-6 py-2">
-                            INSIDERS. is your Professional Bridge.
-                        </p>
-                        <p>
-                            私たちがその間に立ちます。面倒な価格交渉、契約書の締結、翻訳、撮影許可の取得、支払いトラブルの回避。これらすべての「摩擦（Friction）」を私たちが吸収します。あなたはただ、極上のコンテンツを作り、日本のVIBEを表現することだけに集中してください。
-                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {t.benefit.points.map((point, idx) => (
+                            <div key={idx} className="bg-black border border-white/5 p-8 rounded-3xl">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6 text-white">
+                                    {idx === 0 && <Star className="w-5 h-5" />}
+                                    {idx === 1 && <ShieldCheck className="w-5 h-5" />}
+                                    {idx === 2 && <Globe className="w-5 h-5" />}
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-4">{point.title}</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed font-light">{point.desc}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* 3. TRANSPARENCY (Dual UI Mockup) */}
+            {/* 3. TRANSPARENCY (Dual UI Mockup Full Version) */}
             <section className="py-24 px-6 max-w-6xl mx-auto overflow-hidden">
                 <div className="text-center mb-16">
-                    <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase mb-3">Complete Transparency</h2>
-                    <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-6">How We Match You</h3>
+                    <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase mb-3">{t.transparency.badge}</h2>
+                    <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-6">{t.transparency.title}</h3>
                     <p className="text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
-                        私たちはあなたの「フォロワー数」を企業に売ることはしません。独自のAIが企業の強み（VIBE）を解析し、それに最もマッチする審美眼を持つクリエイターとしてあなたを推薦します。だからこそ、無理な案件やミスマッチは起こりません。
+                        {t.transparency.desc}
                     </p>
                 </div>
 
                 <div className="flex flex-col lg:flex-row justify-center gap-10 lg:gap-16 items-center lg:items-start pb-10">
 
-                    {/* =========================================
-              ADVERTISER UI: Scrollable Mockup
-          ============================================= */}
+                    {/* Advertiser UI Mockup */}
                     <div className="flex flex-col items-center">
                         <div className="text-[10px] font-bold text-indigo-400 mb-4 uppercase tracking-widest opacity-80 flex items-center gap-2">
-                            <Building2 className="w-3 h-3" /> ADVERTISER UI
+                            <Building2 className="w-3 h-3" /> {t.transparency.advUi}
                         </div>
                         <div className="relative w-[260px] sm:w-[280px] h-[560px] sm:h-[600px] bg-slate-50 rounded-[2.5rem] border-[6px] border-[#f8fafc] shadow-2xl overflow-hidden flex flex-col group ring-1 ring-slate-200">
                             <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-white text-slate-900 pb-10">
 
-                                {/* --- Screen 0: Search Window --- */}
+                                {/* Screen 0: Search Window */}
                                 <div className="p-4 border-b border-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] bg-white relative z-10">
                                     <div className="bg-white rounded-xl p-2 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.1)] border border-slate-50 flex items-center gap-2">
                                         <div className="flex items-center gap-1 px-2 py-1 border-r border-slate-100 scale-90">
@@ -87,14 +290,13 @@ export default function CreatorLandingPage() {
                                     </div>
                                 </div>
 
-                                {/* --- Screen 1: Analysis Complete --- */}
+                                {/* Screen 1: Analysis Complete */}
                                 <div className="p-6 text-center border-b border-slate-50">
                                     <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-100 text-emerald-500">
                                         <CheckCircle2 className="w-6 h-6" />
                                     </div>
                                     <h4 className="text-xl font-black text-slate-900 italic tracking-tighter mb-2">ANALYSIS COMPLETE</h4>
-                                    <p className="text-[10px] text-slate-400 mb-6 leading-tight">分析の結果、貴店の強みは<br />以下のように定義されました。</p>
-                                    <div className="flex flex-wrap justify-center gap-1.5 mb-8">
+                                    <div className="flex flex-wrap justify-center gap-1.5 mb-8 mt-4">
                                         {['#和モダン', '#隠れ家', '#自然光', '#シズル感', '#行列'].map(tag => (
                                             <span key={tag} className="px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-100 text-[9px] font-bold text-slate-700 shadow-sm">{tag}</span>
                                         ))}
@@ -103,12 +305,9 @@ export default function CreatorLandingPage() {
                                         推薦クリエイター：
                                         <span className="text-2xl font-black text-slate-900 border-b-2 border-yellow-400 leading-none">24名</span>
                                     </div>
-                                    <div className="w-full py-3 bg-black text-white rounded-full text-[10px] font-bold flex items-center justify-center gap-2 shadow-lg scale-95 hover:bg-slate-800 transition-colors">
-                                        マッチング候補を見る <ArrowRight className="w-3 h-3" />
-                                    </div>
                                 </div>
 
-                                {/* --- Screen 2: Creator Catalog --- */}
+                                {/* Screen 2: Creator Catalog */}
                                 <div className="p-5 bg-slate-50/50 border-b border-slate-100">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
@@ -117,32 +316,29 @@ export default function CreatorLandingPage() {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
-                                        <div className="relative aspect-[9/16] rounded-[24px] overflow-hidden group/card shadow-xl border-4 border-white">
-                                            {/* Dummy Creator Image */}
+                                        <div className="relative aspect-[9/16] rounded-[24px] overflow-hidden shadow-xl border-4 border-white">
                                             <div className="absolute inset-0 bg-slate-800">
                                                 <img src="https://images.unsplash.com/photo-1515003197210-ce9c856873c2?auto=format&fit=crop&w=600&q=80" className="w-full h-full object-cover opacity-80" alt="Creator" />
                                             </div>
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/10 z-10" />
                                             <div className="absolute bottom-4 left-4 z-20 text-white">
-                                                <div className="text-[11px] font-bold opacity-80 mb-0.5">200k followers</div>
-                                                <div className="text-lg font-black tracking-tight mb-1 uppercase">saki_japan</div>
+                                                <div className="text-lg font-black tracking-tight mb-1 uppercase">Elena Tokyo</div>
+                                                <div className="text-[10px] text-emerald-400 font-bold flex items-center gap-1"><Check className="w-3 h-3" /> VERIFIED MATCH</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* --- Screen 3: Offer Selection (Screenshot Match) --- */}
+                                {/* Screen 3: Offer Selection */}
                                 <div className="p-5 bg-white border-b border-slate-100 flex flex-col gap-5 relative z-10">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <div className="text-[10px] text-amber-500 font-bold mb-1 flex items-center gap-1">
                                                 <Sparkles className="w-3 h-3" /> オファー作成
                                             </div>
-                                            <h5 className="text-[13px] font-black text-slate-900">SAKI_JAPANさんを招待</h5>
+                                            <h5 className="text-[13px] font-black text-slate-900">Elena Tokyoさんを招待</h5>
                                         </div>
-                                        <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 font-bold border border-slate-100">×</div>
                                     </div>
-
                                     <div className="space-y-3">
                                         <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5">
                                             <span>🎁</span> 提供プラン
@@ -150,35 +346,23 @@ export default function CreatorLandingPage() {
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="p-3 pb-4 rounded-xl bg-white border-[1.5px] border-slate-900 relative shadow-sm">
                                                 <div className="h-2"></div>
-                                                <div className="text-[9px] text-slate-500 mt-2 font-medium">商品提供のみ</div>
+                                                <div className="text-[9px] text-slate-500 mt-2 font-medium">無料ご招待</div>
                                                 <div className="absolute top-2.5 right-2.5 flex items-center justify-center w-3.5 h-3.5 bg-slate-900 rounded-full">
                                                     <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                                                 </div>
                                             </div>
                                             <div className="p-3 pb-4 rounded-xl bg-slate-50/50 border border-slate-100">
-                                                <div className="text-[10px] font-bold text-slate-100 bg-white inline-block mb-1 text-transparent select-none">報酬あり</div>
-                                                <div className="text-[9px] text-slate-300 font-medium">謝礼金あり</div>
+                                                <div className="text-[10px] font-bold text-slate-900 mb-1">報酬あり</div>
+                                                <div className="text-[9px] text-slate-500 font-medium">¥50,000</div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="space-y-3">
-                                        <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5">
-                                            <span>📷</span> 撮影で盛り込んでほしい要素
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <div className="px-3 py-1.5 rounded-lg text-[9px] font-bold bg-black text-white shadow-sm">看板メニュー</div>
-                                            <div className="px-3 py-1.5 rounded-lg text-[9px] font-bold bg-black text-white shadow-sm">店内の雰囲気</div>
-                                            <div className="px-3 py-1.5 rounded-lg text-[9px] font-bold bg-white text-slate-400 border border-slate-200">接客</div>
-                                        </div>
-                                    </div>
-
                                     <div className="mt-1 w-full py-4 bg-black text-white rounded-2xl text-[10px] font-bold flex items-center justify-center gap-2 shadow-xl">
                                         <Send className="w-3.5 h-3.5" /> 招待状を送る
                                     </div>
                                 </div>
 
-                                {/* --- Screen 4: Offer Sent (Screenshot Match) --- */}
+                                {/* Screen 4: Offer Sent */}
                                 <div className="py-12 px-6 bg-white min-h-[220px] flex flex-col items-center justify-center text-center">
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center mb-5 border-2 border-emerald-300 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                                         <Check className="w-6 h-6" strokeWidth={3} />
@@ -190,67 +374,63 @@ export default function CreatorLandingPage() {
                                 </div>
 
                             </div>
-
-                            {/* Floating Scroll Indicator */}
                             <div className="absolute bottom-4 right-4 bg-indigo-600 text-white px-4 py-1.5 rounded-full text-[9px] font-bold shadow-lg animate-bounce hidden lg:block z-20">
                                 Scroll ↓
                             </div>
                         </div>
                     </div>
 
-                    {/* =========================================
-              CREATOR UI: Reconstructed from Code
-          ============================================= */}
-                    <div className="flex flex-col items-center">
+                    {/* Creator UI Mockup */}
+                    <div className="flex flex-col items-center mt-10 lg:mt-0">
                         <div className="text-[10px] font-bold text-rose-400 mb-4 uppercase tracking-widest opacity-80 flex items-center gap-2">
-                            CREATOR UI <Sparkles className="w-3 h-3" />
+                            <Sparkles className="w-3 h-3" /> {t.transparency.creatorUi}
                         </div>
                         <div className="relative w-[260px] sm:w-[280px] h-[560px] sm:h-[600px] bg-[#0a0a0a] rounded-[2.5rem] border-[6px] border-[#1f2229] shadow-2xl overflow-hidden ring-1 ring-white/10">
-                            <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide p-4 pb-12 font-sans text-slate-50">
+                            <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-hide p-4 pb-12 text-slate-50">
 
-                                {/* --- Creator Header --- */}
+                                {/* Header */}
                                 <div className="flex justify-between items-center mb-6 mt-2">
                                     <div>
-                                        <div className="text-[10px] text-slate-400 mb-0.5">Welcome back,</div>
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <div className="text-[10px] text-slate-400">Welcome back,</div>
+                                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest flex items-center gap-0.5">
+                                                <Check className="w-2 h-2" strokeWidth={3} /> VERIFIED
+                                            </div>
+                                        </div>
                                         <div className="text-sm font-bold tracking-wide">Elena Tokyo</div>
                                     </div>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
-                                        className="w-10 h-10 rounded-full object-cover border border-white/10 shadow-lg"
-                                        alt="Avatar"
-                                    />
+                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" className="w-10 h-10 rounded-full object-cover border border-white/10 shadow-lg" alt="Avatar" />
                                 </div>
 
-                                {/* --- Tier Card --- */}
-                                <div className="bg-[#121212] border border-white/10 rounded-2xl p-5 mb-6 relative overflow-hidden shadow-2xl">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent pointer-events-none"></div>
-                                    <div className="flex items-center gap-1.5 text-yellow-500 mb-4 relative z-10">
-                                        <Crown className="w-3.5 h-3.5" strokeWidth={2.5} />
-                                        <span className="text-[10px] font-black tracking-widest uppercase">Tier S Creator</span>
+                                {/* Pending Offer */}
+                                <div className="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/20 via-[#1a1a1a] to-[#0a0a0a] border border-amber-500/30 p-4 shadow-[0_0_30px_-5px_rgba(245,158,11,0.15)] group">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full pointer-events-none" />
+                                    <div className="flex items-start justify-between mb-3 relative z-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/40 shrink-0">
+                                                <span className="text-amber-500 text-lg animate-pulse">🎁</span>
+                                            </div>
+                                            <div>
+                                                <div className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-1.5 py-0.5 rounded inline-block mb-1">1 Pending Offer</div>
+                                                <div className="text-sm font-bold text-white tracking-wide">WAGYU OMAKASE 凛</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-baseline gap-2 mb-1 relative z-10">
-                                        <span className="text-3xl font-light text-white">12</span>
-                                        <span className="text-[10px] text-slate-400 font-medium">Assets Created</span>
+                                    <div className="bg-black/60 rounded-xl p-3 border border-white/5 relative z-10 mb-4 backdrop-blur-sm">
+                                        <div className="text-[9px] text-slate-400 mb-0.5 uppercase tracking-wider">Offer Details</div>
+                                        <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                                            <Sparkles className="w-3 h-3" /> 無料ご招待 ＋ ¥50,000
+                                        </div>
                                     </div>
-                                    <p className="text-[9px] text-slate-400 mb-5 relative z-10">Your VIBE is driving permanent value.</p>
-
-                                    <div className="flex justify-between text-[8px] text-slate-400 mb-1.5 relative z-10 font-medium tracking-wide">
-                                        <span>Progress to SS-Tier</span>
-                                        <span>12 / 15</span>
-                                    </div>
-                                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden relative z-10">
-                                        <div className="bg-yellow-500 w-[80%] h-full rounded-full"></div>
-                                    </div>
+                                    <button className="w-full bg-amber-500 text-black py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-400 transition-colors relative z-10 shadow-lg group-hover:shadow-amber-500/20">
+                                        <ShieldCheck className="w-4 h-4" /> Unlock & Accept
+                                    </button>
                                 </div>
 
-                                {/* --- Exclusive Invites --- */}
+                                {/* Exclusive Invites */}
                                 <div className="mb-6">
-                                    <div className="flex justify-between items-center mb-4 px-1">
-                                        <h3 className="text-[12px] font-bold">Exclusive Invites</h3>
-                                        <span className="text-[9px] text-slate-400 flex items-center gap-1 cursor-pointer">View All <ArrowRight className="w-2.5 h-2.5" /></span>
-                                    </div>
+                                    <h3 className="text-[12px] font-bold mb-4 px-1">Exclusive Invites</h3>
                                     <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x">
-                                        {/* Invite 1 */}
                                         <div className="min-w-[190px] h-[260px] rounded-2xl relative overflow-hidden flex flex-col justify-end p-3.5 shadow-lg border border-white/10 snap-center group">
                                             <img src="https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=500&q=80" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Wagyu" />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/10"></div>
@@ -260,34 +440,15 @@ export default function CreatorLandingPage() {
                                                 <div className="text-yellow-500 text-[9px] mb-4 flex items-center gap-1 font-medium">
                                                     <Star className="w-2.5 h-2.5 fill-current" /> Elegant & Traditional
                                                 </div>
-                                                <button className="w-full bg-white text-black py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 hover:bg-slate-200 transition-colors">
-                                                    <PlayCircle className="w-3.5 h-3.5" /> Accept Invite
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {/* Invite 2 */}
-                                        <div className="min-w-[190px] h-[260px] rounded-2xl relative overflow-hidden flex flex-col justify-end p-3.5 shadow-lg border border-white/10 snap-center group">
-                                            <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=500&q=80" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Bar" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/10"></div>
-                                            <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded text-[8px] text-white font-bold tracking-wider border border-white/10">NIGHTLIFE</div>
-                                            <div className="relative z-10">
-                                                <h4 className="font-bold text-sm mb-1 leading-tight tracking-wide">TOKYO NEON BAR</h4>
-                                                <div className="text-yellow-500 text-[9px] mb-4 flex items-center gap-1 font-medium">
-                                                    <Star className="w-2.5 h-2.5 fill-current" /> Cyberpunk & Edgy
-                                                </div>
-                                                <button className="w-full bg-white text-black py-2.5 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 hover:bg-slate-200 transition-colors">
-                                                    <PlayCircle className="w-3.5 h-3.5" /> Accept Invite
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* --- Asset History --- */}
+                                {/* Asset History (Restored) */}
                                 <div>
                                     <h3 className="text-[12px] font-bold mb-4 px-1">Asset History</h3>
                                     <div className="space-y-3">
-                                        {/* Item 1 */}
                                         <div className="bg-[#121212] border border-white/5 rounded-xl p-3.5 flex justify-between items-center shadow-md">
                                             <div>
                                                 <div className="text-[11px] font-bold mb-1 tracking-wide">Sushi Ginza Onodera</div>
@@ -295,8 +456,6 @@ export default function CreatorLandingPage() {
                                             </div>
                                             <div className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-1 rounded text-[7px] font-black tracking-widest uppercase">Approved</div>
                                         </div>
-
-                                        {/* Item 2 (Rejected + AI) */}
                                         <div className="bg-[#121212] border border-white/5 rounded-xl flex flex-col overflow-hidden shadow-md">
                                             <div className="p-3.5 flex justify-between items-center border-b border-white/5">
                                                 <div>
@@ -305,33 +464,18 @@ export default function CreatorLandingPage() {
                                                 </div>
                                                 <div className="bg-rose-500/10 text-rose-500 border border-rose-500/20 px-2 py-1 rounded text-[7px] font-black tracking-widest uppercase">Rejected</div>
                                             </div>
-                                            <div className="px-3 py-2.5 bg-[#080808] flex items-center justify-between cursor-pointer hover:bg-black transition-colors">
+                                            <div className="px-3 py-2.5 bg-[#080808] flex items-center justify-between cursor-pointer">
                                                 <div className="text-[9px] text-yellow-500/90 flex items-center gap-1.5 font-medium">
-                                                    <Sparkles className="w-3 h-3" /> AIからの次回アドバイスを見る
+                                                    <Sparkles className="w-3 h-3" /> AI Insight
                                                 </div>
                                                 <ChevronDown className="w-3 h-3 text-slate-600" />
                                             </div>
-                                        </div>
-
-                                        {/* Item 3 */}
-                                        <div className="bg-[#121212] border border-white/5 rounded-xl p-3.5 flex justify-between items-center shadow-md">
-                                            <div>
-                                                <div className="text-[11px] font-bold mb-1 tracking-wide">Shinjuku Golden Gai Bar</div>
-                                                <div className="text-[8px] text-slate-500">2024-03-10</div>
-                                            </div>
-                                            <div className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-1 rounded text-[7px] font-black tracking-widest uppercase">Pending</div>
                                         </div>
                                     </div>
                                 </div>
 
                             </div>
-
-                            {/* Top Notch & Bottom Fade (PWA feel) */}
-                            <div className="absolute top-0 inset-x-0 h-6 bg-black/80 backdrop-blur-md flex items-center justify-center pointer-events-none z-30">
-                                <div className="w-12 h-1 bg-white/20 rounded-full" />
-                            </div>
-                            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0a0a0a] to-transparent pointer-events-none z-30" />
-                            <div className="absolute bottom-4 right-4 bg-rose-500/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-[9px] text-white font-bold animate-bounce hidden lg:block z-40">
+                            <div className="absolute bottom-4 right-4 bg-rose-500/90 text-white px-3 py-1.5 rounded-full text-[9px] font-bold shadow-lg animate-bounce hidden lg:block z-20">
                                 Scroll ↓
                             </div>
                         </div>
@@ -339,72 +483,69 @@ export default function CreatorLandingPage() {
                 </div>
             </section>
 
-            {/* 4. OBJECTION HANDLING (Squashing reasons not to register) */}
+            {/* 4. OBJECTION HANDLING */}
             <section className="py-24 px-6 border-t border-white/5 bg-black">
                 <div className="max-w-5xl mx-auto">
                     <h2 className="text-3xl font-bold text-center mb-16">
-                        Focus on your art. <br className="md:hidden" />
-                        <span className="text-slate-500">We handle the friction.</span>
+                        {t.objection.title1} <br className="md:hidden" />
+                        <span className="text-slate-500">{t.objection.title2}</span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <div className="p-8 border border-white/10 rounded-3xl bg-zinc-950 hover:bg-zinc-900 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                                <Zap className="w-5 h-5 text-white" />
+                        {t.objection.items.map((item, idx) => (
+                            <div key={idx} className="p-8 border border-white/10 rounded-3xl bg-zinc-950 hover:bg-zinc-900 transition-colors">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                                    {idx === 0 && <Zap className="w-5 h-5 text-white" />}
+                                    {idx === 1 && <Wallet className="w-5 h-5 text-white" />}
+                                    {idx === 2 && <ShieldCheck className="w-5 h-5 text-white" />}
+                                    {idx === 3 && <Sparkles className="w-5 h-5 text-white" />}
+                                </div>
+                                <h3 className="text-lg font-bold mb-3 text-white">{item.title}</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed font-light">{item.desc}</p>
                             </div>
-                            <h3 className="text-lg font-bold mb-3 text-white">No Exclusivity (専属契約なし)</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed font-light">
-                                あなたの活動を縛ることは一切ありません。INSIDERS.に登録しながら、他の案件やプラットフォームを利用することも完全に自由です。
-                            </p>
-                        </div>
-
-                        <div className="p-8 border border-white/10 rounded-3xl bg-zinc-950 hover:bg-zinc-900 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                                <Wallet className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="text-lg font-bold mb-3 text-white">Guaranteed Payment (報酬完全保証)</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed font-light">
-                                企業との直接のやり取りによる未払い・遅延リスクはゼロです。案件完了後、INSIDERS.がクリエイターへ確実・迅速に報酬をお支払いします。
-                            </p>
-                        </div>
-
-                        <div className="p-8 border border-white/10 rounded-3xl bg-zinc-950 hover:bg-zinc-900 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                                <ShieldCheck className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="text-lg font-bold mb-3 text-white">Zero Negotiation (交渉ストレスゼロ)</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed font-light">
-                                面倒な単価交渉は発生しません。予算や条件はすべてプラットフォーム側で企業と調整済み。「この条件で受けるか」をボタン1つで決めるだけです。
-                            </p>
-                        </div>
-
-                        <div className="p-8 border border-white/10 rounded-3xl bg-zinc-950 hover:bg-zinc-900 transition-colors">
-                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-6">
-                                <Sparkles className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="text-lg font-bold mb-3 text-white">Quality Clients Only (優良企業のみ)</h3>
-                            <p className="text-slate-400 text-sm leading-relaxed font-light">
-                                INSIDERS.の理念（VIBEの資産化）に賛同し、事前審査を通過したリテラシーの高いブランド・名店からのオファーのみが届きます。
-                            </p>
-                        </div>
-
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* 5. CTA SECTION */}
+            {/* 5. GAMIFICATION / PROFILE OPTIMIZATION */}
+            <section className="py-24 px-6 border-t border-white/5 bg-zinc-950">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-xs font-bold tracking-widest text-emerald-500 uppercase mb-3">{t.gamification.badge}</h2>
+                        <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-6">{t.gamification.title}</h3>
+                        <p className="text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">
+                            {t.gamification.desc}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {t.gamification.items.map((item, idx) => (
+                            <div key={idx} className="p-8 border border-white/10 rounded-3xl bg-black hover:border-emerald-500/30 transition-colors group">
+                                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
+                                    {item.icon}
+                                </div>
+                                <h3 className="text-lg font-bold text-white mb-3">{item.title}</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed font-light">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 6. CTA SECTION */}
             <section className="py-32 px-6 text-center">
-                <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-8">
-                    Ready to make your mark?
+                <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+                    {t.cta.title}
                 </h2>
+                <p className="text-slate-400 mb-10 max-w-lg mx-auto leading-relaxed">{t.cta.desc}</p>
                 <Link
-                    href="/join"
+                    href="/join/D277KA3X"
                     className="inline-block bg-white text-black px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
                 >
-                    ENTER THE INSIDERS.
+                    {t.cta.btn}
                 </Link>
-                <p className="mt-6 text-xs text-slate-500 font-light">
-                    ※現在は招待制（Waitlist）となっております。審査を通過した方のみアカウントが発行されます。
+                <p className="mt-6 text-xs text-slate-500 font-light max-w-md mx-auto">
+                    {t.cta.note}
                 </p>
             </section>
         </div>
