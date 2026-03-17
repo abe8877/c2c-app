@@ -1059,7 +1059,7 @@ export default function VibeCatalogue({
                                                     type="text"
                                                     value={url}
                                                     onChange={(e) => setUrl(e.target.value)}
-                                                    placeholder="Instagram または GoogleマップのURL"
+                                                    placeholder="Googleマップ または InstagramのURL"
                                                     className="flex-1 py-4 outline-none text-lg font-medium placeholder:text-stone-300 w-full min-w-0 bg-transparent"
                                                     onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
                                                 />
