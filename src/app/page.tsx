@@ -1,466 +1,496 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import {
-    Search, CheckCircle2, ArrowRight, Sparkles, Send,
-    Globe, MessageSquare, BadgeCent, Scissors,
-    UtensilsCrossed, Tent, AlertTriangle, ArrowUpRight
+    Search, CheckCircle2, ArrowRight, Sparkles,
+    MessageSquare, AlertTriangle, ArrowUpRight, Globe, MapPin,
+    RefreshCw, LayoutGrid, PlayCircle, MousePointer2, Database, Send
 } from 'lucide-react';
 
 export default function InsidersLP() {
+    // --- Animation States for Mocks ---
+    const [chatStep, setChatStep] = useState(0);
+    const [assetStep, setAssetStep] = useState(0);
+
+    useEffect(() => {
+        // Chat Animation Loop
+        const chatInterval = setInterval(() => {
+            setChatStep((prev) => (prev >= 3 ? 0 : prev + 1));
+        }, 3000);
+
+        // Asset Drag & Drop Animation Loop
+        const assetInterval = setInterval(() => {
+            setAssetStep((prev) => (prev >= 2 ? 0 : prev + 1));
+        }, 4000);
+
+        return () => {
+            clearInterval(chatInterval);
+            clearInterval(assetInterval);
+        };
+    }, []);
+
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+        <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
 
             {/* =========================================
-          1. HERO SECTION (ファーストビュー)
+          1. HERO SECTION
       ========================================= */}
-            <section className="relative pt-24 pb-32 lg:pt-36 lg:pb-40 overflow-hidden bg-gradient-to-b from-slate-50 to-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+            <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden bg-white border-b border-slate-100">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4rem_4rem][mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
 
-                        {/* Left: Copy & CTA */}
-                        <div className="lg:col-span-6 text-center lg:text-left mb-16 lg:mb-0">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold mb-6">
-                                <AlertTriangle className="w-4 h-4" />
-                                <span>代理店の高額マージンや、英語対応に疲れた店舗様へ</span>
-                            </div>
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6 leading-[1.15]">
-                                月額3.98万円で、<br />
-                                世界中の訪日客を<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">呼び込む。</span>
-                            </h1>
-                            <p className="text-lg text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                                英語力も、高額なPR代理店も不要です。お店のURLを入れるだけで、AIが「海外から本当に支持されている」本物のクリエイターを自動選出。交渉から来店までスマホひとつで完結する、インバウンド専門クリエイター・マッチングアプリ。
-                            </p>
-                            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                                <a href="#pricing" className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2">
-                                    無料でクリエイターを探す <ArrowRight className="w-5 h-5" />
-                                </a>
-                                <span className="text-sm text-slate-400 font-medium">初期費用 ¥0 / 14日間トライアル</span>
-                            </div>
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold mb-8">
+                        <Globe className="w-4 h-4 text-indigo-500" />
+                        <span>インバウンド専門クリエイター・マッチングプラットフォーム</span>
+                    </div>
+
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6 leading-[1.15]">
+                        市場に眠る「本物」と出会い、<br className="hidden sm:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                            熱狂を資産に変える。
+                        </span>
+                    </h1>
+
+                    <p className="text-lg text-slate-500 mb-10 leading-relaxed max-w-2xl">
+                        「フォロワー数だけの外国人インフルエンサー」に騙されるのは終わりにしませんか。<br />
+                        お店のURLを入れるだけで、AIが海外の訪日予定層に本当に刺さるクリエイターを自動推薦。交渉から資産化まで、スマホひとつで完結するインバウンド集客の新しいインフラです。
+                    </p>
+
+                    <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
+                        <a href="#signup" className="w-full sm:w-auto px-10 py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group">
+                            無料で3名のクリエイターにオファーする
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                        <span className="text-sm text-slate-400 font-bold flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> クレジットカード登録不要・初期費用¥0
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            {/* =========================================
+          2. PARADIGM SHIFT (旅ナカ教育)
+      ========================================= */}
+            <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50" />
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                    <div className="text-indigo-400 text-xs font-black tracking-widest mb-4 uppercase">New Inbound Motivation</div>
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-8 leading-tight">
+                        スマホの中の「AIガイド」に載っていないお店は、<br className="hidden sm:block" />
+                        地図から消えているのと同じです。
+                    </h2>
+                    <p className="text-slate-300 text-lg leading-relaxed mb-8">
+                        今のインバウンド客は、旅行中（旅ナカ）にTikTokやリールを開き、「明日のランチ」「今夜行くバー」「明日行ける体験」を直感で決めています。
+                        古いガイドブックや検索サイトに頼る時代は終わりました。彼らの“旅ナカ行動”はすべて、スマホの中のショート動画というAIガイドによって支配されています。
+                    </p>
+                </div>
+            </section>
+
+            {/* =========================================
+          3. PROBLEM SECTION (スムーズなブリッジ)
+      ========================================= */}
+            <section className="py-24 bg-[#fafafa]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <div className="inline-flex items-center gap-2 text-rose-500 font-bold text-sm mb-4 bg-rose-50 px-4 py-1.5 rounded-full">
+                            <AlertTriangle className="w-4 h-4" /> The Structural Flaw
                         </div>
+                        {/* ★接着剤となるコピー★ */}
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-6 leading-tight">
+                            「じゃあ、外国人インフルエンサーを呼ぼう！」<br />
+                            ……その考えは危険です。
+                        </h2>
+                        <p className="text-lg text-slate-500 leading-relaxed">
+                            動画が必須だからといって、適当な「日本在住の外国人」に数十万払っても外国人は来店しません。なぜなら彼らのフォロワーの多くは日本人だからです。自力で「海外の訪日予定層」に刺さる動画集客をやろうとすると、3つの壁にぶつかります。
+                        </p>
+                    </div>
 
-                        {/* Right: Dual UI Mockups */}
-                        <div className="lg:col-span-6 relative">
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-indigo-100/40 to-violet-100/40 rounded-full blur-3xl -z-10" />
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-2xl border border-slate-100">🤔</div>
+                            <h3 className="text-lg font-black text-slate-900 mb-3">「偽物の数字」に騙される</h3>
+                            <p className="text-slate-500 text-sm leading-relaxed">
+                                外国人なら誰でもいいわけではありません。「海外の訪日予定層」を本当に動かせる”本物のインサイダー（日本人含む）”を、自力で探し出すことは不可能です。
+                            </p>
+                        </div>
+                        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-2xl border border-slate-100">💬</div>
+                            <h3 className="text-lg font-black text-slate-900 mb-3">英語のDMにビビって放置</h3>
+                            <p className="text-slate-500 text-sm leading-relaxed">
+                                良さそうなクリエイターを見つけても、英語での報酬交渉や条件のすり合わせに尻込みしてしまい、結局声をかけられずにチャンスを逃していませんか？
+                            </p>
+                        </div>
+                        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-2xl border border-slate-100">💸</div>
+                            <h3 className="text-lg font-black text-slate-900 mb-3">「単発のお祭り」で予算が尽きる</h3>
+                            <p className="text-slate-500 text-sm leading-relaxed">
+                                キャスティング会社に依頼すると、中抜きのマージンを取られ1回で20〜30万円。単発のお祭りで終わってしまい、コンスタントに外国人を呼ぶインフラにはなりません。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                            <div className="flex flex-row justify-center lg:justify-end gap-4 sm:gap-6 items-start">
+            {/* =========================================
+          4. CORE VALUES & UI MOCKUPS (ソリューション)
+      ========================================= */}
+            <section className="py-24 bg-white border-t border-slate-100 overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center max-w-3xl mx-auto mb-20">
+                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-6">
+                            市場から見落とされた「本物」を集約。<br />
+                            だから、安く、高確率でマッチングする。
+                        </h2>
+                        <p className="text-lg text-slate-500 leading-relaxed">
+                            INSIDERS.は単なるマッチングアプリではありません。3つのコアバリューによって、貴店のインバウンド集客を「資産」へと変えるテクノロジー基盤です。
+                        </p>
+                    </div>
 
-                                {/* --- ADVERTISER UI MOCKUP --- */}
-                                <div className="flex flex-col items-center translate-y-8">
+                    <div className="space-y-32">
+
+                        {/* Core Value 1: Data & List (Scroll UI) */}
+                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
+                            <div className="order-2 lg:order-1 relative flex justify-center">
+                                <div className="absolute inset-0 bg-indigo-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
+
+                                {/* ADVERTISER UI: Scrollable Mockup */}
+                                <div className="flex flex-col items-center">
                                     <div className="text-[10px] font-bold text-indigo-500 mb-3 uppercase tracking-widest opacity-90">ADVERTISER UI</div>
-                                    <div className="relative w-[160px] sm:w-[220px] h-[400px] sm:h-[480px] bg-slate-50 rounded-[2rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group">
+                                    <div className="relative w-[240px] h-[520px] bg-slate-50 rounded-[2.5rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group">
                                         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-white">
-                                            {/* Screen 0: Search */}
-                                            <div className="p-3 border-b border-slate-50 bg-white">
-                                                <div className="bg-slate-50 rounded-lg p-1.5 border border-slate-100 flex items-center gap-1.5">
-                                                    <span className="text-[10px]">🍱</span>
-                                                    <div className="flex-1 flex items-center gap-1 text-slate-400">
-                                                        <Search className="w-3 h-3 shrink-0" />
-                                                        <span className="text-[7px] sm:text-[8px] truncate">URLを入力...</span>
+
+                                            {/* Screen 0: Search Window */}
+                                            <div className="p-3 border-b border-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] bg-white sticky top-0 z-20">
+                                                <div className="bg-white rounded-xl p-1.5 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.1)] border border-slate-50 flex items-center gap-2">
+                                                    <div className="flex items-center gap-1 px-2 py-1 border-r border-slate-100 scale-90">
+                                                        <span className="text-[10px]">🍱</span>
+                                                        <span className="text-[9px] font-bold text-slate-800">Food</span>
                                                     </div>
-                                                    <div className="bg-slate-900 text-white text-[6px] sm:text-[7px] font-bold px-1.5 py-1 rounded shrink-0">
+                                                    <div className="flex-1 flex items-center gap-1.5 text-slate-400">
+                                                        <Search className="w-3 h-3 shrink-0" />
+                                                        <span className="text-[8px] truncate">URLを入力して...</span>
+                                                    </div>
+                                                    <div className="bg-black text-white text-[7px] font-black px-2 py-2 rounded-lg shrink-0 scale-90">
                                                         分析 ✨
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* Screen 1: Analysis */}
-                                            <div className="p-4 text-center border-b border-slate-50">
-                                                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2 text-emerald-600">
-                                                    <CheckCircle2 className="w-4 h-4" />
+
+                                            {/* Screen 1: Analysis Complete */}
+                                            <div className="p-5 text-center border-b border-slate-100">
+                                                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-emerald-50 text-emerald-600">
+                                                    <CheckCircle2 className="w-5 h-5" />
                                                 </div>
-                                                <h4 className="text-[10px] sm:text-xs font-black text-slate-900 italic tracking-tighter mb-2">ANALYSIS COMPLETE</h4>
-                                                <div className="flex flex-wrap justify-center gap-1 mb-3">
-                                                    {['#和モダン', '#隠れ家', '#シズル感'].map(tag => (
-                                                        <span key={tag} className="px-1.5 py-0.5 bg-slate-50 rounded border border-slate-100 text-[6px] sm:text-[7px] font-bold text-slate-600">{tag}</span>
+                                                <h4 className="text-lg font-black text-slate-900 italic tracking-tighter mb-2">ANALYSIS COMPLETE</h4>
+                                                <p className="text-[8px] text-slate-400 mb-5 leading-tight">分析の結果、貴店の強みは<br />以下のように定義されました。</p>
+
+                                                <div className="flex flex-wrap justify-center gap-1 mb-6">
+                                                    {['#和モダン', '#隠れ家', '#自然光', '#シズル感', '#行列のできる店'].map(tag => (
+                                                        <span key={tag} className="px-2 py-1 bg-slate-50 rounded-lg border border-slate-100 text-[8px] font-bold text-slate-700 shadow-sm">{tag}</span>
                                                     ))}
                                                 </div>
-                                                <div className="w-full py-2 bg-slate-900 text-white rounded-full text-[7px] sm:text-[8px] font-bold flex items-center justify-center gap-1">
-                                                    候補を見る <ArrowRight className="w-2 h-2" />
+
+                                                <div className="text-[9px] text-slate-400 mb-4 flex items-center justify-center gap-1.5">
+                                                    推薦クリエイター：
+                                                    <span className="text-lg font-black text-slate-900 border-b-2 border-yellow-400 leading-none">24名</span>
+                                                </div>
+
+                                                <div className="w-full py-2.5 bg-black text-white rounded-full text-[9px] font-bold flex items-center justify-center gap-2 shadow-lg scale-95">
+                                                    マッチング候補を見る <ArrowRight className="w-3 h-3" />
                                                 </div>
                                             </div>
-                                            {/* Screen 2: Catalog */}
-                                            <div className="p-3 bg-slate-50/50 border-b border-slate-100">
-                                                <div className="flex items-center gap-1 mb-2">
-                                                    <span className="text-[8px] sm:text-[9px] font-black text-slate-900">CATALOG</span>
-                                                    <div className="bg-yellow-400 text-[5px] font-black px-1 rounded uppercase">AI選定</div>
+
+                                            {/* Screen 2: Creator Catalog */}
+                                            <div className="p-4 bg-slate-50/50 border-b border-slate-100">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black text-slate-900">CREATOR CATALOG</span>
+                                                        <div className="bg-yellow-400 text-[6px] font-black px-1 rounded uppercase tracking-tighter">AI選定</div>
+                                                    </div>
                                                 </div>
-                                                <div className="relative aspect-[9/16] rounded-xl overflow-hidden shadow-lg border-2 border-white">
-                                                    <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80" alt="Creator" className="absolute inset-0 w-full h-full object-cover" />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                                    <div className="absolute bottom-2 left-2 text-white">
-                                                        <div className="text-[9px] sm:text-[10px] font-black leading-tight">@saki_japan</div>
-                                                        <div className="text-[6px] sm:text-[7px] font-bold opacity-80">200k followers</div>
+
+                                                <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide">
+                                                    {['All', '🍱 Food', '💄 Beauty'].map((cat, i) => (
+                                                        <div key={cat} className={`px-3 py-1 rounded-full text-[8px] font-bold whitespace-nowrap shadow-sm border ${i === 1 ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-100'}`}>
+                                                            {cat}
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div className="relative aspect-[9/16] rounded-2xl overflow-hidden group/card shadow-xl border-2 border-white">
+                                                        <img
+                                                            src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80"
+                                                            alt="Food Creator"
+                                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/10 z-10" />
+                                                        <div className="absolute top-2 left-2 z-20 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-lg text-[6px] text-white font-bold uppercase">FOOD</div>
+
+                                                        <div className="absolute bottom-3 left-3 z-20 text-white">
+                                                            <div className="text-xs font-black tracking-tight mb-0.5">@saki_japan</div>
+                                                            <div className="text-[8px] font-bold opacity-80">200k followers</div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* Screen 3: Offer */}
-                                            <div className="p-4 bg-white text-center">
-                                                <div className="text-[7px] text-yellow-600 font-bold mb-1 flex items-center justify-center gap-1"><Sparkles className="w-2 h-2" /> オファー作成</div>
-                                                <div className="w-full py-2 bg-indigo-600 text-white rounded-lg text-[7px] sm:text-[8px] font-bold flex items-center justify-center gap-1 shadow-md">
-                                                    <Send className="w-2 h-2" /> 招待状を送る
+
+                                            {/* Screen 3: Offer Selection */}
+                                            <div className="p-5 bg-white space-y-4 border-b border-slate-50">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="text-[8px] text-yellow-600 font-bold mb-0.5 flex items-center gap-1"><Sparkles className="w-2 h-2" /> オファー作成</div>
+                                                        <h5 className="text-[10px] font-black text-slate-900 uppercase">saki_japanさんを招待</h5>
+                                                    </div>
+                                                    <div className="w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 font-bold">×</div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">🎁 提供プラン</div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div className="p-3 rounded-xl bg-white border-2 border-slate-900 relative">
+                                                            <div className="text-[9px] font-black mb-0.5">食事のみ</div>
+                                                            <div className="text-[6px] text-slate-400 leading-tight">商品提供のみ</div>
+                                                            <div className="absolute top-1.5 right-1.5 flex items-center justify-center w-3 h-3 bg-slate-900 rounded-full"><CheckCircle2 className="w-2 h-2 text-white" /></div>
+                                                        </div>
+                                                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-50 opacity-60">
+                                                            <div className="text-[9px] font-bold mb-0.5">報酬あり</div>
+                                                            <div className="text-[6px] text-slate-400 leading-tight">謝礼金あり</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">📷 撮影で盛り込んでほしい要素</div>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {['看板メニュー', '店内の雰囲気', '接客'].map((item, i) => (
+                                                            <div key={item} className={`px-2 py-1 rounded-lg text-[8px] font-bold border ${i < 2 ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-slate-400 border-slate-50'}`}>
+                                                                {item}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full py-3 bg-black text-white rounded-xl text-[9px] font-black flex items-center justify-center gap-2 shadow-xl hover:bg-slate-900 transition-colors">
+                                                    <Send className="w-3 h-3" /> 招待状を送る
                                                 </div>
                                             </div>
+
+                                            {/* Screen 4: Offer Sent */}
+                                            <div className="p-8 bg-white min-h-[200px] flex flex-col items-center justify-center text-center">
+                                                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-4 border border-emerald-100">
+                                                    <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                                                </div>
+                                                <h4 className="text-xl font-black text-slate-900 italic tracking-tighter mb-3">OFFER SENT!</h4>
+                                                <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
+                                                    招待状を送りました。
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="absolute bottom-2 right-2 bg-indigo-600 text-white px-2 py-0.5 rounded-full text-[6px] font-bold shadow-lg animate-bounce">
+
+                                        {/* Scroll Hint */}
+                                        <div className="absolute bottom-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-[7px] font-bold shadow-lg animate-bounce z-30">
                                             Scroll ↓
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* --- CREATOR UI MOCKUP --- */}
-                                <div className="flex flex-col items-center">
-                                    <div className="text-[10px] font-bold text-rose-400 mb-3 uppercase tracking-widest opacity-90">CREATOR UI</div>
-                                    <div className="relative w-[160px] sm:w-[220px] h-[400px] sm:h-[480px] bg-slate-900 rounded-[2rem] border-[6px] border-slate-800 shadow-2xl overflow-hidden flex flex-col">
-                                        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide p-3 sm:p-4 text-white">
-                                            {/* Header */}
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <div className="text-[6px] sm:text-[7px] text-slate-400">Welcome back,</div>
-                                                    <div className="text-[10px] sm:text-xs font-bold">Elena Tokyo</div>
-                                                </div>
-                                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80" alt="Avatar" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-700" />
-                                            </div>
-                                            {/* Tier */}
-                                            <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-lg p-2 sm:p-3 mb-4">
-                                                <div className="flex items-center gap-1 mb-1">
-                                                    <Sparkles className="w-2 h-2 sm:w-3 sm:h-3 text-yellow-400" />
-                                                    <span className="text-[7px] sm:text-[9px] font-bold text-yellow-400">TIER S CREATOR</span>
-                                                </div>
-                                                <div className="flex items-end gap-1 mb-1">
-                                                    <span className="text-sm sm:text-lg font-black leading-none">12</span>
-                                                    <span className="text-[6px] sm:text-[7px] text-slate-400">Assets Created</span>
-                                                </div>
-                                                <div className="w-full bg-slate-800 rounded-full h-1 mb-1">
-                                                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-1 rounded-full w-[80%]"></div>
-                                                </div>
-                                            </div>
-                                            {/* Invites */}
-                                            <div className="mb-4">
-                                                <h3 className="text-[8px] sm:text-[9px] font-bold mb-2">Exclusive Invites</h3>
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
-                                                        <div className="h-12 sm:h-16 relative">
-                                                            <img src="https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=500&q=80" className="w-full h-full object-cover opacity-80" />
-                                                            <div className="absolute top-1 left-1 bg-black/60 px-1 py-0.5 rounded text-[5px] font-bold">FINE DINING</div>
-                                                        </div>
-                                                        <div className="p-1.5 sm:p-2">
-                                                            <div className="text-[7px] sm:text-[8px] font-bold truncate mb-1">WAGYU OMAKASE 凛</div>
-                                                            <button className="w-full py-1 bg-white text-black text-[6px] sm:text-[7px] font-bold rounded">Accept Invite</button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
-                                                        <div className="h-12 sm:h-16 relative">
-                                                            <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=500&q=80" className="w-full h-full object-cover opacity-80" />
-                                                            <div className="absolute top-1 left-1 bg-black/60 px-1 py-0.5 rounded text-[5px] font-bold">NIGHTLIFE</div>
-                                                        </div>
-                                                        <div className="p-1.5 sm:p-2">
-                                                            <div className="text-[7px] sm:text-[8px] font-bold truncate mb-1">TOKYO NEON BAR</div>
-                                                            <button className="w-full py-1 bg-white text-black text-[6px] sm:text-[7px] font-bold rounded">Accept Invite</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {/* History */}
-                                            <div>
-                                                <h3 className="text-[8px] sm:text-[9px] font-bold mb-2">Asset History</h3>
-                                                <div className="bg-slate-800 p-1.5 sm:p-2 rounded-lg border border-slate-700 flex justify-between items-center mb-1">
-                                                    <div className="text-[7px] sm:text-[8px] font-bold">Sushi Ginza Onodera</div>
-                                                    <div className="text-[5px] sm:text-[6px] font-bold text-emerald-400 bg-emerald-400/10 px-1 py-0.5 rounded">APPROVED</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-2 right-2 bg-rose-500 text-white px-2 py-0.5 rounded-full text-[6px] font-bold shadow-lg animate-bounce">
-                                            Scroll ↓
-                                        </div>
-                                    </div>
-                                </div>
-
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* =========================================
-          2. PROBLEM SECTION (アンチテーゼ)
-      ========================================= */}
-            <section className="py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-6 leading-tight">
-                            「外国人インフルエンサー」を呼べば、<br className="hidden sm:block" />
-                            インバウンド客が来ると思っていませんか？
-                        </h2>
-                        <p className="text-lg text-slate-500 leading-relaxed">
-                            多くの店舗様が「日本在住の外国人」をアサインし、集客に失敗しています。なぜなら、彼らのフォロワーの多くは「日本人」だからです。本当にリーチすべきは、今まさに日本への旅行を計画している「海外の訪日予定層」です。
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-2xl">🤔</div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">「本物」が見つからない</h3>
-                            <p className="text-slate-500 text-sm leading-relaxed">海外に向けて発信している”本物”のクリエイター（日本人を含む）は、自力では見つけられず、偽物の数字に騙されてしまいます。</p>
-                        </div>
-                        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-2xl">💬</div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">英語での交渉ができない</h3>
-                            <p className="text-slate-500 text-sm leading-relaxed">InstagramのDMで英語のやり取りをしたり、来店時の細かいアテンドをする語学力も時間も、現場のスタッフにはありません。</p>
-                        </div>
-                        <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100">
-                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-2xl">💸</div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">代理店が高すぎる</h3>
-                            <p className="text-slate-500 text-sm leading-relaxed">PR会社やキャスティング会社に依頼すると、高額な中間マージンを取られ、たった1回の施策で数十万円の予算が飛んでいきます。</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* =========================================
-          3. SOLUTION SECTION (独自の強み)
-      ========================================= */}
-            <section className="py-24 bg-slate-900 text-white overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                        <div className="mb-16 lg:mb-0">
-                            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6 leading-tight">
-                                独自のAIデータ基盤が、<br />
-                                最適で”本物”の出会いを<br className="hidden sm:block" />全自動化する。
-                            </h2>
-                            <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-                                私たちは高額な手数料を取る「代理店」ではありません。<br />
-                                独自のアルゴリズムで、本当に「海外から支持されている」国内外のクリエイターをスコアリングし、直接マッチングするプラットフォームです。
-                            </p>
-
-                            <div className="space-y-6">
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0 border border-indigo-500/30">
-                                        <Sparkles className="w-5 h-5 text-indigo-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-lg font-bold mb-2">AIマッチング：URLだけで「インサイダー」を発見</h4>
-                                        <p className="text-sm text-slate-400 leading-relaxed">貴店のURLを入力するだけで、AIがお店の強み（Vibe）を自動解析。代理店が抱えていない、本当に刺さる隠れた才能（インサイダー）を自動推薦します。</p>
-                                    </div>
+                            <div className="order-1 lg:order-2 mb-10 lg:mb-0">
+                                <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
+                                    <Database className="w-5 h-5" /> 01. THE DATABASE
                                 </div>
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0 border border-violet-500/30">
-                                        <MessageSquare className="w-5 h-5 text-violet-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-lg font-bold mb-2">AI翻訳チャット：日本語だけで交渉完結</h4>
-                                        <p className="text-sm text-slate-400 leading-relaxed">条件のすり合わせから当日の案内まで、システム内のチャットをAIが全自動で即時翻訳。あなたは日本語を入力するだけで、英語ネイティブとスムーズに商談が可能です。</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-500/30">
-                                        <BadgeCent className="w-5 h-5 text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-lg font-bold mb-2">破壊的プライシング：代理店マージン「ゼロ」</h4>
-                                        <p className="text-sm text-slate-400 leading-relaxed">月額39,800円のシステム利用料のみで、毎月最大3組のクリエイターをアサイン可能。さらに、投稿された高品質な動画は自社のSNS等で「二次利用無料」です。</p>
-                                    </div>
-                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">独自のスクレイピング技術による<br />「本物」のクリエイター網</h3>
+                                <p className="text-slate-500 leading-relaxed">
+                                    日本の広告主が見落としている、「本当に海外の旅行予定層を動かせる」国内外の優秀なクリエイターを、AIで独自にスコアリングしデータベース化。<br /><br />
+                                    貴店のURLを入力するだけで、AIがお店の強み（Vibe）を解析し、最も高いエンゲージメント（予約）を生み出すクリエイターを自動推薦します。
+                                </p>
                             </div>
                         </div>
 
-                        {/* Right Graphic */}
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-violet-500 rounded-[3rem] blur-3xl opacity-20" />
-                            <div className="relative bg-slate-800 border border-slate-700 rounded-[2rem] p-8 shadow-2xl">
-                                <div className="flex items-center justify-between border-b border-slate-700 pb-4 mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">🏢</div>
+                        {/* Core Value 2: AI Chat UI (Animated) */}
+                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
+                            <div className="mb-10 lg:mb-0">
+                                <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
+                                    <MessageSquare className="w-5 h-5" /> 02. AI CONCIERGE CHAT
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">英語力ゼロで完結。<br />即時翻訳とスマートテンプレート</h3>
+                                <p className="text-slate-500 leading-relaxed">
+                                    クリエイターとの英語のやり取りに怯える必要はありません。<br /><br />
+                                    Supabase RealtimeとGemini AIを連携させた独自チャットにより、あなたが入力した日本語は即座に美しい英語に翻訳されて相手に届きます。さらに、日程や道案内も「スマートテンプレート」のボタンを押すだけでAIが自動生成。スパムや失礼な対応をシステムが防ぎます。
+                                </p>
+                            </div>
+                            <div className="relative flex justify-center">
+                                <div className="absolute inset-0 bg-violet-50 rounded-[3rem] rotate-3 scale-105 -z-10" />
+                                <div className="w-[280px] bg-white rounded-[2rem] border-[6px] border-slate-100 shadow-2xl overflow-hidden flex flex-col h-[480px]">
+                                    <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
+                                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" className="w-8 h-8 rounded-full" />
                                         <div>
-                                            <div className="text-sm font-bold">You (Advertiser)</div>
-                                            <div className="text-xs text-slate-400">日本語で入力</div>
+                                            <div className="text-slate-900 text-xs font-bold">Sarah Jenkins</div>
+                                            <div className="flex items-center gap-1 text-[8px] text-emerald-500 font-bold">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Online (AI Translation)
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="bg-slate-900 rounded-xl p-4 mb-4 border border-slate-700">
-                                    <p className="text-sm text-slate-300">「来週の火曜日の14時に、看板メニューの和牛を撮影しに来ていただけますか？」</p>
-                                </div>
 
-                                <div className="flex justify-center my-4">
-                                    <div className="bg-indigo-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                                        <Sparkles className="w-3 h-3" /> AI Translated
-                                    </div>
-                                </div>
-
-                                <div className="bg-indigo-900/30 rounded-xl p-4 mb-4 border border-indigo-500/30">
-                                    <p className="text-sm text-indigo-200">"Could you come shoot our signature Wagyu beef next Tuesday at 2 PM?"</p>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-slate-700 pt-4 mt-4 flex-row-reverse">
-                                    <div className="flex items-center gap-3 flex-row-reverse">
-                                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden">
-                                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Creator" />
+                                    <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50 flex flex-col justify-end">
+                                        {/* Step 1: Creator Message */}
+                                        <div className={`transition-all duration-500 ${chatStep >= 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                                            <div className="bg-white border border-slate-200 text-slate-800 text-xs p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm">
+                                                Hello! Thank you for the offer. I am available next week. Can I check the menu beforehand?
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-bold">Elena Tokyo</div>
-                                            <div className="text-xs text-slate-400">Received in English</div>
+
+                                        {/* Step 2: User Action (Click Button) */}
+                                        <div className={`flex justify-end transition-all duration-300 ${chatStep >= 1 ? 'opacity-100' : 'opacity-0'}`}>
+                                            <div className="bg-slate-200 text-slate-500 text-[8px] px-2 py-1 rounded-full flex items-center gap-1">
+                                                <MousePointer2 className="w-2 h-2" /> アシスタント返信を使用
+                                            </div>
+                                        </div>
+
+                                        {/* Step 3: AI Translated Message */}
+                                        <div className={`flex flex-col items-end w-full transition-all duration-500 ${chatStep >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                                            <div className="bg-black text-white text-xs p-3 rounded-2xl rounded-tr-none max-w-[85%] relative shadow-md">
+                                                Regarding the content: Please include our signature 'Matcha Parfait' and the interior vibe.
+                                                <div className="mt-2 pt-2 border-t border-white/20 flex items-center gap-1 text-[8px] text-white/60 font-bold">
+                                                    <Sparkles className="w-2 h-2" /> NOTS Translated
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-3 bg-white border-t border-slate-100">
+                                        <div className="text-[8px] text-slate-400 font-bold mb-2">アシスタント返信</div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button className="bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold py-2 rounded-lg border border-slate-200 transition-colors">日程候補</button>
+                                            <button className="bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold py-2 rounded-lg border border-slate-200 transition-colors">メニュー</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Core Value 3: ASSET HUB (Drag & Drop Mock) */}
+                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
+                            <div className="order-2 lg:order-1 relative flex justify-center">
+                                <div className="absolute inset-0 bg-emerald-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
+                                <div className="w-[320px] bg-white rounded-[2rem] border-[6px] border-slate-50 shadow-xl overflow-hidden p-4">
+                                    <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-4 pb-2 border-b border-slate-100">
+                                        <RefreshCw className="w-4 h-4 text-emerald-600" /> コンテンツの集客資産化
+                                    </div>
+
+                                    {/* Fake Video Asset */}
+                                    <div className="mb-4">
+                                        <div className="text-[9px] font-bold text-slate-500 mb-2">獲得した動画 (ASSET)</div>
+                                        <div className={`relative w-24 h-32 rounded-lg overflow-hidden border border-slate-200 transition-all duration-700 z-20 ${assetStep === 1 ? 'translate-x-32 translate-y-16 scale-50 opacity-50' : assetStep === 2 ? 'opacity-0' : 'translate-x-0 opacity-100'}`}>
+                                            <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=300&q=80" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                                <PlayCircle className="w-6 h-6 text-white" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Sync Destinations */}
+                                    <div className="grid grid-cols-2 gap-3 relative z-10">
+                                        <div className={`border rounded-xl p-3 transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                            <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
+                                                <MapPin className="w-3 h-3 text-red-500" /> Google Maps Sync
+                                            </div>
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                                                <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
+                                            </div>
+                                            <div className="text-[6px] text-slate-400 text-right">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
+                                        </div>
+
+                                        <div className={`border rounded-xl p-3 transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                            <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
+                                                <Globe className="w-3 h-3 text-blue-500" /> Web Widget
+                                            </div>
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                                                <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
+                                            </div>
+                                            <div className="text-[6px] text-slate-400 text-right">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4 text-[8px] text-center text-slate-400 font-medium">
+                                        動画を同期して、貴店のデジタル接点を自動アップデート。
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="order-1 lg:order-2 mb-10 lg:mb-0">
+                                <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
+                                    <LayoutGrid className="w-5 h-5" /> 03. THE ASSET
+                                </div>
+                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">バズで終わらせない。<br />獲得した動画を「集客資産」に。</h3>
+                                <p className="text-slate-500 leading-relaxed">
+                                    私たちが狙うのは「虚栄のバズ」ではなく、保存（Save）される「熱量のアルゴリズムハック」です。<br /><br />
+                                    さらに、タイムラインから流れて消えても効果は終わりません。『ASSET HUB』を使えば、納品された動画をGoogle Mapsに同期させたり、自社HPのウィジェットとして埋め込むことが可能。月額3.98万円で、貴店のすべてのデジタル接点をインバウンド仕様にアップデートし続けます。
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </section>
 
             {/* =========================================
-          4. TARGET USE-CASE SECTION
+          5. PRICING & UPSELL (クロージング)
       ========================================= */}
-            <section className="py-24 bg-slate-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-6">
-                            インバウンド需要を取りこぼしている、<br />
-                            あらゆる業態の「救世主」に。
-                        </h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {/* BEAUTY */}
-                        <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-transform hover:-translate-y-2">
-                            <div className="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6">
-                                <Scissors className="w-7 h-7" />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-2">BEAUTY</h3>
-                            <p className="text-xs font-bold text-rose-500 mb-4 tracking-wider uppercase">個人サロン・ヘッドスパ・ネイル</p>
-                            <div className="space-y-4">
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <p className="text-xs font-bold text-slate-500 mb-1">課題</p>
-                                    <p className="text-sm text-slate-700">国内ポータルサイトは外国人が予約できず、英語のDMが殺到して現場がパンク。</p>
-                                </div>
-                                <div className="bg-rose-50 p-4 rounded-xl border border-rose-100">
-                                    <p className="text-xs font-bold text-rose-600 mb-1">効果</p>
-                                    <p className="text-sm text-rose-900 font-medium">月額3.98万で、日本の美容技術を世界に発信。高単価なインバウンド指名客だけで席を埋めることができます。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* CASUAL FOOD */}
-                        <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-transform hover:-translate-y-2">
-                            <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6">
-                                <UtensilsCrossed className="w-7 h-7" />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-2">CASUAL FOOD</h3>
-                            <p className="text-xs font-bold text-amber-500 mb-4 tracking-wider uppercase">大衆酒場・カフェ・食べ歩き</p>
-                            <div className="space-y-4">
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <p className="text-xs font-bold text-slate-500 mb-1">課題</p>
-                                    <p className="text-sm text-slate-700">予約不要の業態で、外国人に「ここに行きたい」と直感的に思わせる術がない。</p>
-                                </div>
-                                <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                                    <p className="text-xs font-bold text-amber-600 mb-1">効果</p>
-                                    <p className="text-sm text-amber-900 font-medium">予約導線の整備は不要。ショート動画の「シズル感」だけで、明日から外国人の行列を作れる定常的なPRインフラに。</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* EXPERIENCE */}
-                        <div className="bg-white rounded-[2rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-transform hover:-translate-y-2">
-                            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
-                                <Tent className="w-7 h-7" />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 mb-2">EXPERIENCE</h3>
-                            <p className="text-xs font-bold text-emerald-500 mb-4 tracking-wider uppercase">着物・陶芸・ローカル体験</p>
-                            <div className="space-y-4">
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                    <p className="text-xs font-bold text-slate-500 mb-1">課題</p>
-                                    <p className="text-sm text-slate-700">海外OTA（旅行サイト）に依存し、20%以上の高い手数料を搾取されている。</p>
-                                </div>
-                                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                                    <p className="text-xs font-bold text-emerald-600 mb-1">効果</p>
-                                    <p className="text-sm text-emerald-900 font-medium">海外の旅行計画層に直接動画を届け、OTAを介さない「自社予約（直接予約）」の比率を劇的に引き上げます。</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* =========================================
-          5. HOW IT WORKS SECTION
-      ========================================= */}
-            <section className="py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-16">
-                        驚くほど簡単。スマホひとつで、<br />今日からインバウンド集客を。
-                    </h2>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        <div className="flex flex-col items-center">
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl font-black mb-4 border-4 border-white shadow-lg z-10">1</div>
-                            <h4 className="text-lg font-bold mb-2">URL入力＆VIBE解析</h4>
-                            <p className="text-xs text-slate-500">お店のURLを入力するだけで、AIが貴店の強み（タグ）を自動解析します。</p>
-                        </div>
-                        <div className="flex flex-col items-center relative">
-                            <div className="hidden md:block absolute top-8 -left-[50%] w-full h-[2px] bg-slate-100 -z-10" />
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl font-black mb-4 border-4 border-white shadow-lg z-10">2</div>
-                            <h4 className="text-lg font-bold mb-2">クリエイター選定</h4>
-                            <p className="text-xs text-slate-500">AIが選出した「海外に刺さる」高相性なクリエイターカタログから招待したい人を選びます。</p>
-                        </div>
-                        <div className="flex flex-col items-center relative">
-                            <div className="hidden md:block absolute top-8 -left-[50%] w-full h-[2px] bg-slate-100 -z-10" />
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-xl font-black mb-4 border-4 border-white shadow-lg z-10">3</div>
-                            <h4 className="text-lg font-bold mb-2">ワンタップでオファー</h4>
-                            <p className="text-xs text-slate-500">条件や撮影してほしい要素を選んで送信ボタンを押すだけ。</p>
-                        </div>
-                        <div className="flex flex-col items-center relative">
-                            <div className="hidden md:block absolute top-8 -left-[50%] w-full h-[2px] bg-slate-100 -z-10" />
-                            <div className="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-black mb-4 border-4 border-white shadow-lg z-10">4</div>
-                            <h4 className="text-lg font-bold mb-2">AIチャットで日程調整</h4>
-                            <p className="text-xs text-slate-500">マッチング成立後、AI翻訳付きのチャットで日程を決めるだけ。あとは最高の体験を。</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* =========================================
-          6. PRICING & UPSELL (クロージング)
-      ========================================= */}
-            <section id="pricing" className="py-24 bg-slate-50">
+            <section id="signup" className="py-24 bg-white border-t border-slate-100">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* INSIDERS Pricing Box */}
-                    <div className="bg-white rounded-[2.5rem] p-10 sm:p-14 shadow-2xl border-2 border-indigo-600 text-center relative overflow-hidden mb-12">
+                    <div className="bg-slate-900 rounded-[2.5rem] p-10 sm:p-14 shadow-2xl text-center relative overflow-hidden mb-12">
                         <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-indigo-500 to-violet-500" />
-                        <h2 className="text-2xl font-black text-slate-900 mb-2">INSIDERS. スタンダード</h2>
-                        <p className="text-slate-500 font-medium mb-8">インバウンド集客を、最も安く、最も確実に始める。</p>
+                        <h2 className="text-2xl font-black text-white mb-2">INSIDERS. スタンダード</h2>
+                        <p className="text-slate-400 font-medium mb-8">インバウンド集客を、最も安く、最も確実に始める。</p>
 
                         <div className="flex items-end justify-center gap-2 mb-8">
-                            <span className="text-6xl font-black tracking-tighter text-slate-900">¥39,800</span>
-                            <span className="text-lg text-slate-400 font-bold pb-2">/ 月（税抜）</span>
+                            <span className="text-6xl font-black tracking-tighter text-white">¥39,800</span>
+                            <span className="text-lg text-slate-500 font-bold pb-2">/ 月（税抜）</span>
                         </div>
 
-                        <ul className="text-left max-w-sm mx-auto space-y-4 mb-10">
-                            <li className="flex items-center gap-3 text-slate-700 font-medium">
-                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> 初期費用ゼロ / いつでも解約可能
+                        <ul className="text-left max-w-sm mx-auto space-y-4 mb-10 text-slate-200">
+                            <li className="flex items-center gap-3 font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" /> 初期費用ゼロ / いつでも解約可能
                             </li>
-                            <li className="flex items-center gap-3 text-slate-700 font-medium">
-                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> クリエイターアサイン 月間最大3組まで
+                            <li className="flex items-center gap-3 font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" /> クリエイターアサイン 月間最大3組まで
                             </li>
-                            <li className="flex items-center gap-3 text-slate-700 font-medium">
-                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> AI自動翻訳チャット機能
+                            <li className="flex items-center gap-3 font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" /> AIコンシェルジュチャット（自動翻訳）
                             </li>
-                            <li className="flex items-center gap-3 text-slate-700 font-medium">
-                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" /> 投稿された動画の二次利用無料
+                            <li className="flex items-center gap-3 font-medium">
+                                <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" /> ASSET HUB（動画の二次利用・マップ連携）
                             </li>
                         </ul>
 
-                        <button className="w-full sm:w-auto px-12 py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl hover:shadow-2xl transition-all">
-                            14日間無料で試してみる
+                        <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-2xl p-6 mb-8">
+                            <div className="text-indigo-300 font-bold text-sm mb-2 flex items-center justify-center gap-2">
+                                <Sparkles className="w-4 h-4" /> 初回限定 特別オファー
+                            </div>
+                            <div className="text-white font-black text-lg">
+                                最初の3名へのオファー（招待）まで<br className="hidden sm:block" />
+                                <span className="text-yellow-400">完全無料</span>でお試しいただけます。
+                            </div>
+                            <p className="text-xs text-indigo-200/80 mt-2">※マッチング・交渉成立後の本契約までクレジットカード登録は不要です。</p>
+                        </div>
+
+                        <button className="w-full sm:w-auto px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-900/50 transition-all">
+                            無料でクリエイター3名にオファーする
                         </button>
                     </div>
 
                     {/* Upsell to BUZZ OVER */}
-                    <div className="bg-slate-200/50 rounded-3xl p-8 border border-slate-200 text-center">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Enterprise BPO Solution</h4>
-                        <p className="text-slate-700 font-bold mb-4">
-                            動画からの来店効果を最大化したい。現場の対応もすべて丸投げしたい店舗様へ。
+                    <div className="text-center pt-8 border-t border-slate-100">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Enterprise BPO Solution</h4>
+                        <p className="text-slate-600 font-bold mb-3">
+                            現場の対応もすべて丸投げしたい。動画からの来店効果を最大化したい店舗様へ。
                         </p>
-                        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+                        <p className="text-sm text-slate-500 mb-4 max-w-2xl mx-auto">
                             クリエイターの手配に加え、AIによるGoogleマップの多言語化や予約導線の最適化までを「完全丸投げ」できるインバウンド特化型スマートBPO『BUZZ OVER（月額25万円〜）』もご用意しています。
                         </p>
-                        <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                        <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors text-sm">
                             BUZZ OVER の詳細を見る <ArrowUpRight className="w-4 h-4" />
                         </a>
                     </div>

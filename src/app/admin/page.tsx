@@ -75,6 +75,9 @@ function AdminDashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 50;
     const [filterTier, setFilterTier] = useState('ALL');
+    const [filterCategory, setFilterCategory] = useState('ALL');
+    const [filterVibe, setFilterVibe] = useState('ALL');
+    const [filterStatus, setFilterStatus] = useState('ALL');
 
     // --- Batch Action State ---
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -142,7 +145,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     vibeCluster: item.vibe_tags || [],
                     bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
                     imgColor: getColorByIndex(index),
-                    status: 'Approved',
+                    status: 'approved',
+                    review_status: item.review_status || 'pending',
                     is_public: item.is_onboarded || false
                 }));
                 setCreators(formattedData);
@@ -249,9 +253,13 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
     };
 
     // フィルタリング処理
-    const filteredData = filterTier === 'ALL'
-        ? creators
-        : creators.filter(c => c.tier === filterTier);
+    const filteredData = creators.filter(c => {
+        const matchTier = filterTier === 'ALL' || c.tier === filterTier;
+        const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
+        const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
+        const matchStatus = filterStatus === 'ALL' || c.review_status === filterStatus;
+        return matchTier && matchCategory && matchVibe && matchStatus;
+    });
 
     // ダミーログデータ
     const mockLogs = [
@@ -312,6 +320,45 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     </button>
                                 );
                             })}
+                        </div>
+
+                        {/* Additional Dropdown Filters */}
+                        <div className="flex gap-2">
+                            <select
+                                value={filterCategory}
+                                onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
+                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
+                            >
+                                <option value="ALL">All Categories</option>
+                                <option value="FOOD">Food</option>
+                                <option value="BEAUTY">Beauty</option>
+                                <option value="TRAVEL">Travel</option>
+                                <option value="EXPERIENCE">Experience</option>
+                                <option value="LIFESTYLE">Lifestyle</option>
+                            </select>
+                            <select
+                                value={filterVibe}
+                                onChange={(e) => { setFilterVibe(e.target.value); setCurrentPage(1); }}
+                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
+                            >
+                                <option value="ALL">All Vibes</option>
+                                <option value="Cinematic">Cinematic</option>
+                                <option value="Luxury">Luxury</option>
+                                <option value="Kawaii">Kawaii</option>
+                                <option value="Street">Street</option>
+                                <option value="Vlog">Vlog</option>
+                                <option value="Traditional">Traditional</option>
+                            </select>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
+                            >
+                                <option value="ALL">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
                         </div>
 
                         {/* NEW: Batch Action Button */}

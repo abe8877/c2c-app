@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import ChatModal from "./ChatModal"; // Added ChatModal import
 import { Instagram, Sparkles, CheckCircle, ArrowRight, MapPin, RefreshCw, Play, Send, X, MessageSquareQuote, DollarSign, Gift, Check, Trash2, MessageSquare, MessageCircle, Menu, ChevronLeft, Map, Calendar, AlertTriangle, Info, Search, TrendingUp, Camera, Home, Users, ChevronRight, Clock, Globe, BarChart3, Layers, UploadCloud, Plus, Bell, User, ChevronDown, Trash } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { analyzeAssetInsight } from "@/app/actions/analyze-asset-insight";
@@ -745,6 +746,60 @@ const OfferModal = ({ isOpen, onClose, creatorName, onSend }: { isOpen: boolean;
     );
 };
 
+const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/60 z-[300] backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8 items-center text-center relative"
+                    >
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors bg-stone-100 rounded-full p-2">
+                            <X className="w-5 h-5" />
+                        </button>
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 shadow-inner ring-4 ring-yellow-50">
+                            <Sparkles className="w-8 h-8 text-yellow-600" />
+                        </div>
+                        <h2 className="text-2xl font-black mb-4 tracking-tight">Premium Plan Required</h2>
+                        <p className="text-sm text-stone-600 font-bold leading-relaxed mb-8">
+                            このクリエイターへのオファーを含め、月額3.98万円でSランククリエイターに依頼し放題のプレミアムプランを有効化しましょう。
+                        </p>
+                        
+                        <div className="w-full space-y-3 mb-6">
+                            <a
+                                href="#"
+                                onClick={(e) => { e.preventDefault(); alert("Stripe決済ページへ遷移します。"); onClose(); }}
+                                className="w-full flex items-center justify-center gap-2 bg-black text-white font-black text-sm py-4 rounded-xl shadow-xl hover:bg-stone-800 hover:scale-[1.02] transition-all active:scale-95"
+                            >
+                                <DollarSign className="w-4 h-4" /> クレジットカードで決済
+                            </a>
+                            <button
+                                onClick={() => {
+                                    alert("請求書払いを申し込みました。運営より手動にてご案内いたします。");
+                                    onClose();
+                                }}
+                                className="w-full flex items-center justify-center gap-2 bg-white text-black border-2 border-stone-200 font-black text-sm py-4 rounded-xl hover:border-black hover:bg-stone-50 transition-all active:scale-95"
+                            >
+                                <Layers className="w-4 h-4" /> 請求書払いを申し込む
+                            </button>
+                        </div>
+                        
+                        <p className="text-[10px] text-stone-400 font-bold bg-stone-50 px-4 py-2 rounded-lg inline-block border border-stone-100 ring-1 ring-inset ring-stone-900/5">
+                            <Info className="w-3 h-3 inline mr-1 mb-0.5" /> 決済確認後、運営が手動でアカウントを有効化します
+                        </p>
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+};
+
 export default function VibeCatalogue({
     initialCreators,
     initialAssets = [],
@@ -823,6 +878,21 @@ export default function VibeCatalogue({
                 avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
                 vibe_tags: ['CULTURE', 'NIGHTLIFE', 'URBAN']
             } as any
+        },
+        {
+            id: 'mock-4',
+            client_tag: clientTag || 'demo-shop',
+            creator_id: 'c4',
+            status: 'COMPLETED',
+            created_at: new Date().toISOString(),
+            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4',
+            creator: {
+                id: 'c4',
+                name: 'Yuki Takahashi',
+                tiktok_handle: 'yuki_eats',
+                avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
+                vibe_tags: ['FOODIE', 'CAFE', 'TOKYO']
+            } as any
         }
     ]);
 
@@ -831,6 +901,20 @@ export default function VibeCatalogue({
     const completedCount = localAssets.filter(a => a.status === 'COMPLETED').length + 4; // +4 for mock acquired videos
     const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPremium, setIsPremium] = useState(false); // mock Premium status requirement
+    const [showPaywall, setShowPaywall] = useState(false);
+    const [freeOffers, setFreeOffers] = useState<number>(0);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('freeOffers');
+        if (stored) {
+            setFreeOffers(parseInt(stored, 10));
+        }
+        const premium = localStorage.getItem('isPremium');
+        if (premium === 'true') {
+            setIsPremium(true);
+        }
+    }, []);
     const [isSent, setIsSent] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<{ urls: string[]; name: string } | null>(null);
     const [showDetails, setShowDetails] = useState<string | null>(null);
@@ -883,6 +967,10 @@ export default function VibeCatalogue({
 
     const handleUrlSubmit = () => {
         if (!url) return;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            alert('有効なURL形式（http:// または https://）を入力してください。');
+            return;
+        }
         setStep('analyzing');
 
         startTransition(async () => {
@@ -919,12 +1007,23 @@ export default function VibeCatalogue({
 
     const openInviteModal = (creator: Creator) => {
         setSelectedCreator(creator);
-        setIsModalOpen(true);
+        if (freeOffers > 0) {
+            setIsModalOpen(true);
+        } else if (!isPremium) {
+            setShowPaywall(true);
+        } else {
+            setIsModalOpen(true);
+        }
     };
 
     const handleOfferSent = () => {
         if (selectedCreator) {
             setInvitedCreatorIds(prev => new Set(prev).add(selectedCreator.id));
+        }
+        if (freeOffers > 0) {
+            const newCount = Math.max(0, freeOffers - 1);
+            setFreeOffers(newCount);
+            localStorage.setItem('freeOffers', newCount.toString());
         }
         setIsSent(true);
         setTimeout(() => {
@@ -1103,6 +1202,11 @@ export default function VibeCatalogue({
                                                 {initialGenre && (
                                                     <span className="bg-black text-white text-[10px] px-3 py-0.5 rounded-full align-middle font-bold flex items-center gap-1.5 shadow-lg border border-white/20 animate-in fade-in slide-in-from-left-4 duration-1000">
                                                         <Sparkles className="w-3 h-3 text-yellow-400" /> Optimized for {initialGenre}
+                                                    </span>
+                                                )}
+                                                {freeOffers > 0 && (
+                                                    <span className="bg-yellow-100 text-yellow-800 text-[10px] px-3 py-0.5 rounded-full align-middle font-black flex items-center gap-1.5 shadow-sm border border-yellow-200">
+                                                        <Sparkles className="w-3 h-3 text-yellow-500" /> 残り {freeOffers}/3 回オファー無料
                                                     </span>
                                                 )}
                                             </div>
@@ -1354,9 +1458,47 @@ export default function VibeCatalogue({
                             <div className="space-y-8">
                                 <h3 className="text-xl font-black tracking-tight text-left uppercase">投稿が完了した獲得動画</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    {/* Mocking acquired videos */}
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all">
+                                    {/* Real / Interactive completed videos */}
+                                    {(localAssets.length > 0 ? localAssets : initialAssets)
+                                        .filter(a => a.status === 'COMPLETED' || a.status === 'FINALIZED')
+                                        .map((asset) => (
+                                        <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col">
+                                            <div className="aspect-[9/16] bg-stone-200 relative">
+                                                {asset.video_url ? (
+                                                    <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                                                ) : (
+                                                    <img src={`https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
+                                                )}
+                                                {asset.status === 'COMPLETED' ? (
+                                                    <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
+                                                        <CheckCircle className="w-2.5 h-2.5" /> 納品済み
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
+                                                        Live
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-4 text-left flex-1 flex flex-col justify-between">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-stone-400 uppercase mb-1">{asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024.03.15'}</p>
+                                                    <h4 className="text-xs font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
+                                                </div>
+                                                {asset.status === 'COMPLETED' && (
+                                                    <button
+                                                        onClick={() => setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'FINALIZED' } : a))}
+                                                        className="w-full mt-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-colors uppercase active:scale-95"
+                                                    >
+                                                        <CheckCircle className="w-3.5 h-3.5" /> 検収完了
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {/* Mocking established acquired videos */}
+                                    {[1, 2].map((i) => (
+                                        <div key={`mock-${i}`} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all">
                                             <div className="aspect-[9/16] bg-stone-200 relative">
                                                 <img src={`https://images.unsplash.com/photo-${1500000000000 + i * 100000}?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/0 transition-colors">
@@ -1482,7 +1624,14 @@ export default function VibeCatalogue({
                 )
             }
 
-            <ChatSheet isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+            <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
+            <ChatModal 
+                isOpen={isChatOpen} 
+                onClose={() => setIsChatOpen(false)} 
+                assetId={`mock-${selectedCreator?.id || 'demo'}`} 
+                partnerName={selectedCreator?.name || 'Support Team'} 
+                currentUserType="shop" 
+            />
 
             <PortfolioVideoModal
                 isOpen={!!selectedVideo}
