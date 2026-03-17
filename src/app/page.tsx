@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
     Search, CheckCircle2, ArrowRight, Sparkles,
     MessageSquare, AlertTriangle, ArrowUpRight, Globe, MapPin,
@@ -476,9 +477,11 @@ export default function InsidersLP() {
                             <p className="text-xs text-indigo-200/80 mt-2">※マッチング・交渉成立後の本契約までクレジットカード登録は不要です。</p>
                         </div>
 
-                        <button className="w-full sm:w-auto px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-900/50 transition-all">
-                            無料でクリエイター3名にオファーする
-                        </button>
+                        <Link href="/advertiser/gateway">
+                            <button className="w-full sm:w-auto px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-900/50 transition-all">
+                                無料でクリエイター3名にオファーする
+                            </button>
+                        </Link>
                     </div>
 
                     {/* Upsell to BUZZ OVER */}

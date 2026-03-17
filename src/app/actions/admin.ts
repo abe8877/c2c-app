@@ -180,3 +180,91 @@ function getMockLostAssets() {
         },
     ];
 }
+
+/**
+ * 進行中のオファー案件を取得
+ */
+export async function getOngoingOffers() {
+    return publicAction({}, async () => {
+        const supabase = await createClient();
+
+        try {
+            const { data, error } = await supabase
+                .from('assets')
+                .select(`
+                    id,
+                    created_at,
+                    status,
+                    shops (name),
+                    creators (name)
+                `)
+                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                return data.map((item: any) => {
+                    const createdAt = new Date(item.created_at);
+                    const now = new Date();
+                    const diffHours = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+                    let alertLevel: 'NONE' | 'WARNING' | 'CRITICAL' = 'NONE';
+                    if (item.status === 'SUGGESTING_ALTERNATIVES') {
+                        alertLevel = 'CRITICAL';
+                    } else if (diffHours >= 36) { // 36時間以上で警告
+                        alertLevel = 'WARNING';
+                    }
+
+                    return {
+                        id: item.id,
+                        advertiser: item.shops?.name || '不明な店舗',
+                        creator: item.creators?.name || '不明なクリエイター',
+                        status: item.status,
+                        createdAt: item.created_at,
+                        diffHours,
+                        alertLevel
+                    };
+                });
+            }
+
+            return getMockOngoingOffers();
+        } catch (error) {
+            console.warn('Ongoing offers fetch failed:', error);
+            return getMockOngoingOffers();
+        }
+    });
+}
+
+function getMockOngoingOffers() {
+    const now = new Date();
+    return [
+        {
+            id: 'o1',
+            advertiser: '焼肉 叙々苑',
+            creator: 'Kenji Suzuki',
+            status: 'SUGGESTING_ALTERNATIVES',
+            createdAt: new Date(now.getTime() - 50 * 60 * 60 * 1000).toISOString(),
+            diffHours: 50,
+            alertLevel: 'CRITICAL'
+        },
+        {
+            id: 'o2',
+            advertiser: 'Blue Bottle Coffee',
+            creator: 'Yuki Takahashi',
+            status: 'OFFERED',
+            createdAt: new Date(now.getTime() - 40 * 60 * 60 * 1000).toISOString(),
+            diffHours: 40,
+            alertLevel: 'WARNING'
+        },
+        {
+            id: 'o3',
+            advertiser: '渋谷 パルコ',
+            creator: 'Mita Vlog',
+            status: 'OFFERED',
+            createdAt: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString(),
+            diffHours: 10,
+            alertLevel: 'NONE'
+        }
+    ];
+}

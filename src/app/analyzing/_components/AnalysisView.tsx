@@ -48,7 +48,7 @@ export function AnalysisView({ matchCount, genre, tags: initialTags }: { matchCo
     };
 
     const handleProceed = () => {
-        router.push(`/demo/advertiser?genre=${genre}`);
+        router.push(`/advertiser?genre=${genre}`);
     };
 
     return (

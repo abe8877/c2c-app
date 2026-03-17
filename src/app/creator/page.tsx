@@ -1,4 +1,4 @@
-// src/app/demo/creator/page.tsx
+// src/app/creator/page.tsx
 import CreatorDashboardContent from "./CreatorDashboardContent";
 // import { createClient } from "@/utils/supabase/server"; // 実装時にコメントアウト解除
 

@@ -33,9 +33,9 @@ export async function analyzeAssetInsight(payload: AnalyzePayload) {
 
         let object;
         try {
-            console.log('Starting Asset Insight AI Analysis using model: gemini-1.5-flash');
-            const result = await generateObject({
-                model: google('gemini-1.5-flash'), // 安定した最新モデルを使用
+            console.log('Starting Asset Insight AI Analysis using model: gemini-3-flash-preview');
+            const { object: generatedObject } = await generateObject({
+                model: google('gemini-3-flash-preview'),
                 schema: z.object({
                     creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
                     shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
@@ -48,7 +48,7 @@ export async function analyzeAssetInsight(payload: AnalyzePayload) {
           もしタグ情報が不十分な場合は、一般的な改善アドバイスを提供してください。`,
                 prompt: `店舗の要求Vibe: ${requirements.join(', ')}\nクリエイターのVibe: ${tags.join(', ')}`
             });
-            object = result.object;
+            object = generatedObject;
         } catch (error) {
             console.error('Gemini API Error:', error);
             // フォールバック用の固定メッセージ

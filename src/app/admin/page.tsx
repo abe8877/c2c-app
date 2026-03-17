@@ -5,7 +5,7 @@ import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Load
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
-import { getAdminStats, getLostAssets, getSuccessLogs } from '@/app/actions/admin';
+import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers } from '@/app/actions/admin';
 import { Info } from 'lucide-react';
 
 // Define the Creator Interface
@@ -61,12 +61,13 @@ function AdminDashboard() {
 
     // タブ管理
     const [activeTab, setActiveTab] = useState<'creators' | 'logs'>(initialTab);
-    const [logTab, setLogTab] = useState<'success' | 'lost'>('success');
+    const [logTab, setLogTab] = useState<'success' | 'lost' | 'ongoing'>('success');
 
     // 統計データ管理
     const [stats, setStats] = useState<any>(null);
     const [lostAssets, setLostAssets] = useState<any[]>([]);
     const [successLogs, setSuccessLogs] = useState<any[]>([]);
+    const [ongoingOffers, setOngoingOffers] = useState<any[]>([]);
 
     // 編集保存の演出用
     const [isSaving, setIsSaving] = useState(false);
@@ -162,6 +163,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 // Lost案件 (Server Action)
                 const lost = await getLostAssets();
                 setLostAssets(lost);
+
+                // Ongoing案件 (Server Action)
+                const ongoing = await getOngoingOffers();
+                setOngoingOffers(ongoing);
 
                 setLoading(false);
             } catch (error: any) {
@@ -288,7 +293,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 <h1 className="text-xl font-bold flex items-center gap-2">
                     {activeTab === 'creators' ? 'Creator Database' : 'Matching Analysis Logs'}
                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
-                        {activeTab === 'creators' ? creators.length : (logTab === 'success' ? successLogs.length : lostAssets.length)} Total
+                    {activeTab === 'creators' ? creators.length : (logTab === 'success' ? successLogs.length : logTab === 'lost' ? lostAssets.length : ongoingOffers.length)} Total
                     </span>
                 </h1>
                 <div className="flex gap-4">
@@ -621,6 +626,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                             >
                                 Lost / Unmatched
                             </button>
+                            <button
+                                onClick={() => setLogTab('ongoing')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'ongoing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                進行中
+                            </button>
                         </div>
                     </div>
 
@@ -655,7 +666,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     ))}
                                 </tbody>
                             </table>
-                        ) : (
+                        ) : logTab === 'lost' ? (
                             <table className="w-full text-left border-collapse text-sm">
                                 <thead className="bg-slate-50 border-b border-slate-200">
                                     <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
@@ -695,6 +706,50 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                             <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.timestamp}</td>
                                         </tr>
                                     ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <table className="w-full text-left border-collapse text-sm">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
+                                        <th className="px-6 py-4">Status & Alert</th>
+                                        <th className="px-6 py-4">Advertiser</th>
+                                        <th className="px-6 py-4">Creator</th>
+                                        <th className="px-6 py-4">Elapsed Hours</th>
+                                        <th className="px-6 py-4 text-right">Offer Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {ongoingOffers.map((offer) => {
+                                        let rowStyle = "hover:bg-slate-50 transition";
+                                        if (offer.alertLevel === 'CRITICAL') {
+                                            rowStyle = "bg-red-50 hover:bg-red-100 transition border-l-4 border-l-red-500";
+                                        } else if (offer.alertLevel === 'WARNING') {
+                                            rowStyle = "bg-amber-50 hover:bg-amber-100 transition border-l-4 border-l-amber-500";
+                                        }
+                                        return (
+                                        <tr key={offer.id} className={rowStyle}>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="font-bold text-xs">
+                                                        {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' : 'オファー中'}
+                                                    </span>
+                                                    {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
+                                                    {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 font-bold text-slate-700">{offer.advertiser}</td>
+                                            <td className="px-6 py-4 font-bold text-blue-600">{offer.creator}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`font-black ${offer.diffHours >= 48 ? 'text-red-600' : offer.diffHours >= 36 ? 'text-amber-600' : 'text-slate-600'}`}>
+                                                    {Math.floor(offer.diffHours)}h
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">
+                                                {new Date(offer.createdAt).toLocaleString('ja-JP')}
+                                            </td>
+                                        </tr>
+                                    )})}
                                 </tbody>
                             </table>
                         )}

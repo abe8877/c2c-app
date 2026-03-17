@@ -1,4 +1,4 @@
-// src/app/demo/analyzing/page.tsx
+// src/app/analyzing/page.tsx
 
 import { createClient } from '@/utils/supabase/server';
 import { AnalysisView } from './_components/AnalysisView';

@@ -146,7 +146,7 @@ export default function OnboardingSuccess() {
 
                     {/* Direct Link as Fallback */}
                     <Link
-                        href="/demo/creator"
+                        href="/creator"
                         className="text-zinc-500 text-sm font-medium hover:text-white transition-colors underline underline-offset-4"
                     >
                         Continue to Dashboard without App

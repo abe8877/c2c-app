@@ -26,7 +26,7 @@ export default function AdvertiserRegisterPage() {
                 localStorage.setItem("isPremium", "false");
             }
 
-            router.push("/demo/advertiser");
+            router.push("/advertiser");
         }, 800);
     };
 

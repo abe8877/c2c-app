@@ -12,7 +12,7 @@ export default function UpgradePage() {
 
             {/* Header */}
             <header className="px-8 py-6 flex justify-between items-center border-b border-stone-100 bg-white sticky top-0 z-20">
-                <Link href="/demo/advertiser" className="text-2xl font-bold tracking-tighter">NOTS <span className="text-yellow-500">PRO</span></Link>
+                <Link href="/advertiser" className="text-2xl font-bold tracking-tighter">NOTS <span className="text-yellow-500">PRO</span></Link>
                 <div className="text-xs font-bold bg-stone-100 px-3 py-1 rounded text-stone-500">Strategic BPO Program</div>
             </header>
 

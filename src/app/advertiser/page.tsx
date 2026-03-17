@@ -1,4 +1,4 @@
-// src/app/demo/advertiser/page.tsx
+// src/app/advertiser/page.tsx
 import { createClient } from '@/utils/supabase/server';
 import VibeCatalogue, { Creator } from './_components/VibeCatalogue';
 

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: 'INSIDERS - Beyond the Buzz',
         short_name: 'INSIDERS',
         description: 'Elite Curation Network. For those who define the vibe.',
-        start_url: '/demo/creator',
+        start_url: '/creator',
         display: 'standalone',
         background_color: '#0f172a',
         theme_color: '#0f172a',

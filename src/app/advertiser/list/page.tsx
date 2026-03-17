@@ -53,7 +53,7 @@ export default function AdvertiserList() {
         <div className="min-h-screen bg-gray-50 pb-32">
             <header className="bg-white border-b sticky top-0 z-40">
                 <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link href="/demo/advertiser" className="font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
+                    <Link href="/advertiser" className="font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
                         MANEKEY
                     </Link>
                     <div className="text-sm text-gray-500">Asset Management</div>
@@ -107,7 +107,7 @@ export default function AdvertiserList() {
                     {/* Empty State / Add more */}
                     <div className="p-8 text-center bg-gray-50 border-t">
                         <p className="text-gray-500 mb-4">新しいクリエイターを探して、資産を増やしましょう。</p>
-                        <Link href="/demo/advertiser" className="inline-flex items-center gap-2 px-6 py-2 bg-black text-white rounded-full font-bold text-sm hover:bg-gray-800 transition-colors">
+                        <Link href="/advertiser" className="inline-flex items-center gap-2 px-6 py-2 bg-black text-white rounded-full font-bold text-sm hover:bg-gray-800 transition-colors">
                             <Search className="w-4 h-4" />
                             クリエイターを探す
                         </Link>
@@ -118,9 +118,9 @@ export default function AdvertiserList() {
             {/* Floating Action Bar */}
             <FloatingActionBar
                 items={[
-                    { name: "ホーム", link: "/demo/advertiser", icon: <Search className="w-4 h-4" /> },
+                    { name: "ホーム", link: "/advertiser", icon: <Search className="w-4 h-4" /> },
                     { name: "AI相談", link: "#", icon: <MessageCircle className="w-4 h-4" /> },
-                    { name: "確定リスト", link: "/demo/advertiser/list", icon: <CheckCircle className="w-4 h-4" /> },
+                    { name: "確定リスト", link: "/advertiser/list", icon: <CheckCircle className="w-4 h-4" /> },
                 ]}
             />
         </div>

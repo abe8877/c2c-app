@@ -260,7 +260,7 @@ export default function VibeOnboardingPage() {
                         <motion.button
                             whileHover={{ scale: 1.05, y: -2 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => router.push('/demo/advertiser')}
+                            onClick={() => router.push('/advertiser')}
                             className="w-full py-6 bg-black text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-black/20 flex items-center justify-center gap-3 group"
                         >
                             マッチング候補を見る

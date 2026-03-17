@@ -1,4 +1,4 @@
-// src/app/demo/advertiser/creators.ts
+// src/app/advertiser/creators.ts
 
 export type Creator = {
     id: string;
