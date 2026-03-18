@@ -3,15 +3,16 @@
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ChatModal from "./ChatModal";
-import { 
-    Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers, 
-    CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users, 
-    AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle, 
-    Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud, 
-    Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home, 
+import {
+    Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers,
+    CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users,
+    AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle,
+    Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
+    Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
     Calendar, Map, Trash, Menu, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
+import Image from 'next/image';
 import { analyzeAssetInsight } from "@/app/actions/analyze-asset-insight";
 import { analyzeShopVibe } from "@/app/actions/analyze-shop-vibe";
 import { offerCreator } from '@/app/actions/offer-creator';
@@ -40,7 +41,7 @@ export interface Creator {
     ethnicity: string;
     vibe_tags: string[];
     followers: string;
-    thumbnail_url: string;
+    thumbnail_url: string | null;
     portfolio_video_urls?: string[];
     tier?: 'S' | 'A' | 'B' | '-';
     vibeMatchScore?: number;
@@ -48,6 +49,7 @@ export interface Creator {
     avatar?: string; // Added for offerCreator
     is_verified?: boolean;
     response_rate?: 'HIGH' | 'MEDIUM' | 'LOW';
+    is_public?: boolean;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -203,12 +205,28 @@ const CreatorCard = ({
             transition={{ duration: 0.4 }}
             className="relative aspect-[9/16] rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
         >
+            {/* Premium Fallback Background (Visible if img fails or is missing) */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-teal-950 flex flex-col items-center justify-center pointer-events-none">
+                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-2 border border-white/10">
+                    <Sparkles className="w-6 h-6 text-teal-500/50" />
+                </div>
+                <span className="text-[10px] font-black tracking-widest text-teal-500/50 uppercase">INSIDERS.</span>
+                <span className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-1">Verifying Vibe</span>
+            </div>
+
             {/* Thumbnail */}
-            <img
-                src={creator.thumbnail_url}
-                alt={creator.name}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
+            {creator.thumbnail_url && (
+                <Image
+                    src={creator.thumbnail_url}
+                    alt={creator.name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    unoptimized={true}
+                    onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                    }}
+                />
+            )}
 
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -233,7 +251,7 @@ const CreatorCard = ({
                         <div className="bg-teal-500/20 backdrop-blur-md border border-teal-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(20,184,166,0.3)] group/verified">
                             <CheckCircle2 className="w-2.5 h-2.5 text-teal-400" />
                             <span className="text-[8px] font-black text-teal-400 uppercase tracking-tighter">Verified</span>
-                            
+
                             {/* Simple Tooltip */}
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black/90 text-white text-[9px] rounded-lg opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all z-50 pointer-events-none border border-white/10">
                                 本人確認済みの公式メンバーです。確実にマッチングします。
@@ -805,7 +823,7 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                         <p className="text-sm text-stone-600 font-bold leading-relaxed mb-8">
                             このクリエイターへのオファーを含め、月額3.98万円でSランククリエイターに依頼し放題のプレミアムプランを有効化しましょう。
                         </p>
-                        
+
                         <div className="w-full space-y-3 mb-6">
                             <a
                                 href="#"
@@ -823,7 +841,7 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                             >
                                 <Layers className="w-4 h-4" /> 請求書払いを申し込む
                             </button>
-                            
+
                             <div className="pt-4 border-t border-stone-100 mt-4 w-full">
                                 <div className="relative group">
                                     <input
@@ -834,7 +852,7 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                                         onChange={(e) => setInvitationCode(e.target.value)}
                                     />
                                     {invitationCode && (
-                                        <button 
+                                        <button
                                             onClick={() => { alert("コードを適用しました。"); setInvitationCode(""); }}
                                             className="absolute right-2 top-1.2 bg-black text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest"
                                         >
@@ -844,7 +862,7 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                                 </div>
                             </div>
                         </div>
-                        
+
                         <p className="text-[10px] text-stone-400 font-bold bg-stone-50 px-4 py-2 rounded-lg inline-block border border-stone-100 ring-1 ring-inset ring-stone-900/5">
                             <Info className="w-3 h-3 inline mr-1 mb-0.5" /> 決済確認後、運営が手動でアカウントを有効化します
                         </p>
@@ -964,7 +982,7 @@ export default function VibeCatalogue({
                 .select('free_offers_remaining, is_premium')
                 .eq('id', 'demo-shop')
                 .single();
-            
+
             if (data && !error) {
                 setFreeOffers(data.free_offers_remaining);
                 setIsPremium(data.is_premium);
@@ -991,7 +1009,10 @@ export default function VibeCatalogue({
             || (filterRegion === 'WESTERN' && (c.ethnicity === 'AMERICA' || c.ethnicity === 'EUROPE'))
             || (filterRegion === 'ASIAN' && c.ethnicity === 'ASIA')
             || (filterRegion === 'GLOBAL');
-        return genreMatch && regionMatch;
+        // Tier S/A 限定 + Public のみ表示（ノイズゼロ担保）
+        const tierOk = c.tier === 'S' || c.tier === 'A';
+        const publicOk = c.is_public !== false;
+        return genreMatch && regionMatch && tierOk && publicOk;
     }).map(c => {
         // ===== VIBEマッチングスコア計算 (Base+Bonus方式) =====
         const creatorVibes = c.vibe_tags.map(t => t.toLowerCase());
@@ -1085,13 +1106,13 @@ export default function VibeCatalogue({
 
     const handleOfferSent = async (details: any) => {
         if (!selectedCreator) return;
-        
+
         try {
             const res = await offerCreator({
                 creatorId: selectedCreator.id,
                 shopId: 'demo-shop', // Mock ID
                 creatorName: selectedCreator.name,
-                creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url,
+                creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url || undefined,
                 offerDetails: details
             });
 
@@ -1266,7 +1287,7 @@ export default function VibeCatalogue({
                                             {/* Inline Error within the bar */}
                                             <AnimatePresence>
                                                 {urlError && (
-                                                    <motion.div 
+                                                    <motion.div
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}
                                                         exit={{ height: 0, opacity: 0 }}
@@ -1574,39 +1595,39 @@ export default function VibeCatalogue({
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
                                         .filter(a => a.status === 'COMPLETED' || a.status === 'FINALIZED')
                                         .map((asset) => (
-                                        <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col">
-                                            <div className="aspect-[9/16] bg-stone-200 relative">
-                                                {asset.video_url ? (
-                                                    <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
-                                                ) : (
-                                                    <img src={`https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
-                                                )}
-                                                {asset.status === 'COMPLETED' ? (
-                                                    <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
-                                                        <CheckCircle className="w-2.5 h-2.5" /> 納品済み
-                                                    </div>
-                                                ) : (
-                                                    <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
-                                                        Live
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="p-4 text-left flex-1 flex flex-col justify-between">
-                                                <div>
-                                                    <p className="text-[10px] font-black text-stone-400 uppercase mb-1">{asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024.03.15'}</p>
-                                                    <h4 className="text-xs font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
+                                            <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col">
+                                                <div className="aspect-[9/16] bg-stone-200 relative">
+                                                    {asset.video_url ? (
+                                                        <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                                                    ) : (
+                                                        <img src={`https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
+                                                    )}
+                                                    {asset.status === 'COMPLETED' ? (
+                                                        <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
+                                                            <CheckCircle className="w-2.5 h-2.5" /> 納品済み
+                                                        </div>
+                                                    ) : (
+                                                        <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
+                                                            Live
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {asset.status === 'COMPLETED' && (
-                                                    <button
-                                                        onClick={() => setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'FINALIZED' } : a))}
-                                                        className="w-full mt-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-colors uppercase active:scale-95"
-                                                    >
-                                                        <CheckCircle className="w-3.5 h-3.5" /> 検収完了
-                                                    </button>
-                                                )}
+                                                <div className="p-4 text-left flex-1 flex flex-col justify-between">
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-stone-400 uppercase mb-1">{asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024.03.15'}</p>
+                                                        <h4 className="text-xs font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
+                                                    </div>
+                                                    {asset.status === 'COMPLETED' && (
+                                                        <button
+                                                            onClick={() => setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'FINALIZED' } : a))}
+                                                            className="w-full mt-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-colors uppercase active:scale-95"
+                                                        >
+                                                            <CheckCircle className="w-3.5 h-3.5" /> 検収完了
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
 
                                     {/* Mocking established acquired videos */}
                                     {[1, 2].map((i) => (
@@ -1740,12 +1761,12 @@ export default function VibeCatalogue({
             }
 
             <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} />
-            <ChatModal 
-                isOpen={isChatOpen} 
-                onClose={() => setIsChatOpen(false)} 
-                assetId={`mock-${selectedCreator?.id || 'demo'}`} 
-                partnerName={selectedCreator?.name || 'Support Team'} 
-                currentUserType="shop" 
+            <ChatModal
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                assetId={`mock-${selectedCreator?.id || 'demo'}`}
+                partnerName={selectedCreator?.name || 'Support Team'}
+                currentUserType="shop"
             />
 
             <PortfolioVideoModal

@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
 import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers } from '@/app/actions/admin';
+import { triggerN8nWebhook } from '@/app/actions/creator';
 import { Info } from 'lucide-react';
 
 // Define the Creator Interface
@@ -202,6 +203,14 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 .eq('id', id);
 
             if (error) throw error;
+
+            // Trigger n8n webhook if making public
+            if (field === 'is_public' && value === true) {
+                const creator = creators.find(c => c.id === id);
+                if (creator) {
+                    triggerN8nWebhook(creator.id, creator.bestVideoUrl);
+                }
+            }
 
             // 保存演出を0.8秒後に消す
             setTimeout(() => setIsSaving(false), 800);

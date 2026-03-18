@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2 } from "lucide-react";
+import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target } from "lucide-react";
 import Image from "next/image";
 import CreatorAiFeedback from "./_components/CreatorAiFeedback";
 import { submitAssetDelivery } from "@/app/actions/creator";
@@ -75,13 +75,13 @@ function AssetItem({ asset }: { asset: Asset }) {
             {localStatus === 'approved' && (
                 <div className="mt-4 pt-4 border-t border-zinc-800/50 flex flex-col gap-2">
                     <div className="flex gap-2">
-                        <button 
+                        <button
                             onClick={() => setIsChatOpen(true)}
                             className="flex-1 py-2 bg-zinc-800 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-zinc-700 transition"
                         >
                             <MessageCircle className="w-3.5 h-3.5" /> AI自動翻訳チャット
                         </button>
-                        <button 
+                        <button
                             onClick={() => setShowDeliveryForm(!showDeliveryForm)}
                             className="flex-1 py-2 bg-teal-600/20 text-teal-500 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-teal-600/30 transition border border-teal-500/30"
                         >
@@ -91,7 +91,7 @@ function AssetItem({ asset }: { asset: Asset }) {
 
                     <AnimatePresence>
                         {showDeliveryForm && (
-                            <motion.form 
+                            <motion.form
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
@@ -100,7 +100,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                             >
                                 <div className="mt-2 bg-zinc-950 p-3 rounded-xl border border-zinc-800">
                                     <p className="text-xs text-zinc-400 mb-2 font-bold">動画URLを入力 (TikTok, IG Reels等)</p>
-                                    <input 
+                                    <input
                                         type="url"
                                         value={deliveryUrl}
                                         onChange={e => setDeliveryUrl(e.target.value)}
@@ -108,8 +108,8 @@ function AssetItem({ asset }: { asset: Asset }) {
                                         className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-teal-500 mb-2"
                                         required
                                     />
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={isSubmitting}
                                         className="w-full py-2 bg-white text-black rounded-lg text-xs font-bold disabled:opacity-50 hover:bg-zinc-200 transition flex items-center justify-center gap-2"
                                     >
@@ -122,17 +122,17 @@ function AssetItem({ asset }: { asset: Asset }) {
                     </AnimatePresence>
                 </div>
             )}
-            
+
             <AnimatePresence>
                 {localStatus === 'COMPLETED' && (
-                    <motion.div 
-                        initial={{ scale: 0.9, opacity: 0, height: 0 }} 
-                        animate={{ scale: 1, opacity: 1, height: 'auto' }} 
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0, height: 0 }}
+                        animate={{ scale: 1, opacity: 1, height: 'auto' }}
                         className="mt-4 p-5 bg-gradient-to-br from-teal-900/40 to-black border border-teal-800/50 rounded-2xl text-center relative overflow-hidden shadow-[0_0_30px_rgba(20,184,166,0.15)] ring-1 ring-teal-500/20"
                     >
-                        <motion.div 
-                            initial={{ scale: 0 }} 
-                            animate={{ scale: 1 }} 
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
                             transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
                             className="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-3 ring-4 ring-teal-500/10"
                         >
@@ -140,19 +140,19 @@ function AssetItem({ asset }: { asset: Asset }) {
                         </motion.div>
                         <h4 className="text-sm font-black text-teal-300 mb-2 tracking-wide">🎉 VIBE DELIVERED!</h4>
                         <p className="text-[10px] text-zinc-300 leading-relaxed font-medium">
-                            動画の提出ありがとうございます！運営にて内容を確認し、<span className="text-teal-400 font-bold">報酬の支払いを確定</span>させます。<br/><br/>
+                            動画の提出ありがとうございます！運営にて内容を確認し、<span className="text-teal-400 font-bold">報酬の支払いを確定</span>させます。<br /><br />
                             INSIDERS.が未払いを防ぎ、確実にサポートしますので、安心して次の案件をお探しください✨
                         </p>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <ChatModal 
-                isOpen={isChatOpen} 
-                onClose={() => setIsChatOpen(false)} 
-                assetId={asset.id} 
-                partnerName={asset.shopName} 
-                currentUserType="creator" 
+            <ChatModal
+                isOpen={isChatOpen}
+                onClose={() => setIsChatOpen(false)}
+                assetId={asset.id}
+                partnerName={asset.shopName}
+                currentUserType="creator"
             />
         </div>
     );
@@ -255,6 +255,55 @@ export default function CreatorDashboardContent({
                                     transition={{ duration: 1, delay: 0.5 }}
                                     className="h-full bg-gradient-to-r from-amber-600 to-amber-400"
                                 />
+                            </div>
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* ユーザーダッシュボード内の「攻略ヒント」セクション */}
+                <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.25 }}
+                    className="px-6 mb-8"
+                >
+                    <div className="bg-[#121212] border border-white/5 rounded-2xl p-5 shadow-xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xs font-bold text-white tracking-widest uppercase flex items-center gap-2">
+                                <Target className="w-4 h-4 text-emerald-500" /> Unlock Next Tier
+                            </h3>
+                            <span className="text-[9px] text-slate-500 font-medium">アルゴリズム攻略</span>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* ミッション 1: HOTバッジの獲得 */}
+                            <div className="bg-black border border-orange-500/20 rounded-xl p-3 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-orange-500/10 blur-xl rounded-full" />
+                                <div className="flex justify-between items-start mb-1 relative z-10">
+                                    <span className="text-[10px] font-bold text-orange-500 flex items-center gap-1">
+                                        🔥 GET "HOT TRENDING"
+                                    </span>
+                                    <span className="text-[10px] text-zinc-500">0/1 達成</span>
+                                </div>
+                                <p className="text-[10px] text-zinc-400 leading-relaxed relative z-10">
+                                    前回高い評価を得た<span className="text-white font-bold">「MATCHA」系の動画</span>の追加を推奨します。動画を追加すると関連カテゴリで上位に表示されやすくなります。
+                                </p>
+                                <button className="mt-2 text-[9px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded font-bold transition-colors">
+                                    + 動画リンクを追加
+                                </button>
+                            </div>
+
+                            {/* ミッション 2: 一貫性の証明 */}
+                            <div className="bg-black border border-white/10 rounded-xl p-3 relative z-10">
+                                <div className="flex justify-between items-start mb-1">
+                                    <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                                        👑 PROVE CONSISTENCY
+                                    </span>
+                                    <span className="text-[10px] text-emerald-500">Tier S 候補</span>
+                                </div>
+                                <p className="text-[10px] text-zinc-400 leading-relaxed">
+                                    あなたの「FOOD」ジャンルでの動画が高く評価されています。一貫性のある動画を増やすことで、より高単価な案件オファーが来やすくなります。
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -26,6 +26,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'images.unsplash.com', // モックデータ用
             },
+            {
+                protocol: 'https',
+                hostname: 'storage.googleapis.com', // n8n + GCS ワーカーからのサムネイル
+            },
         ],
     },
     // 開発環境のTurbopack競合対策 (next-pwaがwebpack依存のため)

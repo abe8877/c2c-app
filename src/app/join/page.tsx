@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, CheckCircle2, ArrowRight, Sparkles, ShieldCheck, Zap, Wallet, Building2, Star, PlayCircle, Check, Globe, TrendingUp, Target, Activity, Send, ChevronDown } from 'lucide-react';
+import { Search, CheckCircle2, ArrowRight, Sparkles, ShieldCheck, Zap, Wallet, Building2, Star, PlayCircle, Check, Globe, TrendingUp, Target, Activity, Send, ChevronDown, Flame, Award } from 'lucide-react';
 
 // --- i18n Dictionary ---
 const dict = {
@@ -63,24 +63,24 @@ const dict = {
             ]
         },
         gamification: {
-            badge: "Hack the Algorithm",
-            title: "Control Your Destiny.",
-            desc: "In INSIDERS., you don't wait for luck. You train the AI, build your professional metrics, and unlock the highest tier of clients.",
+            badge: "Creator Ecosystem",
+            title: "Optimize your impact. Keep your style.",
+            desc: "You don't need to change what makes you unique. Simply follow INSIDERS.' AI hints to optimize your portfolio, and our algorithm will maximize your visibility to attract the perfect offers.",
             items: [
                 {
-                    icon: <Target className="w-5 h-5 text-white" />,
-                    title: "VIBE Training",
-                    desc: "Feed the AI your best work. The deeper it understands your unique cinematic style or color grading, the more exclusive matches you unlock."
+                    icon: <Flame className="w-5 h-5 text-white" />,
+                    title: "The 'HOT' Momentum",
+                    desc: "Don't let the buzz cool down. Add a similar video within a week of a hit, and our AI will grant you the [🔥 HOT TRENDING] badge, boosting you to the top of advertiser search results."
                 },
                 {
-                    icon: <Activity className="w-5 h-5 text-white" />,
-                    title: "Professional Metrics",
-                    desc: "Maintain a high Response Rate (under 24h) and Completion Rate to earn the [PRIORITY] badge, boosting your visibility to top advertisers."
+                    icon: <Award className="w-5 h-5 text-white" />,
+                    title: "'VERIFIED' Authority",
+                    desc: "Maintain a sub-24h response rate and aesthetic consistency. Earning the [Tier S / VERIFIED] title isn't just a badge—it's your ultimate proof of quality to top Japanese brands."
                 },
                 {
-                    icon: <TrendingUp className="w-5 h-5 text-white" />,
-                    title: "Secret Signal",
-                    desc: "Send a 'Secret Signal' to your dream brands without annoying them. When they search, you'll be prioritized as 'Highly Interested'."
+                    icon: <Sparkles className="w-5 h-5 text-white" />,
+                    title: "AI Curation Feedback",
+                    desc: "Even if an offer doesn't match, you're never left in the dark. Our AI provides personalized feedback on 'Missing VIBE' and next steps, acting as your dedicated data-driven producer."
                 }
             ]
         },
@@ -148,24 +148,24 @@ const dict = {
             ]
         },
         gamification: {
-            badge: "アルゴリズムをハックする",
-            title: "運を待つな、自ら最適化せよ。",
-            desc: "INSIDERS.では、ただオファーを待つ必要はありません。AIを育て、プロとしての実績を積むことで、最高峰のクライアント層へのアクセスを自ら切り開くことができます。",
+            badge: "Creator Ecosystem",
+            title: "スタイルはそのままに、見せ方をハックせよ。",
+            desc: "あなたの活動方針を変える必要はありません。INSIDERS.が提示する「AIのヒント」に従ってポートフォリオを最適化するだけで、アルゴリズムがあなたの価値を最大化し、最適なオファーを引き寄せます。",
             items: [
                 {
-                    icon: <Target className="w-5 h-5 text-white" />,
-                    title: "VIBE Training (AIの育成)",
-                    desc: "あなたの最高傑作を追加し、AIに学習させましょう。シズル感やカラーグレーディングの癖を深く理解させるほど、よりニッチで高単価な案件が優先的に届きます。"
+                    icon: <Flame className="w-5 h-5 text-white" />,
+                    title: "The 'HOT' Momentum (トレンドの最大化)",
+                    desc: "「バズの熱」を逃さないでください。過去に伸びた動画と同系統の作品を1週間以内に追加するだけで、AIが【🔥 HOT TRENDING】を付与し、広告主の検索結果の最上位へ自動ブーストします。"
                 },
                 {
-                    icon: <Activity className="w-5 h-5 text-white" />,
-                    title: "Professional Metrics (プロの証明)",
-                    desc: "24時間以内の高い返信率と完了率を維持することで [PRIORITY] バッジを獲得。広告主の検索結果でアルゴリズム的に最上位にブーストされます。"
+                    icon: <Award className="w-5 h-5 text-white" />,
+                    title: "'VERIFIED' Authority (プロフェッショナルの証明)",
+                    desc: "24時間以内の返信率と、世界観の一貫性を維持してください。基準をクリアして【Tier S / VERIFIED】の称号を獲得することは、日本のトップブランドに対する絶対的な品質証明（名刺）になります。"
                 },
                 {
-                    icon: <TrendingUp className="w-5 h-5 text-white" />,
-                    title: "Secret Signal (熱意の送信)",
-                    desc: "憧れの名店へ、通知を飛ばさずに「シークレット・シグナル」を送れます。相手がAI検索を利用した際、あなたは「熱量高」としてトップ推薦されます。"
+                    icon: <Sparkles className="w-5 h-5 text-white" />,
+                    title: "AI Curation Feedback (専属プロデュース)",
+                    desc: "オファーが見送りになった場合でも、単なる「不採用」では終わりません。AIが「不足していたVIBE」や「次回の最適解」を個別にフィードバックし、専属プロデューサーとしてあなたの成長をサポートします。"
                 }
             ]
         },

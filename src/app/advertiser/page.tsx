@@ -64,13 +64,12 @@ export default async function AdvertiserPage() {
             vibe_tags: c.vibe_tags || [],
             followers: c.followers ? c.followers.toLocaleString() : '0',
 
-            // ★修正ポイント: 本人のアップロード画像があれば優先、なければジャンル画像
-            thumbnail_url: c.avatar_url
-                ? c.avatar_url
-                : getImageForGenre(genreKey, i),
+            // ★修正ポイント: 本人のアップロード画像があれば優先、なければジャンル画像（今回の要件でFallback UIが対応するためここはそのままDBの値を渡す）
+            thumbnail_url: c.thumbnail_url || c.avatar_url || null,
 
             portfolio_video_urls: c.portfolio_video_urls || (c.portfolio_video_url ? [c.portfolio_video_url] : []),
-            tier: c.tier || '-'
+            tier: c.tier || '-',
+            is_public: !!c.is_onboarded
         };
     });
 

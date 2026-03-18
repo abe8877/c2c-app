@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Upload, ChevronRight, Globe, Shield, Sparkles } from 'lucide-react';
+import { AlertCircle, Upload, ChevronRight, Globe, Shield, Sparkles, CheckCircle2 } from 'lucide-react';
 import { submitCreatorApplication } from '../actions';
 import TermsOfCuration from './TermsOfCuration';
 
@@ -124,28 +124,51 @@ export function OnboardingForm({ creator }: { creator: any }) {
                     </div>
                 </div>
 
-                {/* Identity / Ticket Info */}
-                <div className="w-full bg-[#0a0a0a] rounded-3xl border border-white/10 p-6 flex flex-col gap-6">
-                    <div className="flex justify-between items-center pb-6 border-b border-white/5">
+                {/* 新UI：Official Curation Status (マニュアル準拠) */}
+                <div className="w-full bg-[#0a0a0a] rounded-3xl border border-white/10 p-6 md:p-8 flex flex-col relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl rounded-full pointer-events-none" />
+                    
+                    <div className="flex justify-between items-center pb-5 border-b border-white/5 mb-6">
                         <div>
-                            <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-1">Pass Status</p>
-                            <p className="text-xs font-semibold text-white uppercase tracking-tighter">Verified Insider</p>
+                            <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-1">Confidential Evaluation</p>
+                            <p className="text-sm font-bold text-white uppercase tracking-wider">Official Curation Status</p>
                         </div>
-                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40">
-                            <Shield size={14} />
+                        <div className="w-8 h-8 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-500">
+                            <CheckCircle2 size={14} />
                         </div>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Identity</p>
-                        <h2 className="text-2xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle || 'Creator'}</h2>
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Access Code</p>
-                        <p className="text-xl font-mono text-white/90 tracking-tighter">{creator.invite_code}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-zinc-400 pt-2">
-                        <Globe size={14} className="opacity-50" />
-                        <span className="text-[10px] tracking-widest uppercase font-medium">Tokyo Network</span>
+
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Creator</p>
+                                <p className="text-xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle || 'Creator'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Provisional Tier</p>
+                                <p className="text-xs font-black text-amber-400 tracking-widest mt-1 uppercase">Tier A (High Potential)</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 border-t border-white/5 pt-4">
+                            <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-2">Evaluated Aesthetic (審査済みVIBE)</p>
+                            <div className="flex gap-2">
+                                {/* マニュアルの CATEGORY と CLUSTER をそのままバッジとして表示 */}
+                                <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
+                                    FOOD
+                                </span>
+                                <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
+                                    Cinematic
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="bg-white/5 rounded-xl p-4 border border-white/5 mt-2">
+                            <p className="text-[11px] text-zinc-300 leading-relaxed font-light">
+                                INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「Cinematic」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />
+                                下部のフォームを完了して本登録を済ませることで、保留中のオファーを開放できます。
+                            </p>
+                        </div>
                     </div>
                 </div>
 
