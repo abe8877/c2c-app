@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
@@ -24,6 +24,7 @@ interface CreatorData {
     status: string;
     is_public: boolean;
     imgColor: string;
+    thumbnail_url: string | null;
 }
 
 // デモ用のクラスター定義（ランダム割り当て用）
@@ -149,7 +150,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     imgColor: getColorByIndex(index),
                     status: 'approved',
                     review_status: item.review_status || 'pending',
-                    is_public: item.is_onboarded || false
+                    is_public: item.is_onboarded || false,
+                    thumbnail_url: item.thumbnail_url || item.avatar_url || null
                 }));
                 setCreators(formattedData);
 
@@ -423,12 +425,13 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 />
                                             </th>
                                             <th className="px-6 py-4 font-bold">Creator Profile</th>
-                                            <th className="px-6 py-4 font-bold w-24 text-center">Video</th>
-                                            <th className="px-6 py-4 font-bold w-32">Tier</th>
-                                            <th className="px-6 py-4 font-bold w-45">Category</th>
-                                            <th className="px-6 py-4 font-bold w-40">Cluster</th>
-                                            <th className="px-6 py-4 font-bold text-center">Status (Visibility)</th>
-                                            <th className="px-6 py-4 font-bold text-right">Review Status</th>
+                                            <th className="px-4 py-4 font-bold w-20 text-center">Thumb</th>
+                                            <th className="px-4 py-4 font-bold w-20 text-center">Video</th>
+                                            <th className="px-4 py-4 font-bold w-28">Tier</th>
+                                            <th className="px-4 py-4 font-bold w-40">Category</th>
+                                            <th className="px-4 py-4 font-bold w-36">Cluster</th>
+                                            <th className="px-4 py-4 font-bold text-center">Status</th>
+                                            <th className="px-4 py-4 font-bold text-right">Review</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
@@ -456,8 +459,36 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                     </div>
                                                 </td>
 
+                                                {/* Thumbnail Status */}
+                                                <td className="px-4 py-4 text-center">
+                                                    {creator.thumbnail_url ? (
+                                                        <div className="relative group/thumb inline-block">
+                                                            <img
+                                                                src={creator.thumbnail_url}
+                                                                alt=""
+                                                                className="w-10 h-14 rounded-lg object-cover border border-slate-200 shadow-sm group-hover/thumb:ring-2 group-hover/thumb:ring-teal-400 transition-all"
+                                                            />
+                                                            <span className="absolute -bottom-1 -right-1 bg-teal-500 text-white rounded-full p-0.5 shadow-sm">
+                                                                <CheckCircle2 size={10} />
+                                                            </span>
+                                                            {/* Hover Preview */}
+                                                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 opacity-0 invisible group-hover/thumb:opacity-100 group-hover/thumb:visible transition-all duration-200 pointer-events-none">
+                                                                <img
+                                                                    src={creator.thumbnail_url}
+                                                                    alt=""
+                                                                    className="w-32 h-44 rounded-xl object-cover border-2 border-white shadow-2xl"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 border border-amber-200 text-[9px] font-bold px-2 py-1 rounded-full">
+                                                            <Clock size={10} /> Pending
+                                                        </span>
+                                                    )}
+                                                </td>
+
                                                 {/* Video Asset Indicator */}
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-4 py-4 text-center">
                                                     {creator.bestVideoUrl ? (
                                                         <a
                                                             href={creator.bestVideoUrl}
@@ -475,7 +506,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* Editable Tier */}
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-4">
                                                     <select
                                                         value={creator.tier}
                                                         onChange={(e) => handleUpdate(creator.id, 'tier', e.target.value)}
@@ -492,7 +523,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* Category (Editable) */}
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-4">
                                                     <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {['FOOD', 'BEAUTY', 'TRAVEL', 'EXPERIENCE', 'LIFESTYLE', 'SHOPPING'].map(g => {
                                                             const isActive = creator.genre.includes(g);
@@ -510,7 +541,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* VIBE Cluster (そのまま) */}
-                                                <td className="px-6 py-4">
+                                                <td className="px-4 py-4">
                                                     <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {/* AIの推測（ヒント）があれば表示 */}
                                                         {creator.vibeCluster.length === 0 && creator.vibeHint && (
@@ -548,7 +579,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* Status (Approved) */}
-                                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <td className="px-4 py-4 whitespace-nowrap text-right">
                                                     <ReviewStatusSelect
                                                         creatorId={creator.id}
                                                         initialStatus={creator.review_status}
