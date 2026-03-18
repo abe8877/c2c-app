@@ -417,7 +417,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                             <th className="px-6 py-4 font-bold w-24 text-center">Video</th>
                                             <th className="px-6 py-4 font-bold w-32">Tier</th>
                                             <th className="px-6 py-4 font-bold w-45">Category</th>
-                                            <th className="px-6 py-4 font-bold w-40">VIBE Cluster</th>
+                                            <th className="px-6 py-4 font-bold w-40">Cluster</th>
                                             <th className="px-6 py-4 font-bold text-center">Status (Visibility)</th>
                                             <th className="px-6 py-4 font-bold text-right">Review Status</th>
                                         </tr>
