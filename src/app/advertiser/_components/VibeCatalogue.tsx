@@ -18,6 +18,7 @@ import { analyzeShopVibe } from "@/app/actions/analyze-shop-vibe";
 import { offerCreator } from '@/app/actions/offer-creator';
 import { createClient } from '@/utils/supabase/client';
 import ShopUpsellBanner from "./ShopUpsellBanner";
+import ShopSettingsModal from "./ShopSettingsModal";
 
 export interface Asset {
     id: string;
@@ -1049,6 +1050,7 @@ export default function VibeCatalogue({
     const [currentAssetId, setCurrentAssetId] = useState<string | null>(null);
     const [selectedVideo, setSelectedVideo] = useState<{ urls: string[]; name: string } | null>(null);
     const [showDetails, setShowDetails] = useState<string | null>(null);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
@@ -1340,10 +1342,10 @@ export default function VibeCatalogue({
                                     </div>
                                 </div>
                                 <div className="px-2 pb-2">
-                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
+                                    <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
                                         <User className="w-4 h-4" /> プロフィール編集
                                     </button>
-                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
+                                    <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
                                         <Globe className="w-4 h-4" /> 店舗情報・リンク設定
                                     </button>
                                     <div className="my-1 border-t border-stone-100" />
@@ -1960,6 +1962,11 @@ export default function VibeCatalogue({
                 onClose={() => setSelectedVideo(null)}
                 videoUrls={selectedVideo?.urls || []}
                 creatorName={selectedVideo?.name || ''}
+            />
+
+            <ShopSettingsModal 
+                isOpen={isSettingsOpen} 
+                onClose={() => setIsSettingsOpen(false)} 
             />
         </div >
     );
