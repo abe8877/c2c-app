@@ -132,11 +132,15 @@ export function OnboardingForm({ creator }: { creator: any }) {
                     
                     <div className="flex justify-between items-center pb-5 border-b border-white/5 mb-6">
                         <div>
-                            <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-1">Confidential Evaluation</p>
-                            <p className="text-sm font-bold text-white uppercase tracking-wider">Official Curation Status</p>
+                            <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-1">
+                                {creator.id === 'new-applicant' ? 'Registration Application' : 'Confidential Evaluation'}
+                            </p>
+                            <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                {creator.id === 'new-applicant' ? 'Applicant Status' : 'Official Curation Status'}
+                            </p>
                         </div>
                         <div className="w-8 h-8 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-500">
-                            <CheckCircle2 size={14} />
+                            {creator.id === 'new-applicant' ? <Sparkles size={14} /> : <CheckCircle2 size={14} />}
                         </div>
                     </div>
 
@@ -144,31 +148,36 @@ export function OnboardingForm({ creator }: { creator: any }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Creator</p>
-                                <p className="text-xl font-playfair italic text-white leading-tight">@{creator.tiktok_handle || 'Creator'}</p>
+                                <p className="text-xl font-playfair italic text-white leading-tight">@{formData.real_name || (creator.tiktok_handle || 'Creator')}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Provisional Tier</p>
-                                <p className="text-xs font-black text-amber-400 tracking-widest mt-1 uppercase">Tier A (High Potential)</p>
+                                <p className="text-xs font-black text-amber-400 tracking-widest mt-1 uppercase">
+                                    {creator.id === 'new-applicant' ? 'TBD (Reviewing)' : (creator.tier === 'B' ? 'Tier B' : 'Tier A (High Potential)')}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="space-y-2 border-t border-white/5 pt-4">
-                            <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-2">Evaluated Aesthetic (審査済みVIBE)</p>
-                            <div className="flex gap-2">
-                                {/* マニュアルの CATEGORY と CLUSTER をそのままバッジとして表示 */}
-                                <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
-                                    FOOD
-                                </span>
-                                <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
-                                    Cinematic
-                                </span>
+                        {creator.id !== 'new-applicant' && (
+                            <div className="space-y-2 border-t border-white/5 pt-4">
+                                <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-2">Evaluated Aesthetic (審査済みVIBE)</p>
+                                <div className="flex gap-2">
+                                    <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
+                                        FOOD
+                                    </span>
+                                    <span className="px-2.5 py-1 bg-white/10 border border-white/20 text-white text-[10px] rounded font-bold tracking-wider">
+                                        Cinematic
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="bg-white/5 rounded-xl p-4 border border-white/5 mt-2">
+                        <div className={creator.id === 'new-applicant' ? "" : "bg-white/5 rounded-xl p-4 border border-white/5 mt-2"}>
                             <p className="text-[11px] text-zinc-300 leading-relaxed font-light">
-                                INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「Cinematic」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />
-                                下部のフォームを完了して本登録を済ませることで、保留中のオファーを開放できます。
+                                {creator.id === 'new-applicant' 
+                                    ? "申請後、INSIDERS.キュレーションチームがあなたのSNSアカウントを厳査します。承認された場合、登録された連絡先へ通知が届きます。"
+                                    : <>INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「Cinematic」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />下部のフォームを完了して本登録を済ませることで、保留中のオファーを開放できます。</>
+                                }
                             </p>
                         </div>
 
@@ -196,7 +205,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                     {/* Bottom Content */}
                                     <div className="absolute bottom-3 left-3 z-20 text-left">
                                         <div className="flex items-center gap-1.5 mb-1">
-                                            <p className="text-[10px] font-black text-white tracking-tight italic">@{creator.tiktok_handle || 'Creator'}</p>
+                                            <p className="text-[10px] font-black text-white tracking-tight italic">@{formData.real_name || (creator.tiktok_handle || 'Creator')}</p>
                                             <div className="bg-teal-500/20 backdrop-blur-sm border border-teal-400/50 rounded-full px-1 py-0.5 flex items-center gap-0.5">
                                                 <CheckCircle2 size={6} className="text-teal-400" />
                                                 <span className="text-[5px] font-black text-teal-400 uppercase tracking-tighter">Verified</span>
@@ -246,6 +255,12 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                 className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all font-mono text-xs placeholder:text-zinc-700"
                                 placeholder="https://www.tiktok.com/@..."
                             />
+                            <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                <p className="text-[9px] text-amber-400 font-bold leading-relaxed">
+                                    ⚠️ 注意: 動画は「公開(Public)」設定である必要があります。<br/>
+                                    下書き（Draft）や限定公開（Friends only / Private）状態のURLは、広告主側で正常にプレビューが表示されません。
+                                </p>
+                            </div>
                         </div>
 
                         <div className="space-y-4">

@@ -228,10 +228,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
             if (error) throw error;
 
-            // Trigger n8n webhook if making public
+            // Trigger n8n webhook if making public and thumbnail is missing
             if (field === 'is_public' && value === true) {
                 const creator = creators.find(c => c.id === id);
-                if (creator) {
+                if (creator && !creator.thumbnail_url) {
                     triggerN8nWebhook(creator.id, creator.bestVideoUrl);
                 }
             }
@@ -295,7 +295,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         const matchTier = filterTier === 'ALL' || c.tier === filterTier;
         const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
         const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
-        const matchStatus = filterStatus === 'ALL' || c.review_status === filterStatus;
+        const matchStatus = filterStatus === 'ALL' || 
+            (filterStatus === 'public' ? (c.is_public && c.review_status === 'approved') : 
+             filterStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
+             filterStatus === 'system_hidden' ? c.is_system_hidden : 
+             filterStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
+             c.review_status === filterStatus);
         const matchSearch = !searchQuery ||
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.tiktokUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -465,10 +470,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
                             >
                                 <option value="ALL">All Status</option>
-                                <option value="pending">☑ Public</option>
-                                <option value="approved">☒ Hidden</option>
-                                <option value="rejected">🤖 System Hidden</option>
-                                <option value="ai_recommended">💎 AI Recommended</option>
+                                <option value="public">☑ Public</option>
+                                <option value="hidden">☒ Hidden</option>
+                                <option value="system_hidden">🤖 System Hidden</option>
+                                <option value="ai_recommended">💎 AI Recommend</option>
                             </select>
 
                             <select
@@ -678,6 +683,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                 if (!creator.is_public) {
                                                                     if (window.confirm("このクリエイターを公開設定にしますか？\n（基準未達の場合はフィルタリングにより広告主UIには表示されない可能性があります）")) {
                                                                         handleUpdate(creator.id, 'is_public', true);
+                                                                        // Webhook trigger if thumbnail is missing
+                                                                        if (!creator.thumbnail_url) {
+                                                                            import('@/app/actions/creator').then(({ triggerN8nWebhook }) => {
+                                                                                triggerN8nWebhook(creator.id, creator.tiktokUrl);
+                                                                            });
+                                                                        }
                                                                     }
                                                                 } else {
                                                                     handleUpdate(creator.id, 'is_public', false);
@@ -715,6 +726,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                     <ReviewStatusSelect
                                                         creatorId={creator.id}
                                                         initialStatus={creator.review_status}
+                                                        isAiRecommended={creator.is_ai_recommended}
                                                     />
                                                 </td>
                                             </tr>

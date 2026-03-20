@@ -166,19 +166,19 @@ export default function InsidersLP() {
                     <div className="space-y-32">
 
                         {/* Core Value 1: Data & List (Scroll UI) */}
-                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-                            <div className="mb-10 w-full">
+                        <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+                            <div className="flex-1 lg:max-w-xl text-left">
                                 <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
                                     <Database className="w-5 h-5" /> 01. THE DATABASE
                                 </div>
-                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">独自のスクレイピング技術による<br />「本物」のクリエイター網</h3>
-                                <p className="text-slate-500 leading-relaxed mb-12">
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight leading-tight">独自のスクレイピング技術による<br />「本物」のクリエイター網</h3>
+                                <p className="text-slate-500 leading-relaxed text-base sm:text-lg mb-8">
                                     日本の広告主が見落としている、「本当に海外の旅行予定層を動かせる」国内外の優秀なクリエイターを、AIで独自にスコアリングしデータベース化。<br /><br />
                                     貴店のURLを入力するだけで、AIがお店の強み（Vibe）を解析し、最も高いエンゲージメント（予約）を生み出すクリエイターを自動推薦します。
                                 </p>
                             </div>
 
-                            <div className="relative flex justify-center w-full">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto">
                                 <div className="absolute inset-0 bg-indigo-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
 
                                 {/* ADVERTISER UI: Scrollable Mockup */}
@@ -299,19 +299,19 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Core Value 2: AI Chat UI (Animated) */}
-                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-                            <div className="mb-10 w-full">
+                        <div className="flex flex-col lg:flex-row-reverse items-center justify-between gap-16">
+                            <div className="flex-1 lg:max-w-xl text-left">
                                 <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
                                     <MessageSquare className="w-5 h-5" /> 02. AI CONCIERGE CHAT
                                 </div>
-                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">英語力ゼロで完結。<br />即時翻訳とスマートテンプレート</h3>
-                                <p className="text-slate-500 leading-relaxed mb-12">
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight leading-tight">英語力ゼロで完結。<br />即時翻訳とスマートテンプレート</h3>
+                                <p className="text-slate-500 leading-relaxed text-base sm:text-lg mb-8">
                                     クリエイターとの英語のやり取りに怯える必要はありません。<br /><br />
                                     Supabase RealtimeとGemini AIを連携させた独自チャットにより、あなたが入力した日本語は即座に美しい英語に翻訳されて相手に届きます。さらに、日程や道案内も「スマートテンプレート」のボタンを押すだけでAIが自動生成。スパムや失礼な対応をシステムが防ぎます。
                                 </p>
                             </div>
 
-                            <div className="relative flex justify-center w-full">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto">
                                 <div className="absolute inset-0 bg-violet-50 rounded-[3rem] rotate-3 scale-105 -z-10" />
                                 <div className="w-[280px] bg-white rounded-[2rem] border-[6px] border-slate-100 shadow-2xl overflow-hidden flex flex-col h-[520px]">
                                     {/* (Chat Mockup UI remains same) */}
@@ -360,19 +360,19 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Core Value 3: ASSET HUB (Drag & Drop Mock) */}
-                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
-                            <div className="mb-10 w-full">
+                        <div className="flex flex-col lg:flex-row items-center justify-between gap-16">
+                            <div className="flex-1 lg:max-w-xl text-left">
                                 <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
                                     <LayoutGrid className="w-5 h-5" /> 03. THE ASSET
                                 </div>
-                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">バズで終わらせない。<br />獲得した動画を「集客資産」に。</h3>
-                                <p className="text-slate-500 leading-relaxed mb-12">
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight leading-tight">バズで終わらせない。<br />獲得した動画を「集客資産」に。</h3>
+                                <p className="text-slate-500 leading-relaxed text-base sm:text-lg mb-8">
                                     私たちが狙うのは「虚栄のバズ」ではなく、保存（Save）される「熱量のアルゴリズムハック」です。<br /><br />
                                     さらに、タイムラインから流れて消えても効果は終わりません。『ASSET HUB』を使えば、納品された動画をGoogle Mapsに同期させたり、自社HPのウィジェットとして埋め込むことが可能。月額3.98万円で、貴店のすべてのデジタル接点をインバウンド仕様にアップデートし続けます。
                                 </p>
                             </div>
 
-                            <div className="relative flex justify-center w-full">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto">
                                 <div className="absolute inset-0 bg-emerald-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
                                 <div className="w-[340px] bg-white rounded-[2rem] border-[6px] border-slate-50 shadow-xl overflow-hidden p-6">
                                     <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-6 pb-2 border-b border-slate-100 text-left">

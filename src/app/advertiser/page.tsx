@@ -43,6 +43,8 @@ export default async function AdvertiserPage() {
     const { data: creators, error } = await supabase
         .from('creators')
         .select('*')
+        .eq('is_public', true)
+        .eq('review_status', 'approved')
         .order('followers', { ascending: false }) // フォロワー順
         .limit(100);
 
@@ -71,7 +73,8 @@ export default async function AdvertiserPage() {
             tier: c.tier || '-',
             is_public: !!c.is_onboarded,
             is_hot: !!c.is_hot,
-            is_ai_recommended: !!c.is_ai_recommended
+            is_ai_recommended: !!c.is_ai_recommended,
+            review_status: c.review_status
         };
     });
 

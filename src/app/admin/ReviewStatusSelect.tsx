@@ -9,11 +9,13 @@ type ReviewStatus = "pending" | "approved" | "rejected" | "ai_recommended";
 interface ReviewStatusSelectProps {
     creatorId: string;
     initialStatus: string | null;
+    isAiRecommended?: boolean;
 }
 
-export default function ReviewStatusSelect({ creatorId, initialStatus }: ReviewStatusSelectProps) {
-    // DBが空の場合は 'pending' をフォールバック
-    const [status, setStatus] = useState<ReviewStatus>((initialStatus as ReviewStatus) || "pending");
+export default function ReviewStatusSelect({ creatorId, initialStatus, isAiRecommended }: ReviewStatusSelectProps) {
+    // is_ai_recommended=TRUEの場合、自動でReview=💎 AI Recommendにする
+    const defaultStatus = isAiRecommended ? "ai_recommended" : ((initialStatus as ReviewStatus) || "pending");
+    const [status, setStatus] = useState<ReviewStatus>(defaultStatus);
     const [isUpdating, setIsUpdating] = useState(false);
 
     const supabase = createClient();

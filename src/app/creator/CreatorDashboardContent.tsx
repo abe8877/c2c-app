@@ -11,7 +11,7 @@ import ChatModal from "../advertiser/_components/ChatModal";
 export interface Asset {
     id: string;
     shopName: string;
-    status: 'pending' | 'approved' | 'rejected' | 'COMPLETED';
+    status: 'pending' | 'approved' | 'rejected' | 'COMPLETED' | 'OFFERED' | 'APPROVED';
     date: string;
     shopRequirements: string[];
     creatorTags: string[];
@@ -52,12 +52,14 @@ function AssetItem({ asset }: { asset: Asset }) {
                     <h4 className="font-bold text-sm">{asset.shopName}</h4>
                     <p className="text-[10px] text-zinc-500">{asset.date}</p>
                 </div>
-                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${localStatus === 'approved' ? 'bg-teal-500/20 text-teal-500' :
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                    localStatus === 'APPROVED' || localStatus === 'approved' ? 'bg-teal-500/20 text-teal-500' :
                     localStatus === 'rejected' ? 'bg-zinc-800 text-zinc-500' :
-                        localStatus === 'COMPLETED' ? 'bg-blue-500/20 text-blue-500' :
-                            'bg-amber-500/20 text-amber-500'
+                    localStatus === 'COMPLETED' ? 'bg-blue-500/20 text-blue-500' :
+                    localStatus === 'OFFERED' ? 'bg-amber-500/20 text-amber-500' :
+                    'bg-zinc-500/10 text-zinc-400'
                     }`}>
-                    {localStatus}
+                    {localStatus === 'OFFERED' ? 'INVITED' : localStatus}
                 </span>
             </div>
 
@@ -72,7 +74,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                 />
             )}
 
-            {localStatus === 'approved' && (
+            {(localStatus === 'approved' || localStatus === 'APPROVED' || localStatus === 'OFFERED') && (
                 <div className="mt-4 pt-4 border-t border-zinc-800/50 flex flex-col gap-2">
                     <div className="flex gap-2">
                         <button
@@ -159,11 +161,13 @@ function AssetItem({ asset }: { asset: Asset }) {
 }
 
 interface CreatorData {
+    id: string;
     name: string;
     tier: string;
     avatarUrl: string;
     assetsGenerated: number;
     nextMilestone: number;
+    hitKeywords?: string[];
 }
 
 interface ExclusiveInvite {
@@ -185,6 +189,30 @@ export default function CreatorDashboardContent({
     exclusiveInvites,
     assets
 }: CreatorDashboardContentProps) {
+    const [newVideoUrl, setNewVideoUrl] = useState("");
+    const [isUpdatingPortfolio, setIsUpdatingPortfolio] = useState(false);
+    const [showVideoInput, setShowVideoInput] = useState(false);
+
+    const handleAddPortfolioVideo = async () => {
+        if (!newVideoUrl) return;
+        setIsUpdatingPortfolio(true);
+        try {
+            const { updateCreatorPortfolio } = await import("@/app/actions/creator");
+            await updateCreatorPortfolio(creatorData.id, newVideoUrl);
+            setNewVideoUrl("");
+            setShowVideoInput(false);
+            alert("ポートフォリオに動画を追加しました！");
+        } catch (error) {
+            console.error(error);
+            alert("エラーが発生しました。");
+        } finally {
+            setIsUpdatingPortfolio(false);
+        }
+    };
+
+    // ミッション用にHitKeywordsから一つ選ぶ
+    const targetKeyword = creatorData.hitKeywords?.[0] || "FOOD";
+
     return (
         <div className="min-h-screen bg-zinc-950 flex justify-center selection:bg-amber-500/30">
             <div className="w-full max-w-md bg-black text-white min-h-screen relative shadow-2xl border-x border-zinc-900 pb-20 font-sans overflow-x-hidden">
@@ -286,11 +314,44 @@ export default function CreatorDashboardContent({
                                     <span className="text-[10px] text-zinc-500">0/1 達成</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-400 leading-relaxed relative z-10">
-                                    前回高い評価を得た<span className="text-white font-bold">「MATCHA」系の動画</span>の追加を推奨します。動画を追加すると関連カテゴリで上位に表示されやすくなります。
+                                    貴店のアナリティクスに基づき、<span className="text-white font-bold">「{targetKeyword}」系の動画</span>の追加を推奨します。動画を追加すると関連カテゴリで上位に表示されやすくなります。
                                 </p>
-                                <button className="mt-2 text-[9px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded font-bold transition-colors">
-                                    + 動画リンクを追加
-                                </button>
+                                
+                                <div className="mt-2 space-y-2">
+                                    {!showVideoInput ? (
+                                        <button 
+                                            onClick={() => setShowVideoInput(true)}
+                                            className="text-[9px] bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded font-bold transition-colors"
+                                        >
+                                            + 動画リンクを追加
+                                        </button>
+                                    ) : (
+                                        <div className="flex flex-col gap-2">
+                                            <input 
+                                                type="url"
+                                                value={newVideoUrl}
+                                                onChange={(e) => setNewVideoUrl(e.target.value)}
+                                                placeholder="https://tiktok.com/..."
+                                                className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-[9px] text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                                            />
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={handleAddPortfolioVideo}
+                                                    disabled={isUpdatingPortfolio}
+                                                    className="text-[9px] bg-orange-600 text-white px-3 py-1 rounded font-bold disabled:opacity-50"
+                                                >
+                                                    {isUpdatingPortfolio ? "更新中..." : "保存"}
+                                                </button>
+                                                <button 
+                                                    onClick={() => setShowVideoInput(false)}
+                                                    className="text-[9px] bg-zinc-800 text-white px-3 py-1 rounded font-bold"
+                                                >
+                                                    キャンセル
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* ミッション 2: 一貫性の証明 */}

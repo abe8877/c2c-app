@@ -19,10 +19,10 @@ export default function AdminLayout({
     }, [pathname]);
 
     const menuItems = [
-        { name: 'VIBE Master', icon: Sparkles, href: '/admin' },
-        { name: 'CS (Inbox)', icon: MessageCircle, href: '/admin/cs' },
-        { name: 'Matching Logs', icon: BarChart3, href: '/admin?tab=logs' },
-        { name: 'Settings', icon: Settings, href: '/admin/settings' },
+        { name: 'CREATORS', icon: Sparkles, href: '/admin' },
+        { name: 'CS', icon: MessageCircle, href: '/admin/cs' },
+        { name: 'MATCHING LOG', icon: BarChart3, href: '/admin?tab=logs' },
+        { name: 'SETTINGS', icon: Settings, href: '/admin/setting' },
     ];
 
     return (
@@ -47,7 +47,7 @@ export default function AdminLayout({
                         // クエリパラメータを含めた完全一致チェック
                         const currentFullHref = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : pathname;
                         const isActive = currentFullHref === item.href || (item.href === '/admin' && currentFullHref === '/admin');
-                        
+
                         return (
                             <Link
                                 key={item.name}
@@ -58,8 +58,8 @@ export default function AdminLayout({
                                     }
                                 }}
                                 className={`group px-4 py-3 rounded-xl cursor-pointer font-bold flex items-center gap-3 transition-all duration-200 relative ${isActive
-                                        ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10'
-                                        : 'hover:bg-slate-800 hover:text-white'
+                                    ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10'
+                                    : 'hover:bg-slate-800 hover:text-white'
                                     }`}
                             >
                                 <item.icon size={18} className={`${isActive ? 'text-yellow-500' : 'text-slate-500 group-hover:text-slate-300'} transition-colors`} />

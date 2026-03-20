@@ -3,27 +3,68 @@
 import { createClient } from '@/utils/supabase/server';
 
 export async function submitAssetDelivery(assetId: string, videoUrl: string) {
-    // In a real implementation this would fetch from 'assets' table or similar
-    // Since this is a demo mockup, we just simulate a delay or mock the DB update
     const supabase = await createClient();
     
-    // Simulate updating the asset record
-    console.log(`Submitting delivery for asset ${assetId} with URL ${videoUrl}`);
-
-    // If 'assets' table exists, uncomment below
-    /*
     const { error } = await supabase
         .from('assets')
-        .update({ status: 'completed', video_url: videoUrl })
+        .update({ 
+            status: 'COMPLETED', 
+            video_url: videoUrl,
+            submitted_at: new Date().toISOString()
+        })
         .eq('id', assetId);
 
     if (error) {
+        console.error("Submit Delivery Error:", error);
         throw new Error(error.message);
     }
-    */
     
-    // For demo purposes, we will return a success flag
-    return { success: true, assetId, videoUrl, newStatus: 'completed' };
+    return { success: true, assetId, videoUrl, newStatus: 'COMPLETED' };
+}
+
+export async function approveAsset(assetId: string) {
+    const supabase = await createClient();
+    
+    const { error } = await supabase
+        .from('assets')
+        .update({ 
+            status: 'APPROVED', 
+            approved_at: new Date().toISOString()
+        })
+        .eq('id', assetId);
+
+    if (error) {
+        console.error("Approve Asset Error:", error);
+        throw new Error(error.message);
+    }
+    
+    return { success: true, assetId, newStatus: 'APPROVED' };
+}
+
+export async function updateCreatorPortfolio(creatorId: string, videoUrl: string) {
+    const supabase = await createClient();
+
+    // 現在のプロフィールを取得
+    const { data: creator } = await supabase
+        .from('creators')
+        .select('portfolio_video_urls')
+        .eq('id', creatorId)
+        .single();
+
+    const currentUrls = creator?.portfolio_video_urls || [];
+    const newUrls = [...new Set([...currentUrls, videoUrl])];
+
+    const { error } = await supabase
+        .from('creators')
+        .update({ portfolio_video_urls: newUrls })
+        .eq('id', creatorId);
+
+    if (error) {
+        console.error("Update Portfolio Error:", error);
+        throw new Error(error.message);
+    }
+
+    return { success: true, newUrls };
 }
 
 export async function triggerN8nWebhook(creatorId: string, portfolioUrl: string) {

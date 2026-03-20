@@ -12,7 +12,7 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
     const { data: creator } = await supabase
         .from('creators')
         .select('*')
-        .eq('invite_code', code)
+        .ilike('invite_code', code)
         .single();
 
     if (!creator) {

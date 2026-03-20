@@ -1,72 +1,80 @@
-// src/app/creator/page.tsx
 import CreatorDashboardContent from "./CreatorDashboardContent";
-// import { createClient } from "@/utils/supabase/server"; // 実装時にコメントアウト解除
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function CreatorDashboard() {
-    // -----------------------------
-    // Data Fetching (Server Side)
-    // -----------------------------
-    // 本来は Supabase から取得しますが、一旦モックデータをここで定義して渡します
-    // const supabase = await createClient();
-    // const { data: profile } = await supabase.from('creators').select('*').single();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+        redirect("/login");
+    }
+
+    // クリエイタープロフィールの取得
+    const { data: creator } = await supabase
+        .from('creators')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (!creator) {
+        // プロフィールがない場合はオンボーディングへ（またはエラー表示）
+        return <div className="p-8 text-white">Creator profile not found. Please complete onboarding.</div>;
+    }
+
+    // 1. クリエイターデータの整形
     const creatorData = {
-        name: "Elena Tokyo",
-        tier: "Tier S",
-        avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
-        assetsGenerated: 12,
+        id: creator.id,
+        name: creator.name || creator.tiktok_handle || "New Creator",
+        tier: creator.tier ? `Tier ${creator.tier}` : "Tier B",
+        avatarUrl: creator.avatar_url || creator.thumbnail_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+        assetsGenerated: 0, // あとで集計
         nextMilestone: 15,
+        hitKeywords: creator.vibe_tags || [], // HitKeywordsの代わりに一旦vibe_tagsを使用
     };
 
-    const exclusiveInvites = [
-        {
-            id: "shop_1",
-            name: "WAGYU OMAKASE 凛",
-            genre: "Fine Dining",
-            vibe: "Elegant & Traditional",
-            thumbnail: "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=500&q=80",
-        },
-        {
-            id: "shop_2",
-            name: "TOKYO NEON BAR",
-            genre: "Nightlife",
-            vibe: "Cyberpunk & Edgy",
-            thumbnail: "https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=500&q=80",
-        },
-    ];
+    // 2. 招待（マッチングする店舗）の取得
+    // 本来はVibeマッチングロジックを通しますが、デモ用に最新の店舗をいくつか取得
+    const { data: shops } = await supabase
+        .from('shops')
+        .select('*')
+        .limit(5);
 
-    const mockAssets = [
-        {
-            id: "asset_1",
-            shopName: "Sushi Ginza Onodera",
-            status: "approved" as const,
-            date: "2024-03-01",
-            shopRequirements: ["Traditional", "Elegant", "Quiet"],
-            creatorTags: ["Traditional", "Elegant"]
-        },
-        {
-            id: "asset_2",
-            shopName: "Harajuku Kawaii Cafe",
-            status: "rejected" as const,
-            date: "2024-02-15",
-            shopRequirements: ["Colorful", "Pop", "Energetic", "Kawaii"],
-            creatorTags: ["Moody", "Cinematic", "Elegant"] // Vibe mismatch
-        },
-        {
-            id: "asset_3",
-            shopName: "Shinjuku Golden Gai Bar",
-            status: "pending" as const,
-            date: "2024-03-10",
-            shopRequirements: ["Retro", "Gritty", "Authentic"],
-            creatorTags: ["Retro", "Gritty"]
-        }
-    ];
+    const exclusiveInvites = (shops || []).map(shop => ({
+        id: shop.id,
+        name: shop.name || "Unnamed Shop",
+        genre: shop.genre || "Lifestyle",
+        vibe: shop.shop_vibe_tags?.[0] || "Modern",
+        thumbnail: "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=500&q=80",
+    }));
+
+    // 3. アセット履歴の取得
+    const { data: assetsFetched } = await supabase
+        .from('assets')
+        .select(`
+            *,
+            shop: shops ( name, shop_vibe_tags )
+        `)
+        .eq('creator_id', user.id)
+        .order('created_at', { ascending: false });
+
+    const assets = (assetsFetched || []).map(a => ({
+        id: a.id,
+        shopName: a.shop?.name || "Unknown Shop",
+        status: a.status as any,
+        date: a.created_at ? new Date(a.created_at).toLocaleDateString() : "-",
+        shopRequirements: a.shop?.shop_vibe_tags || [],
+        creatorTags: creator.vibe_tags || []
+    }));
+
+    // 実績数の集計
+    creatorData.assetsGenerated = assets.filter(a => a.status === 'APPROVED' || a.status === 'COMPLETED' || a.status === 'approved').length;
 
     return (
         <CreatorDashboardContent
             creatorData={creatorData}
             exclusiveInvites={exclusiveInvites}
-            assets={mockAssets}
+            assets={assets}
         />
     );
 }

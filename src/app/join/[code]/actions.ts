@@ -28,19 +28,25 @@ export const submitCreatorApplication = async (formData: FormData) => {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // 2. 招待コードの有効性を検証 (Auth作成前に必ず実行)
-        const { data: creatorData, error: creatorCheckError } = await supabaseAdmin
-            .from('creators')
-            .select('id, is_onboarded, status')
-            .eq('invite_code', inviteCode)
-            .single();
+        const isApply = inviteCode === 'apply';
+        let creatorId: string | null = null;
 
-        if (creatorCheckError || !creatorData) {
-            console.error("Invite code check error:", creatorCheckError);
-            throw new Error("無効な招待コードです。URLが正しいかご確認ください。");
-        }
-        if (creatorData.is_onboarded || creatorData.status === 'onboarded') {
-            throw new Error("この招待コードは既に使用されています。");
+        // 2. 招待コードの有効性を検証 (Auth作成前に必ず実行)
+        if (!isApply) {
+            const { data: creatorData, error: creatorCheckError } = await supabaseAdmin
+                .from('creators')
+                .select('id, is_onboarded, status')
+                .eq('invite_code', inviteCode)
+                .single();
+
+            if (creatorCheckError || !creatorData) {
+                console.error("Invite code check error:", creatorCheckError);
+                throw new Error("無効な招待コードです。URLが正しいかご確認ください。");
+            }
+            if (creatorData.is_onboarded || creatorData.status === 'onboarded') {
+                throw new Error("この招待コードは既に使用されています。");
+            }
+            creatorId = creatorData.id;
         }
 
         // 3. Supabaseでアカウント作成（サインアップ）
@@ -53,7 +59,6 @@ export const submitCreatorApplication = async (formData: FormData) => {
             console.error("Auth error:", authError);
             throw new Error("アカウントの作成に失敗しました。既に登録済みのメールアドレスの可能性があります。");
         }
-
 
         // 3. 厳格なRBAC適用（user_rolesへcreatorとしてINSERT）
         const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
@@ -94,31 +99,66 @@ export const submitCreatorApplication = async (formData: FormData) => {
             finalAvatarUrl = publicUrl;
         }
 
-        // 5. creatorsテーブルの既存行をUPDATE
-        const { error: updateError } = await supabaseAdmin
-            .from('creators')
-            .update({
-                user_id: authData.user.id,
-                email: email,
-                portfolio_video_url: portfolioUrl,
-                avatar_url: finalAvatarUrl,
-                real_name: realName,
-                nationality: nationality,
-                contact_app: contactApp,
-                contact_id: contactId,
-                vibe_tags: vibeTags,
-                status: 'onboarded',
-                is_onboarded: true,
-                updated_at: new Date().toISOString(),
-            })
-            .eq('invite_code', inviteCode);
+        // 5. creatorsテーブルをUPDATEまたはINSERT
+        if (isApply) {
+            const generatedCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+            const { data: newCreator, error: insertError } = await supabaseAdmin
+                .from('creators')
+                .insert({
+                    user_id: authData.user.id,
+                    email: email,
+                    portfolio_video_url: portfolioUrl,
+                    avatar_url: finalAvatarUrl,
+                    real_name: realName,
+                    nationality: nationality,
+                    contact_app: contactApp,
+                    contact_id: contactId,
+                    vibe_tags: vibeTags,
+                    status: 'onboarded',
+                    is_onboarded: true,
+                    invite_code: generatedCode,
+                    tier: 'B' // 一般応募はTier Bから
+                })
+                .select('id')
+                .single();
 
-        if (updateError) {
-            console.error("Creator update failed:", updateError);
-            throw new Error("プロフィールの更新に失敗しました。");
+            if (insertError) {
+                console.error("Creator insert failed:", insertError);
+                throw new Error("プロフィールの作成に失敗しました。");
+            }
+            creatorId = newCreator.id;
+        } else {
+            const { error: updateError } = await supabaseAdmin
+                .from('creators')
+                .update({
+                    user_id: authData.user.id,
+                    email: email,
+                    portfolio_video_url: portfolioUrl,
+                    avatar_url: finalAvatarUrl,
+                    real_name: realName,
+                    nationality: nationality,
+                    contact_app: contactApp,
+                    contact_id: contactId,
+                    vibe_tags: vibeTags,
+                    status: 'onboarded',
+                    is_onboarded: true,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('invite_code', inviteCode);
+
+            if (updateError) {
+                console.error("Creator update failed:", updateError);
+                throw new Error("プロフィールの更新に失敗しました。");
+            }
         }
 
-        // 6. ダッシュボードへリダイレクト
+        // 6. オートメール / サムネイル生成Webhookのトリガー (サムネイルがない場合のみ)
+        const { triggerN8nWebhook } = await import('@/app/actions/creator');
+        if (!finalAvatarUrl && creatorId) {
+            triggerN8nWebhook(creatorId, portfolioUrl);
+        }
+
+        // 7. ダッシュボードへリダイレクト
         redirect('/creator/dashboard');
     });
 };

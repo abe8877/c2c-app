@@ -9,7 +9,7 @@ import {
     AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
-    Calendar, Map, Trash, Menu, CheckCircle2, Flame
+    Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -52,6 +52,8 @@ export interface Creator {
     is_public?: boolean;
     is_hot?: boolean;
     is_ai_recommended?: boolean;
+    review_status?: string;
+    offer_count?: number;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -273,6 +275,12 @@ const CreatorCard = ({
                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">AI RECOMMENDED</span>
                         </div>
                     )}
+                    {(parseInt(creator.followers.replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
+                        <div className="bg-amber-500/20 backdrop-blur-md border border-amber-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)] group/popular">
+                            <Crown className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">👑 人気</span>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="text-white/70 text-xs font-bold">{creator.followers} followers</span>
@@ -361,27 +369,101 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                     </div>
 
                     <div className="p-6 space-y-6 flex-1">
-                        <div className="bg-orange-50 border border-orange-100 p-5 rounded-3xl space-y-3">
-                            <div className="flex justify-between items-end">
+                        <div className="bg-orange-50 border border-orange-100 p-5 rounded-3xl space-y-4 relative group/alert overflow-hidden">
+                            <motion.div 
+                                animate={{ opacity: [0.1, 0.3, 0.1] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                                className="absolute inset-0 bg-gradient-to-r from-orange-200 to-transparent" 
+                            />
+                            <div className="flex justify-between items-end relative z-10">
                                 <div className="text-[10px] font-black text-orange-800 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <AlertTriangle className="w-4 h-4" />
+                                    <Clock className="w-4 h-4" />
                                     動画の鮮度 (Freshness)
                                 </div>
                                 <div className="text-2xl font-black text-orange-600 tracking-tighter">{freshness}%</div>
                             </div>
-                            <div className="w-full bg-orange-200 rounded-full h-2">
-                                <div
-                                    className="bg-orange-500 h-2 rounded-full transition-all duration-1000"
-                                    style={{ width: `${freshness}%` }}
+                            <div className="w-full bg-orange-200 rounded-full h-2 relative z-10">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${freshness}%` }}
+                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                    className="bg-orange-500 h-2 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"
                                 />
                             </div>
-                            <p className="text-[10px] text-orange-800 leading-relaxed font-bold">
-                                <span className="text-orange-950 uppercase tracking-widest mr-1">AI Advice:</span> 現在の動画効果はあと約40日で低下します。
-                                <button className="underline font-black ml-1 hover:text-orange-950">次回の撮影を予約する</button>
-                            </p>
+                            <div className="space-y-3 relative z-10">
+                                <p className="text-[10px] text-orange-800 leading-relaxed font-bold">
+                                    <span className="text-orange-950 uppercase tracking-widest mr-1">AI Advice:</span> 
+                                    最新の投稿から30日が経過しました。集客効果を維持するため、新しいVIBEの補充を推奨します。
+                                </p>
+                                <div className="flex flex-col gap-2">
+                                    <div className="relative group/book">
+                                        <button 
+                                            className="w-full py-3 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-orange-500/40 active:scale-95 transition-all flex items-center justify-center gap-2 group-hover/book:bg-orange-500"
+                                        >
+                                            <Camera className="w-3.5 h-3.5" /> Book next shoot
+                                            <ChevronDown className="w-3 h-3 ml-auto transition-transform group-hover/book:rotate-180" />
+                                        </button>
+                                        
+                                        {/* Multi-action dropdown menu */}
+                                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1A1A1A] border border-white/10 rounded-2xl p-2 opacity-0 invisible group-hover/book:opacity-100 group-hover/book:visible transition-all z-50 shadow-2xl backdrop-blur-xl translate-y-2 group-hover/book:translate-y-0">
+                                            <button 
+                                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3"
+                                            >
+                                                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                                    <Users className="w-3 h-3 text-blue-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-white">Find similar creators</p>
+                                                    <p className="text-[7px] text-zinc-500">同じVIBEを持つ他の方を探す</p>
+                                                </div>
+                                            </button>
+                                            <button 
+                                                onClick={() => alert("Re-booking flow triggered...")}
+                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3 mt-1"
+                                            >
+                                                <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                                    <RefreshCw className="w-3 h-3 text-amber-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-white">Re-book this creator</p>
+                                                    <p className="text-[7px] text-zinc-500">同じ方にもう一度依頼する</p>
+                                                </div>
+                                            </button>
+                                            <button 
+                                                onClick={() => alert("Custom brief flow...")}
+                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3 mt-1"
+                                            >
+                                                <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center">
+                                                    <Plus className="w-3 h-3 text-teal-400" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[9px] font-bold text-white">New Concept</p>
+                                                    <p className="text-[7px] text-zinc-500">新しい撮影要望で募集する</p>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="text-[8px] text-zinc-400 text-center mt-1 uppercase tracking-widest font-black opacity-40">Powered by NOTS Engine</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="border rounded-[24px] p-5 bg-stone-50 relative ring-1 ring-stone-200/50">
+                        <div className="border rounded-[24px] p-5 bg-stone-50 relative ring-1 ring-stone-200/50 overflow-hidden">
+                            <AnimatePresence>
+                                {synced && (
+                                    <motion.div
+                                        initial={{ y: 50, x: -50, scale: 0.5, opacity: 0 }}
+                                        animate={{ y: 0, x: 0, scale: 1, opacity: 1 }}
+                                        transition={{ duration: 0.8, type: "spring" }}
+                                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-24 aspect-[9/16] bg-black rounded-xl overflow-hidden shadow-2xl ring-4 ring-blue-500"
+                                    >
+                                        <video autoPlay loop muted className="w-full h-full object-cover">
+                                            <source src="https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4" type="video/mp4" />
+                                        </video>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             <div className="flex gap-3 mb-4">
                                 <div className="w-10 h-10 bg-white rounded-full border-2 border-white shadow-sm ring-1 ring-stone-200" />
                                 <div>
@@ -668,7 +750,9 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
         : creator?.followers || 0;
     
     // CTOからの提案: フォロワー数5万以上、またはHOTバッジありを「高需要」と判定
-    const isHighDemand = isHot || followers >= 50000;
+    const followersStr = typeof creator?.followers === 'string' ? creator.followers : '0';
+    const followersNum = parseInt(followersStr.replace(/,/g, '')) || 0;
+    const isHighDemand = followersNum >= 50000 || (creator?.offer_count ?? 0) >= 10;
 
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
@@ -768,6 +852,31 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
                                     <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
                                 </label>
+                                {isHighDemand ? (
+                                    <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                                            <Crown className="w-5 h-5 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
+                                            <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
+                                                こちらのクリエイターは需要が非常に高いため、<span className="font-black">謝礼金（Rewards）の提示</span>を強く推奨します。無報酬の場合、承認率が著しく低下する可能性があります。
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 text-indigo-600">
+                                            <Sparkles className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-indigo-900 text-sm mb-1">マッチング最適化</p>
+                                            <p className="text-[10px] text-indigo-800 leading-relaxed font-medium">
+                                                このクリエイターは貴店のVIBEと高相性です。まずは招待状を送って反応を見てみましょう。
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                                 <AnimatePresence>
                                     {isHighDemand && (
                                         <motion.div
@@ -1051,9 +1160,9 @@ export default function VibeCatalogue({
             || (filterRegion === 'WESTERN' && (c.ethnicity === 'AMERICA' || c.ethnicity === 'EUROPE'))
             || (filterRegion === 'ASIAN' && c.ethnicity === 'ASIA')
             || (filterRegion === 'GLOBAL');
-        // Tier S/A 限定 + Public のみ表示（ノイズゼロ担保）
+        // Tier S/A 限定 + Public(onboarded && approved) のみ表示（ノイズゼロ担保）
         const tierOk = c.tier === 'S' || c.tier === 'A';
-        const publicOk = c.is_public !== false;
+        const publicOk = c.is_public && c.review_status === 'approved';
         return genreMatch && regionMatch && tierOk && publicOk;
     }).map(c => {
         // ===== VIBEマッチングスコア計算 (Base+Bonus方式) =====
@@ -1657,27 +1766,63 @@ export default function VibeCatalogue({
                                                         <img src={`https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
                                                     )}
                                                     {asset.status === 'COMPLETED' ? (
-                                                        <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
-                                                            <CheckCircle className="w-2.5 h-2.5" /> 納品済み
+                                                        <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                            <Clock className="w-2.5 h-2.5" /> 承認待ち
                                                         </div>
                                                     ) : (
-                                                        <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1">
-                                                            Live
+                                                        <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                            <CheckCircle className="w-2.5 h-2.5" /> 承認済み
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="p-4 text-left flex-1 flex flex-col justify-between">
-                                                    <div>
+                                                    <div className="mb-2">
                                                         <p className="text-[10px] font-black text-stone-400 uppercase mb-1">{asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024.03.15'}</p>
                                                         <h4 className="text-xs font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
                                                     </div>
                                                     {asset.status === 'COMPLETED' && (
-                                                        <button
-                                                            onClick={() => setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'FINALIZED' } : a))}
-                                                            className="w-full mt-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1 transition-colors uppercase active:scale-95"
-                                                        >
-                                                            <CheckCircle className="w-3.5 h-3.5" /> 検収完了
-                                                        </button>
+                                                        <div className="space-y-3">
+                                                            <div className="relative pt-4 pb-2 border-t border-stone-100">
+                                                                <div className="flex justify-between items-center mb-2">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Clock className="w-3 h-3 text-blue-500" />
+                                                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Auto-Approve</span>
+                                                                    </div>
+                                                                    <span className="text-[10px] font-bold text-stone-400">48h remaining</span>
+                                                                </div>
+                                                                <div className="w-full bg-stone-100 h-1 rounded-full overflow-hidden">
+                                                                    <motion.div 
+                                                                        initial={{ width: 0 }}
+                                                                        animate={{ width: '33%' }}
+                                                                        className="h-full bg-blue-500"
+                                                                    />
+                                                                </div>
+                                                                <p className="text-[8px] text-zinc-400 mt-2 leading-tight">
+                                                                    提出から72時間以内にアクションがない場合、自動で承認されます。
+                                                                </p>
+                                                            </div>
+                                                            <button
+                                                                onClick={async () => {
+                                                                    const { approveAsset } = await import('@/app/actions/creator');
+                                                                    await approveAsset(asset.id);
+                                                                    setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'APPROVED' } : a));
+                                                                }}
+                                                                className="w-full py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg"
+                                                            >
+                                                                <CheckCircle className="w-3.5 h-3.5 text-teal-400" /> Approve Content
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                    {(asset.status === 'APPROVED' || asset.status === 'FINALIZED') && (
+                                                        <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
+                                                            <div className="flex items-center justify-between text-[9px] font-bold text-stone-400 uppercase tracking-widest px-1">
+                                                                <span>Asset Status</span>
+                                                                <span className="text-teal-600">Active Asset ✅</span>
+                                                            </div>
+                                                            <button className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-black rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase">
+                                                                <Map className="w-3.5 h-3.5" /> Deploy to Maps
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
