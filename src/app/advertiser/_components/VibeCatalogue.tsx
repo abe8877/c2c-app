@@ -648,7 +648,16 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     );
 };
 
-const OfferModal = ({ isOpen, onClose, creatorName, isHot, onSend }: { isOpen: boolean; onClose: () => void; creatorName: string; isHot: boolean; onSend: (details: any) => void }) => {
+const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void }) => {
+    const creatorName = creator?.name || '';
+    const isHot = !!creator?.is_hot;
+    const followers = typeof creator?.followers === 'string' 
+        ? parseInt(creator.followers.replace(/,/g, ''), 10) 
+        : creator?.followers || 0;
+    
+    // CTOからの提案: フォロワー数5万以上、またはHOTバッジありを「高需要」と判定
+    const isHighDemand = isHot || followers >= 50000;
+
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
@@ -748,22 +757,18 @@ const OfferModal = ({ isOpen, onClose, creatorName, isHot, onSend }: { isOpen: b
                                     <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
                                 </label>
                                 <AnimatePresence>
-                                    {isHot && (
+                                    {isHighDemand && (
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mt-4"
+                                            className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md"
                                         >
-                                            <div className="flex gap-3">
-                                                <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                                                    <Sparkles className="w-4 h-4 text-amber-600" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="text-xs font-black text-amber-900 mb-1 leading-tight">
-                                                        💡 {creatorName}さんは現在、非常に人気が高まっています。
-                                                    </p>
-                                                    <p className="text-[10px] font-bold text-amber-700/80 leading-relaxed">
-                                                        より確実にマッチングを成立させるため、無料（Barter）ではなく、<span className="text-amber-900 font-black">謝礼金（推奨: ¥30,000〜）</span>を設定してオファーすることをお勧めします。
+                                            <div className="flex">
+                                                <div className="flex-shrink-0 text-amber-500 font-bold">💡</div>
+                                                <div className="ml-3">
+                                                    <p className="text-sm text-amber-800 leading-relaxed font-medium">
+                                                        <strong>{creatorName}</strong>さんは現在、非常に人気が高まっています。<br />
+                                                        より確実にマッチングを成立させるため、無料（Barter）ではなく、<strong>謝礼金（推奨: ¥30,000〜）</strong>を設定してオファーすることをお勧めします。
                                                     </p>
                                                 </div>
                                             </div>
@@ -1791,8 +1796,7 @@ export default function VibeCatalogue({
                     <OfferModal
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
-                        creatorName={selectedCreator?.name || ''}
-                        isHot={selectedCreator?.is_hot || false}
+                        creator={selectedCreator}
                         onSend={handleOfferSent}
                     />
                 )

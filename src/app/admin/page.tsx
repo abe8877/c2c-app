@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
@@ -83,6 +84,7 @@ function AdminDashboard() {
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [user, setUser] = useState<any>(null);
+    const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
 
     // --- Batch Action State ---
@@ -143,24 +145,36 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 if (error) throw error;
 
                 // 取得したデータをUI用に整形
-                const formattedData = (data || []).map((item, index) => ({
-                    id: item.id,
-                    name: item.name || item.tiktok_handle || 'Unknown',
-                    tier: item.tier || '-',
-                    genre: item.genre || [],
-                    ethnicity: item.ethnicity || '-',
-                    followers: (item.followers || 0).toLocaleString(),
-                    tiktokUrl: item.tiktok_url || '',
-                    vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
-                    vibeCluster: item.vibe_tags || [],
-                    bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
-                    imgColor: getColorByIndex(index),
-                    status: 'approved',
-                    review_status: item.review_status || 'pending',
-                    is_public: item.is_onboarded || false,
-                    is_ai_recommended: !!item.is_ai_recommended,
-                    thumbnail_url: item.thumbnail_url || item.avatar_url || null
-                }));
+                const formattedData = (data || []).map((item, index) => {
+                    const isSystemHidden = !item.is_onboarded && item.was_public; // was_publicカラムがあると想定、なければitem.idから推測等
+                    
+                    // is_ai_recommendedの場合、未着手ならデフォルトをセット
+                    let reviewStatus = item.review_status || 'pending';
+                    if (item.is_ai_recommended && reviewStatus === 'pending') {
+                        reviewStatus = 'ai_recommended';
+                    }
+
+                    return {
+                        id: item.id,
+                        name: item.name || item.tiktok_handle || 'Unknown',
+                        tier: item.tier || '-',
+                        genre: item.genre || [],
+                        ethnicity: item.ethnicity || '-',
+                        followers: item.followers || 0,
+                        followersStr: (item.followers || 0).toLocaleString(),
+                        tiktokUrl: item.tiktok_url || '',
+                        vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
+                        vibeCluster: item.vibe_tags || [],
+                        bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
+                        imgColor: getColorByIndex(index),
+                        status: 'approved',
+                        review_status: reviewStatus,
+                        is_public: item.is_onboarded || false,
+                        is_system_hidden: isSystemHidden,
+                        is_ai_recommended: !!item.is_ai_recommended,
+                        thumbnail_url: item.thumbnail_url || item.avatar_url || null
+                    };
+                });
                 setCreators(formattedData);
 
                 // 統計情報 (Server Action)
@@ -289,6 +303,22 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             (c.genre && c.genre.some((g: string) => g.toLowerCase().includes(searchQuery.toLowerCase())));
 
         return matchTier && matchCategory && matchVibe && matchStatus && matchSearch;
+    }).sort((a, b) => {
+        // 優先順位 1: System Hidden (最優先)
+        if (a.is_system_hidden && !b.is_system_hidden) return -1;
+        if (!a.is_system_hidden && b.is_system_hidden) return 1;
+
+        // 優先順位 2: AI Recommended
+        if (a.review_status === 'ai_recommended' && b.review_status !== 'ai_recommended') return -1;
+        if (a.review_status !== 'ai_recommended' && b.review_status === 'ai_recommended') return 1;
+
+        // 優先順位 3: Tier Bタブの場合は AI Recommended をさらに優先（既に上記でカバーされているが念のため）
+        if (filterTier === 'B') {
+            if (a.is_ai_recommended && !b.is_ai_recommended) return -1;
+            if (!a.is_ai_recommended && b.is_ai_recommended) return 1;
+        }
+
+        return 0; // 同等の場合は現状維持（フォロワー順）
     });
 
     // ダミーログデータ
@@ -298,6 +328,23 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         { id: '3', advertiser: 'Retro Ramen', creator: 'Elena R.', matchScore: 89, vibes: ['#Retro', '#HiddenGem'], date: '2024-03-01 18:30' },
         { id: '4', advertiser: 'Harajuku Desserts', creator: 'Mika K.', matchScore: 95, vibes: ['#Kawaii', '#Photogenic'], date: '2024-03-01 15:10' },
     ];
+
+    // 代替候補を取得するロジック (Mock)
+    const getAlternatives = (offer: any) => {
+        // 本来はAPIを叩くが、ここでは既存のcreatorsから適当にピックアップ
+        return creators
+            .filter(c => c.is_public && (c.tier === 'S' || c.tier === 'A'))
+            .slice(0, 5);
+    };
+
+    const handlePushAlternative = async (offerId: string, altId: string) => {
+        setIsActionLoading(true);
+        // 推奨：本来はここでもAPIを叩き、offerのステータスを alternative_proposed に更新する
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        alert('広告主へ代替案を提案しました。');
+        setExpandedOfferId(null);
+        setIsActionLoading(false);
+    };
 
     // ページネーション処理
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -327,8 +374,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
                 <h1 className="text-xl font-bold flex items-center gap-2">
                     {activeTab === 'creators' ? 'Creator Database' : 'Matching Analysis Logs'}
-                    <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
-                        {activeTab === 'creators' ? creators.length : (logTab === 'success' ? successLogs.length : logTab === 'lost' ? lostAssets.length : ongoingOffers.length)} Total
+                    <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full transition-all">
+                        {activeTab === 'creators'
+                            ? `${filteredData.length.toLocaleString()} / ${creators.length.toLocaleString()}`
+                            : (logTab === 'success' ? successLogs.length : logTab === 'lost' ? lostAssets.length : ongoingOffers.length)}
+                        <span className="ml-1 opacity-50 font-normal">Matching</span>
                     </span>
                 </h1>
                 <div className="flex gap-4 items-center">
@@ -408,15 +458,17 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 <option value="Vlog">Vlog</option>
                                 <option value="Traditional">Traditional</option>
                             </select>
+
                             <select
                                 value={filterStatus}
                                 onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
+                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
                             >
-                                <option value="ALL">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
+                                <option value="ALL">All Review Status</option>
+                                <option value="pending">⏳ Pending</option>
+                                <option value="approved">✓ Approved</option>
+                                <option value="rejected">✕ Rejected</option>
+                                <option value="ai_recommended">💎 AI Recommended</option>
                             </select>
                         </div>
 
@@ -622,17 +674,24 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                         />
                                                         <span className={`text-[10px] font-black px-3 py-1.5 rounded-full border flex items-center gap-1.5 min-w-[100px] justify-center transition-all ${creator.is_public
                                                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                                            : "bg-amber-50 text-amber-600 border-amber-200"
+                                                            : creator.is_system_hidden
+                                                                ? "bg-amber-50 text-amber-600 border-amber-200 shadow-sm ring-1 ring-amber-400/20"
+                                                                : "bg-stone-50 text-stone-400 border-stone-200"
                                                             }`}>
                                                             {creator.is_public ? (
                                                                 <>
                                                                     <CheckCircle2 size={12} className="text-emerald-500" />
                                                                     <span>Public</span>
                                                                 </>
-                                                            ) : (
+                                                            ) : creator.is_system_hidden ? (
                                                                 <>
                                                                     <span className="animate-pulse">🤖</span>
                                                                     <span>System Hidden</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Clock size={12} className="text-stone-300" />
+                                                                    <span>Hidden</span>
                                                                 </>
                                                             )}
                                                         </span>
@@ -725,7 +784,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 onClick={() => setLogTab('lost')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'lost' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
-                                Lost / Unmatched
+                                Unmatched
                             </button>
                             <button
                                 onClick={() => setLogTab('ongoing')}
@@ -822,34 +881,114 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {ongoingOffers.map((offer) => {
-                                        let rowStyle = "hover:bg-slate-50 transition";
+                                        let rowStyle = "hover:bg-indigo-50/50 transition cursor-pointer";
+                                        const isExpanded = expandedOfferId === offer.id;
                                         if (offer.alertLevel === 'CRITICAL') {
-                                            rowStyle = "bg-red-50 hover:bg-red-100 transition border-l-4 border-l-red-500";
+                                            rowStyle = "bg-red-50 hover:bg-red-100/50 transition border-l-4 border-l-red-500 cursor-pointer";
                                         } else if (offer.alertLevel === 'WARNING') {
-                                            rowStyle = "bg-amber-50 hover:bg-amber-100 transition border-l-4 border-l-amber-500";
+                                            rowStyle = "bg-amber-50 hover:bg-amber-100/50 transition border-l-4 border-l-amber-500 cursor-pointer";
                                         }
+                                        
+                                        // Mock status check
+                                        const needsAlternative = offer.alertLevel === 'CRITICAL' || offer.status === 'needs_alternative';
+                                        
                                         return (
-                                            <tr key={offer.id} className={rowStyle}>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="font-bold text-xs">
-                                                            {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' : 'オファー中'}
+                                            <React.Fragment key={offer.id}>
+                                                <tr 
+                                                    onClick={() => setExpandedOfferId(isExpanded ? null : offer.id)}
+                                                    className={`${rowStyle} ${isExpanded ? 'bg-indigo-50 border-b-0' : ''}`}
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="font-bold text-xs">
+                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' : 'オファー中'}
+                                                            </span>
+                                                            {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
+                                                            {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 font-bold text-slate-700">{offer.advertiser}</td>
+                                                    <td className="px-6 py-4 font-bold text-blue-600">{offer.creator}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`font-black ${offer.diffHours >= 48 ? 'text-red-600' : offer.diffHours >= 36 ? 'text-amber-600' : 'text-slate-600'}`}>
+                                                            {Math.floor(offer.diffHours)}h
                                                         </span>
-                                                        {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
-                                                        {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-slate-700">{offer.advertiser}</td>
-                                                <td className="px-6 py-4 font-bold text-blue-600">{offer.creator}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`font-black ${offer.diffHours >= 48 ? 'text-red-600' : offer.diffHours >= 36 ? 'text-amber-600' : 'text-slate-600'}`}>
-                                                        {Math.floor(offer.diffHours)}h
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">
-                                                    {new Date(offer.createdAt).toLocaleString('ja-JP')}
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <span className="text-slate-400 font-medium text-xs tabular-nums">
+                                                                {new Date(offer.createdAt).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                            <ChevronDown className={`text-slate-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} size={16} />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {isExpanded && (
+                                                    <tr>
+                                                        <td colSpan={5} className="px-0 py-0 border-t-0">
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: 'auto', opacity: 1 }}
+                                                                className="overflow-hidden bg-indigo-50/30"
+                                                            >
+                                                                <div className="p-8 border-t border-indigo-100 shadow-inner">
+                                                                    <div className="flex items-center justify-between mb-6">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="bg-indigo-600 p-1.5 rounded-lg text-white">
+                                                                                <Sparkles size={16} />
+                                                                            </span>
+                                                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                                                                                AI Alternative Suggestions
+                                                                            </h4>
+                                                                        </div>
+                                                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                                                            Based on Vibe & Genre Match
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className="grid grid-cols-5 gap-4">
+                                                                        {getAlternatives(offer).map((alt) => (
+                                                                            <motion.div 
+                                                                                key={alt.id}
+                                                                                whileHover={{ y: -4 }}
+                                                                                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200"
+                                                                            >
+                                                                                <div className="relative mb-3">
+                                                                                    <img 
+                                                                                        src={alt.thumbnail_url || 'https://via.placeholder.com/150'} 
+                                                                                        className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105" 
+                                                                                    />
+                                                                                    <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
+                                                                                        <Check size={8} />
+                                                                                    </div>
+                                                                                </div>
+                                                                                <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">{alt.name}</p>
+                                                                                <p className="text-[10px] font-bold text-slate-400 mb-4">{alt.followersStr} followers</p>
+                                                                                
+                                                                                <button 
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handlePushAlternative(offer.id, alt.id);
+                                                                                    }}
+                                                                                    className="w-full bg-slate-900 text-white text-[10px] font-black py-2 rounded-xl hover:bg-indigo-600 transition-colors shadow-sm"
+                                                                                >
+                                                                                    提案する
+                                                                                </button>
+                                                                            </motion.div>
+                                                                        ))}
+                                                                    </div>
+                                                                    
+                                                                    <div className="mt-8 flex justify-center border-t border-indigo-100 pt-6">
+                                                                        <p className="text-[10px] text-slate-400 font-medium italic bg-white px-4 py-1 rounded-full border border-slate-50 italic">
+                                                                            AI suggests these creators to ensure the advertiser's campaign continues without further delay.
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         )
                                     })}
                                 </tbody>
