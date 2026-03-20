@@ -147,7 +147,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 // 取得したデータをUI用に整形
                 const formattedData = (data || []).map((item, index) => {
                     const isSystemHidden = !item.is_onboarded && item.was_public; // was_publicカラムがあると想定、なければitem.idから推測等
-                    
+
                     // is_ai_recommendedの場合、未着手ならデフォルトをセット
                     let reviewStatus = item.review_status || 'pending';
                     if (item.is_ai_recommended && reviewStatus === 'pending') {
@@ -464,7 +464,19 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
                                 className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
                             >
-                                <option value="ALL">All Review Status</option>
+                                <option value="ALL">All Status</option>
+                                <option value="pending">☑ Public</option>
+                                <option value="approved">☒ Hidden</option>
+                                <option value="rejected">🤖 System Hidden</option>
+                                <option value="ai_recommended">💎 AI Recommended</option>
+                            </select>
+
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
+                            >
+                                <option value="ALL">All Review</option>
                                 <option value="pending">⏳ Pending</option>
                                 <option value="approved">✓ Approved</option>
                                 <option value="rejected">✕ Rejected</option>
@@ -888,13 +900,13 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                         } else if (offer.alertLevel === 'WARNING') {
                                             rowStyle = "bg-amber-50 hover:bg-amber-100/50 transition border-l-4 border-l-amber-500 cursor-pointer";
                                         }
-                                        
+
                                         // Mock status check
                                         const needsAlternative = offer.alertLevel === 'CRITICAL' || offer.status === 'needs_alternative';
-                                        
+
                                         return (
                                             <React.Fragment key={offer.id}>
-                                                <tr 
+                                                <tr
                                                     onClick={() => setExpandedOfferId(isExpanded ? null : offer.id)}
                                                     className={`${rowStyle} ${isExpanded ? 'bg-indigo-50 border-b-0' : ''}`}
                                                 >
@@ -948,15 +960,15 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
                                                                     <div className="grid grid-cols-5 gap-4">
                                                                         {getAlternatives(offer).map((alt) => (
-                                                                            <motion.div 
+                                                                            <motion.div
                                                                                 key={alt.id}
                                                                                 whileHover={{ y: -4 }}
                                                                                 className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200"
                                                                             >
                                                                                 <div className="relative mb-3">
-                                                                                    <img 
-                                                                                        src={alt.thumbnail_url || 'https://via.placeholder.com/150'} 
-                                                                                        className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105" 
+                                                                                    <img
+                                                                                        src={alt.thumbnail_url || 'https://via.placeholder.com/150'}
+                                                                                        className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105"
                                                                                     />
                                                                                     <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
                                                                                         <Check size={8} />
@@ -964,8 +976,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                 </div>
                                                                                 <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">{alt.name}</p>
                                                                                 <p className="text-[10px] font-bold text-slate-400 mb-4">{alt.followersStr} followers</p>
-                                                                                
-                                                                                <button 
+
+                                                                                <button
                                                                                     onClick={(e) => {
                                                                                         e.stopPropagation();
                                                                                         handlePushAlternative(offer.id, alt.id);
@@ -977,7 +989,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                             </motion.div>
                                                                         ))}
                                                                     </div>
-                                                                    
+
                                                                     <div className="mt-8 flex justify-center border-t border-indigo-100 pt-6">
                                                                         <p className="text-[10px] text-slate-400 font-medium italic bg-white px-4 py-1 rounded-full border border-slate-50 italic">
                                                                             AI suggests these creators to ensure the advertiser's campaign continues without further delay.

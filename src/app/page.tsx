@@ -166,17 +166,27 @@ export default function InsidersLP() {
                     <div className="space-y-32">
 
                         {/* Core Value 1: Data & List (Scroll UI) */}
-                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="order-2 lg:order-1 relative flex justify-center">
+                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+                            <div className="mb-10 w-full">
+                                <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
+                                    <Database className="w-5 h-5" /> 01. THE DATABASE
+                                </div>
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">独自のスクレイピング技術による<br />「本物」のクリエイター網</h3>
+                                <p className="text-slate-500 leading-relaxed mb-12">
+                                    日本の広告主が見落としている、「本当に海外の旅行予定層を動かせる」国内外の優秀なクリエイターを、AIで独自にスコアリングしデータベース化。<br /><br />
+                                    貴店のURLを入力するだけで、AIがお店の強み（Vibe）を解析し、最も高いエンゲージメント（予約）を生み出すクリエイターを自動推薦します。
+                                </p>
+                            </div>
+
+                            <div className="relative flex justify-center w-full">
                                 <div className="absolute inset-0 bg-indigo-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
 
                                 {/* ADVERTISER UI: Scrollable Mockup */}
                                 <div className="flex flex-col items-center">
                                     <div className="text-[10px] font-bold text-indigo-500 mb-3 uppercase tracking-widest opacity-90">ADVERTISER UI</div>
-                                    <div className="relative w-[240px] h-[520px] bg-slate-50 rounded-[2.5rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group">
+                                    <div className="relative w-[280px] h-[580px] bg-slate-50 rounded-[2.5rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group">
                                         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-white">
-
-                                            {/* Screen 0: Search Window */}
+                                            {/* (Rest of Mockup UI remains same) */}
                                             <div className="p-3 border-b border-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] bg-white sticky top-0 z-20">
                                                 <div className="bg-white rounded-xl p-1.5 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.1)] border border-slate-50 flex items-center gap-2">
                                                     <div className="flex items-center gap-1 px-2 py-1 border-r border-slate-100 scale-90">
@@ -193,7 +203,6 @@ export default function InsidersLP() {
                                                 </div>
                                             </div>
 
-                                            {/* Screen 1: Analysis Complete */}
                                             <div className="p-5 text-center border-b border-slate-100">
                                                 <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-emerald-50 text-emerald-600">
                                                     <CheckCircle2 className="w-5 h-5" />
@@ -217,7 +226,6 @@ export default function InsidersLP() {
                                                 </div>
                                             </div>
 
-                                            {/* Screen 2: Creator Catalog */}
                                             <div className="p-4 bg-slate-50/50 border-b border-slate-100">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <div className="flex items-center gap-2">
@@ -225,7 +233,6 @@ export default function InsidersLP() {
                                                         <div className="bg-yellow-400 text-[6px] font-black px-1 rounded uppercase tracking-tighter">AI選定</div>
                                                     </div>
                                                 </div>
-
                                                 <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide">
                                                     {['All', '🍱 Food', '💄 Beauty'].map((cat, i) => (
                                                         <div key={cat} className={`px-3 py-1 rounded-full text-[8px] font-bold whitespace-nowrap shadow-sm border ${i === 1 ? 'bg-black text-white border-black' : 'bg-white text-slate-500 border-slate-100'}`}>
@@ -233,17 +240,11 @@ export default function InsidersLP() {
                                                         </div>
                                                     ))}
                                                 </div>
-
                                                 <div className="grid grid-cols-1 gap-4">
                                                     <div className="relative aspect-[9/16] rounded-2xl overflow-hidden group/card shadow-xl border-2 border-white">
-                                                        <img
-                                                            src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80"
-                                                            alt="Food Creator"
-                                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-                                                        />
+                                                        <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80" alt="Food Creator" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" />
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/10 z-10" />
                                                         <div className="absolute top-2 left-2 z-20 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-lg text-[6px] text-white font-bold uppercase">FOOD</div>
-
                                                         <div className="absolute bottom-3 left-3 z-20 text-white">
                                                             <div className="text-xs font-black tracking-tight mb-0.5">@saki_japan</div>
                                                             <div className="text-[8px] font-bold opacity-80">200k followers</div>
@@ -252,7 +253,6 @@ export default function InsidersLP() {
                                                 </div>
                                             </div>
 
-                                            {/* Screen 3: Offer Selection */}
                                             <div className="p-5 bg-white space-y-4 border-b border-slate-50">
                                                 <div className="flex items-center justify-between">
                                                     <div>
@@ -261,7 +261,6 @@ export default function InsidersLP() {
                                                     </div>
                                                     <div className="w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center text-[10px] text-slate-400 font-bold">×</div>
                                                 </div>
-
                                                 <div className="space-y-2">
                                                     <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">🎁 提供プラン</div>
                                                     <div className="grid grid-cols-2 gap-2">
@@ -276,32 +275,17 @@ export default function InsidersLP() {
                                                         </div>
                                                     </div>
                                                 </div>
-
-                                                <div className="space-y-2">
-                                                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">📷 撮影で盛り込んでほしい要素</div>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {['看板メニュー', '店内の雰囲気', '接客'].map((item, i) => (
-                                                            <div key={item} className={`px-2 py-1 rounded-lg text-[8px] font-bold border ${i < 2 ? 'bg-black text-white border-black shadow-sm' : 'bg-white text-slate-400 border-slate-50'}`}>
-                                                                {item}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
                                                 <div className="w-full py-3 bg-black text-white rounded-xl text-[9px] font-black flex items-center justify-center gap-2 shadow-xl hover:bg-slate-900 transition-colors">
                                                     <Send className="w-3 h-3" /> 招待状を送る
                                                 </div>
                                             </div>
 
-                                            {/* Screen 4: Offer Sent */}
                                             <div className="p-8 bg-white min-h-[200px] flex flex-col items-center justify-center text-center">
                                                 <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-4 border border-emerald-100">
                                                     <CheckCircle2 className="w-6 h-6 text-emerald-500" />
                                                 </div>
                                                 <h4 className="text-xl font-black text-slate-900 italic tracking-tighter mb-3">OFFER SENT!</h4>
-                                                <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
-                                                    招待状を送りました。
-                                                </p>
+                                                <p className="text-[9px] text-slate-400 font-medium leading-relaxed">招待状を送りました。</p>
                                             </div>
                                         </div>
 
@@ -312,37 +296,29 @@ export default function InsidersLP() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="order-1 lg:order-2 mb-10 lg:mb-0">
-                                <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                    <Database className="w-5 h-5" /> 01. THE DATABASE
-                                </div>
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">独自のスクレイピング技術による<br />「本物」のクリエイター網</h3>
-                                <p className="text-slate-500 leading-relaxed">
-                                    日本の広告主が見落としている、「本当に海外の旅行予定層を動かせる」国内外の優秀なクリエイターを、AIで独自にスコアリングしデータベース化。<br /><br />
-                                    貴店のURLを入力するだけで、AIがお店の強み（Vibe）を解析し、最も高いエンゲージメント（予約）を生み出すクリエイターを自動推薦します。
-                                </p>
-                            </div>
                         </div>
 
                         {/* Core Value 2: AI Chat UI (Animated) */}
-                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="mb-10 lg:mb-0">
+                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+                            <div className="mb-10 w-full">
                                 <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
                                     <MessageSquare className="w-5 h-5" /> 02. AI CONCIERGE CHAT
                                 </div>
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">英語力ゼロで完結。<br />即時翻訳とスマートテンプレート</h3>
-                                <p className="text-slate-500 leading-relaxed">
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">英語力ゼロで完結。<br />即時翻訳とスマートテンプレート</h3>
+                                <p className="text-slate-500 leading-relaxed mb-12">
                                     クリエイターとの英語のやり取りに怯える必要はありません。<br /><br />
                                     Supabase RealtimeとGemini AIを連携させた独自チャットにより、あなたが入力した日本語は即座に美しい英語に翻訳されて相手に届きます。さらに、日程や道案内も「スマートテンプレート」のボタンを押すだけでAIが自動生成。スパムや失礼な対応をシステムが防ぎます。
                                 </p>
                             </div>
-                            <div className="relative flex justify-center">
+
+                            <div className="relative flex justify-center w-full">
                                 <div className="absolute inset-0 bg-violet-50 rounded-[3rem] rotate-3 scale-105 -z-10" />
-                                <div className="w-[280px] bg-white rounded-[2rem] border-[6px] border-slate-100 shadow-2xl overflow-hidden flex flex-col h-[480px]">
+                                <div className="w-[280px] bg-white rounded-[2rem] border-[6px] border-slate-100 shadow-2xl overflow-hidden flex flex-col h-[520px]">
+                                    {/* (Chat Mockup UI remains same) */}
                                     <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
                                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" className="w-8 h-8 rounded-full" />
                                         <div>
-                                            <div className="text-slate-900 text-xs font-bold">Sarah Jenkins</div>
+                                            <div className="text-slate-900 text-xs font-bold text-left">Sarah Jenkins</div>
                                             <div className="flex items-center gap-1 text-[8px] text-emerald-500 font-bold">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Online (AI Translation)
                                             </div>
@@ -350,23 +326,20 @@ export default function InsidersLP() {
                                     </div>
 
                                     <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50 flex flex-col justify-end">
-                                        {/* Step 1: Creator Message */}
                                         <div className={`transition-all duration-500 ${chatStep >= 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                                            <div className="bg-white border border-slate-200 text-slate-800 text-xs p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm">
+                                            <div className="bg-white border border-slate-200 text-slate-800 text-xs p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm text-left">
                                                 Hello! Thank you for the offer. I am available next week. Can I check the menu beforehand?
                                             </div>
                                         </div>
 
-                                        {/* Step 2: User Action (Click Button) */}
                                         <div className={`flex justify-end transition-all duration-300 ${chatStep >= 1 ? 'opacity-100' : 'opacity-0'}`}>
                                             <div className="bg-slate-200 text-slate-500 text-[8px] px-2 py-1 rounded-full flex items-center gap-1">
                                                 <MousePointer2 className="w-2 h-2" /> アシスタント返信を使用
                                             </div>
                                         </div>
 
-                                        {/* Step 3: AI Translated Message */}
                                         <div className={`flex flex-col items-end w-full transition-all duration-500 ${chatStep >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                                            <div className="bg-black text-white text-xs p-3 rounded-2xl rounded-tr-none max-w-[85%] relative shadow-md">
+                                            <div className="bg-black text-white text-xs p-3 rounded-2xl rounded-tr-none max-w-[85%] relative shadow-md text-left">
                                                 Regarding the content: Please include our signature 'Matcha Parfait' and the interior vibe.
                                                 <div className="mt-2 pt-2 border-t border-white/20 flex items-center gap-1 text-[8px] text-white/60 font-bold">
                                                     <Sparkles className="w-2 h-2" /> NOTS Translated
@@ -376,7 +349,7 @@ export default function InsidersLP() {
                                     </div>
 
                                     <div className="p-3 bg-white border-t border-slate-100">
-                                        <div className="text-[8px] text-slate-400 font-bold mb-2">アシスタント返信</div>
+                                        <div className="text-[8px] text-slate-400 font-bold mb-2 text-left">アシスタント返信</div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <button className="bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold py-2 rounded-lg border border-slate-200 transition-colors">日程候補</button>
                                             <button className="bg-white hover:bg-slate-50 text-slate-700 text-[9px] font-bold py-2 rounded-lg border border-slate-200 transition-colors">メニュー</button>
@@ -387,62 +360,63 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Core Value 3: ASSET HUB (Drag & Drop Mock) */}
-                        <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="order-2 lg:order-1 relative flex justify-center">
+                        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+                            <div className="mb-10 w-full">
+                                <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
+                                    <LayoutGrid className="w-5 h-5" /> 03. THE ASSET
+                                </div>
+                                <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6">バズで終わらせない。<br />獲得した動画を「集客資産」に。</h3>
+                                <p className="text-slate-500 leading-relaxed mb-12">
+                                    私たちが狙うのは「虚栄のバズ」ではなく、保存（Save）される「熱量のアルゴリズムハック」です。<br /><br />
+                                    さらに、タイムラインから流れて消えても効果は終わりません。『ASSET HUB』を使えば、納品された動画をGoogle Mapsに同期させたり、自社HPのウィジェットとして埋め込むことが可能。月額3.98万円で、貴店のすべてのデジタル接点をインバウンド仕様にアップデートし続けます。
+                                </p>
+                            </div>
+
+                            <div className="relative flex justify-center w-full">
                                 <div className="absolute inset-0 bg-emerald-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
-                                <div className="w-[320px] bg-white rounded-[2rem] border-[6px] border-slate-50 shadow-xl overflow-hidden p-4">
-                                    <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-4 pb-2 border-b border-slate-100">
+                                <div className="w-[340px] bg-white rounded-[2rem] border-[6px] border-slate-50 shadow-xl overflow-hidden p-6">
+                                    <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-6 pb-2 border-b border-slate-100 text-left">
                                         <RefreshCw className="w-4 h-4 text-emerald-600" /> コンテンツの集客資産化
                                     </div>
 
                                     {/* Fake Video Asset */}
-                                    <div className="mb-4">
-                                        <div className="text-[9px] font-bold text-slate-500 mb-2">獲得した動画 (ASSET)</div>
-                                        <div className={`relative w-24 h-32 rounded-lg overflow-hidden border border-slate-200 transition-all duration-700 z-20 ${assetStep === 1 ? 'translate-x-32 translate-y-16 scale-50 opacity-50' : assetStep === 2 ? 'opacity-0' : 'translate-x-0 opacity-100'}`}>
+                                    <div className="mb-6 flex flex-col items-start">
+                                        <div className="text-[9px] font-bold text-slate-500 mb-3 uppercase tracking-widest">獲得した動画 (ASSET)</div>
+                                        <div className={`relative w-28 h-40 rounded-xl overflow-hidden border border-slate-200 transition-all duration-700 z-20 ${assetStep === 1 ? 'translate-x-32 translate-y-16 scale-50 opacity-50' : assetStep === 2 ? 'opacity-0' : 'translate-x-0 opacity-100'}`}>
                                             <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=300&q=80" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                                <PlayCircle className="w-6 h-6 text-white" />
+                                                <PlayCircle className="w-8 h-8 text-white" />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Sync Destinations */}
-                                    <div className="grid grid-cols-2 gap-3 relative z-10">
-                                        <div className={`border rounded-xl p-3 transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                    <div className="grid grid-cols-2 gap-4 relative z-10">
+                                        <div className={`border rounded-xl p-4 text-left transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
                                             <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
                                                 <MapPin className="w-3 h-3 text-red-500" /> Google Maps Sync
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1 text-left">
                                                 <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
                                             </div>
-                                            <div className="text-[6px] text-slate-400 text-right">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
+                                            <div className="text-[6px] text-slate-400 text-right font-bold">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
                                         </div>
 
-                                        <div className={`border rounded-xl p-3 transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                        <div className={`border rounded-xl p-4 text-left transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
                                             <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
                                                 <Globe className="w-3 h-3 text-blue-500" /> Web Widget
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1 text-left">
                                                 <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
                                             </div>
-                                            <div className="text-[6px] text-slate-400 text-right">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
+                                            <div className="text-[6px] text-slate-400 text-right font-bold">鮮度: {assetStep >= 2 ? '100%' : '60%'}</div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 text-[8px] text-center text-slate-400 font-medium">
-                                        動画を同期して、貴店のデジタル接点を自動アップデート。
+                                    <div className="mt-6 text-[9px] text-center text-slate-400 font-bold leading-relaxed">
+                                        動画を同期して、貴店のデジタル接点を<br />自動でインバウンド仕様にアップデート。
                                     </div>
                                 </div>
-                            </div>
-                            <div className="order-1 lg:order-2 mb-10 lg:mb-0">
-                                <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
-                                    <LayoutGrid className="w-5 h-5" /> 03. THE ASSET
-                                </div>
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">バズで終わらせない。<br />獲得した動画を「集客資産」に。</h3>
-                                <p className="text-slate-500 leading-relaxed">
-                                    私たちが狙うのは「虚栄のバズ」ではなく、保存（Save）される「熱量のアルゴリズムハック」です。<br /><br />
-                                    さらに、タイムラインから流れて消えても効果は終わりません。『ASSET HUB』を使えば、納品された動画をGoogle Mapsに同期させたり、自社HPのウィジェットとして埋め込むことが可能。月額3.98万円で、貴店のすべてのデジタル接点をインバウンド仕様にアップデートし続けます。
-                                </p>
                             </div>
                         </div>
 

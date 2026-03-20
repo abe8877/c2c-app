@@ -217,12 +217,20 @@ export default function CreatorJoinLandingPage() {
                 <p className="text-lg md:text-xl text-slate-400 max-w-2xl font-light mb-12 leading-relaxed">
                     {t.hero.desc}
                 </p>
-                <Link
-                    href="/join/D277KA3X"
-                    className="bg-white text-black px-8 py-4 rounded-full font-bold tracking-wide hover:bg-slate-200 transition-colors duration-300 flex items-center gap-2"
-                >
-                    {t.hero.cta} <ArrowRight className="w-4 h-4" />
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <Link
+                        href="/join/D277KA3X"
+                        className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-bold tracking-wide hover:bg-slate-200 transition-colors duration-300 flex items-center justify-center gap-2 border border-white"
+                    >
+                        {lang === 'en' ? 'Have an invitation code?' : '招待コードをお持ちの方'} <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <Link
+                        href="/join/apply"
+                        className="w-full sm:w-auto bg-transparent text-white px-8 py-4 rounded-full font-bold tracking-wide hover:bg-white/10 transition-colors duration-300 flex items-center justify-center gap-2 border border-white/20"
+                    >
+                        {lang === 'en' ? 'Register Application' : '登録申請をする'}
+                    </Link>
+                </div>
             </section>
 
             {/* 2. THE MISMATCH & BENEFIT */}
@@ -538,12 +546,20 @@ export default function CreatorJoinLandingPage() {
                     {t.cta.title}
                 </h2>
                 <p className="text-slate-400 mb-10 max-w-lg mx-auto leading-relaxed">{t.cta.desc}</p>
-                <Link
-                    href="/join/D277KA3X"
-                    className="inline-block bg-white text-black px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
-                >
-                    {t.cta.btn}
-                </Link>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Link
+                        href="/join/D277KA3X"
+                        className="w-full sm:w-auto bg-white text-black px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2"
+                    >
+                        {lang === 'en' ? 'I HAVE AN INVITATION CODE' : '招待コードをお持ちの方'} <ArrowRight className="w-4 h-4" />
+                    </Link>
+                    <Link
+                        href="/join/apply"
+                        className="w-full sm:w-auto bg-transparent text-white px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:bg-white/5 transition-all duration-300 border border-white/20 flex items-center justify-center"
+                    >
+                        {lang === 'en' ? 'APPLY FOR REGISTRATION' : '登録申請をする'}
+                    </Link>
+                </div>
                 <p className="mt-6 text-xs text-slate-500 font-light max-w-md mx-auto">
                     {t.cta.note}
                 </p>

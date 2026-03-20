@@ -30,7 +30,7 @@ export default function AdminLayout({
             {/* Nav Loading Overlay */}
             {isNavigating && (
                 <div className="fixed inset-0 bg-white/20 backdrop-blur-[1px] z-[9999] flex items-center justify-center pointer-events-none">
-                    <Loader2 size={32} className="animate-spin text-slate-900" />
+                    <Loader2 size={32} className="animate-spin text-slate-900 shadow-sm" />
                 </div>
             )}
 
@@ -44,13 +44,18 @@ export default function AdminLayout({
                 </div>
                 <nav className="flex-1 px-4 space-y-1.5 pt-4">
                     {menuItems.map((item) => {
-                        const isActive = pathname === item.href || (item.href.includes('?') && pathname === item.href.split('?')[0]);
+                        // クエリパラメータを含めた完全一致チェック
+                        const currentFullHref = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : pathname;
+                        const isActive = currentFullHref === item.href || (item.href === '/admin' && currentFullHref === '/admin');
+                        
                         return (
                             <Link
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => {
-                                    if (pathname !== item.href) setIsNavigating(true);
+                                    if (currentFullHref !== item.href) {
+                                        setIsNavigating(true);
+                                    }
                                 }}
                                 className={`group px-4 py-3 rounded-xl cursor-pointer font-bold flex items-center gap-3 transition-all duration-200 relative ${isActive
                                         ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10'

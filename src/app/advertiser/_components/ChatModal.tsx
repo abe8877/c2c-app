@@ -280,8 +280,10 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
                             <textarea
                                 value={inputText}
                                 onChange={e => setInputText(e.target.value)}
-                                placeholder="メッセージを入力（自動でプロ仕様の英語に翻訳されます）"
-                                className="flex-1 resize-none h-12 max-h-32 bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-stone-900 transition-all placeholder:text-stone-400"
+                                placeholder={currentUserType === 'shop' 
+                                    ? "メッセージを入力（自動でプロ仕様の英語に翻訳されます）" 
+                                    : "Type a message..."}
+                                className="flex-1 resize-none h-24 max-h-48 bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-stone-900 transition-all placeholder:text-stone-400"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault();
@@ -292,7 +294,7 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
                             <button
                                 onClick={handleSend}
                                 disabled={!inputText.trim() || isSending}
-                                className="w-12 h-12 shrink-0 bg-stone-900 text-white rounded-xl flex items-center justify-center hover:bg-stone-800 disabled:opacity-50 transition active:scale-95"
+                                className="h-24 w-12 shrink-0 bg-stone-900 text-white rounded-xl flex items-center justify-center hover:bg-stone-800 disabled:opacity-50 transition active:scale-95"
                             >
                                 {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
                             </button>

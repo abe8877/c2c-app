@@ -115,3 +115,22 @@ export async function analyzeShopVibe(url: string, genre?: string) {
         return { success: false, error: 'Internal Server Error' };
     }
 }
+
+export async function saveShopVibeTags(clientTag: string, tags: string[], clusters: string[]) {
+    try {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('shops')
+            .update({
+                vibe_tags: tags,
+                vibe_clusters: clusters
+            })
+            .eq('client_tag', clientTag);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (err: any) {
+        console.error('Error saving shop vibe tags:', err.message);
+        return { success: false, error: err.message };
+    }
+}

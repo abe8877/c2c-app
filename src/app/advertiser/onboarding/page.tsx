@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ArrowRight, Loader2, Instagram, MapPin, CheckCircle2, Search, Zap } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { analyzeShopVibe } from '@/app/actions/analyze-shop-vibe';
+import { Search, Sparkles, MapPin, Instagram, ArrowRight, CheckCircle2, ChevronRight, User, TrendingUp, Loader2, Zap } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { analyzeShopVibe, saveShopVibeTags } from '@/app/actions/analyze-shop-vibe';
+import Link from 'next/link';
 
 type UIState = 'idle' | 'analyzing' | 'complete';
 
@@ -52,6 +53,11 @@ export default function VibeOnboardingPage() {
                     tags: res.tags || [],
                     matchCount: res.matchCount || 0
                 });
+
+                // データベースに保存
+                const shopId = new URLSearchParams(window.location.search).get('shopId') || 'demo-shop';
+                await saveShopVibeTags(shopId, res.tags || [], res.mappedVibeClusters || []);
+
                 // 演出のために少し待機
                 setTimeout(() => setState('complete'), 2000);
             } else {

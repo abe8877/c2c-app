@@ -9,7 +9,7 @@ import {
     AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
-    Calendar, Map, Trash, Menu, CheckCircle2
+    Calendar, Map, Trash, Menu, CheckCircle2, Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -259,6 +259,18 @@ const CreatorCard = ({
                                 本人確認済みの公式メンバーです。確実にマッチングします。
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black/90" />
                             </div>
+                        </div>
+                    )}
+                    {creator.is_hot && (
+                        <div className="bg-orange-500/20 backdrop-blur-md border border-orange-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)] group/hot">
+                            <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-400" />
+                            <span className="text-[8px] font-black text-orange-400 uppercase tracking-tighter">HOT</span>
+                        </div>
+                    )}
+                    {creator.is_ai_recommended && (
+                        <div className="bg-indigo-500/20 backdrop-blur-md border border-indigo-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(99,102,241,0.3)] group/ai">
+                            <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                            <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">AI RECOMMENDED</span>
                         </div>
                     )}
                 </div>
