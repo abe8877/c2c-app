@@ -7,6 +7,7 @@ ALTER TABLE assets ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP WITH TIME ZON
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS client_tag TEXT;
 ALTER TABLE assets ADD COLUMN IF NOT EXISTS video_url TEXT;
+ALTER TABLE assets ADD COLUMN IF NOT EXISTS offer_details JSONB;
 
 -- Update assets to include client_tag from shops if possible (migration)
 UPDATE assets 

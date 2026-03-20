@@ -278,7 +278,7 @@ const CreatorCard = ({
                     {(parseInt(creator.followers.replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
                         <div className="bg-amber-500/20 backdrop-blur-md border border-amber-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)] group/popular">
                             <Crown className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">👑 人気</span>
+                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">人気</span>
                         </div>
                     )}
                 </div>
@@ -369,85 +369,7 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                     </div>
 
                     <div className="p-6 space-y-6 flex-1">
-                        <div className="bg-orange-50 border border-orange-100 p-5 rounded-3xl space-y-4 relative group/alert overflow-hidden">
-                            <motion.div 
-                                animate={{ opacity: [0.1, 0.3, 0.1] }}
-                                transition={{ duration: 4, repeat: Infinity }}
-                                className="absolute inset-0 bg-gradient-to-r from-orange-200 to-transparent" 
-                            />
-                            <div className="flex justify-between items-end relative z-10">
-                                <div className="text-[10px] font-black text-orange-800 flex items-center gap-1.5 uppercase tracking-wider">
-                                    <Clock className="w-4 h-4" />
-                                    動画の鮮度 (Freshness)
-                                </div>
-                                <div className="text-2xl font-black text-orange-600 tracking-tighter">{freshness}%</div>
-                            </div>
-                            <div className="w-full bg-orange-200 rounded-full h-2 relative z-10">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${freshness}%` }}
-                                    transition={{ duration: 1.5, ease: "easeOut" }}
-                                    className="bg-orange-500 h-2 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-                                />
-                            </div>
-                            <div className="space-y-3 relative z-10">
-                                <p className="text-[10px] text-orange-800 leading-relaxed font-bold">
-                                    <span className="text-orange-950 uppercase tracking-widest mr-1">AI Advice:</span> 
-                                    最新の投稿から30日が経過しました。集客効果を維持するため、新しいVIBEの補充を推奨します。
-                                </p>
-                                <div className="flex flex-col gap-2">
-                                    <div className="relative group/book">
-                                        <button 
-                                            className="w-full py-3 bg-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-orange-500/40 active:scale-95 transition-all flex items-center justify-center gap-2 group-hover/book:bg-orange-500"
-                                        >
-                                            <Camera className="w-3.5 h-3.5" /> Book next shoot
-                                            <ChevronDown className="w-3 h-3 ml-auto transition-transform group-hover/book:rotate-180" />
-                                        </button>
-                                        
-                                        {/* Multi-action dropdown menu */}
-                                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-[#1A1A1A] border border-white/10 rounded-2xl p-2 opacity-0 invisible group-hover/book:opacity-100 group-hover/book:visible transition-all z-50 shadow-2xl backdrop-blur-xl translate-y-2 group-hover/book:translate-y-0">
-                                            <button 
-                                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3"
-                                            >
-                                                <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                                    <Users className="w-3 h-3 text-blue-400" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-white">Find similar creators</p>
-                                                    <p className="text-[7px] text-zinc-500">同じVIBEを持つ他の方を探す</p>
-                                                </div>
-                                            </button>
-                                            <button 
-                                                onClick={() => alert("Re-booking flow triggered...")}
-                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3 mt-1"
-                                            >
-                                                <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
-                                                    <RefreshCw className="w-3 h-3 text-amber-400" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-white">Re-book this creator</p>
-                                                    <p className="text-[7px] text-zinc-500">同じ方にもう一度依頼する</p>
-                                                </div>
-                                            </button>
-                                            <button 
-                                                onClick={() => alert("Custom brief flow...")}
-                                                className="w-full text-left px-4 py-2 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3 mt-1"
-                                            >
-                                                <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center">
-                                                    <Plus className="w-3 h-3 text-teal-400" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-white">New Concept</p>
-                                                    <p className="text-[7px] text-zinc-500">新しい撮影要望で募集する</p>
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p className="text-[8px] text-zinc-400 text-center mt-1 uppercase tracking-widest font-black opacity-40">Powered by NOTS Engine</p>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div className="border rounded-[24px] p-5 bg-stone-50 relative ring-1 ring-stone-200/50 overflow-hidden">
                             <AnimatePresence>
@@ -745,10 +667,10 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void }) => {
     const creatorName = creator?.name || '';
     const isHot = !!creator?.is_hot;
-    const followers = typeof creator?.followers === 'string' 
-        ? parseInt(creator.followers.replace(/,/g, ''), 10) 
+    const followers = typeof creator?.followers === 'string'
+        ? parseInt(creator.followers.replace(/,/g, ''), 10)
         : creator?.followers || 0;
-    
+
     // CTOからの提案: フォロワー数5万以上、またはHOTバッジありを「高需要」と判定
     const followersStr = typeof creator?.followers === 'string' ? creator.followers : '0';
     const followersNum = parseInt(followersStr.replace(/,/g, '')) || 0;
@@ -846,14 +768,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
-                                </label>
-                                {isHighDemand ? (
-                                    <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
+                                {isHighDemand && (
+                                    <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
                                         <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
                                             <Crown className="w-5 h-5 text-amber-600" />
                                         </div>
@@ -864,38 +780,14 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             </p>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 text-indigo-600">
-                                            <Sparkles className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-indigo-900 text-sm mb-1">マッチング最適化</p>
-                                            <p className="text-[10px] text-indigo-800 leading-relaxed font-medium">
-                                                このクリエイターは貴店のVIBEと高相性です。まずは招待状を送って反応を見てみましょう。
-                                            </p>
-                                        </div>
-                                    </div>
                                 )}
-                                <AnimatePresence>
-                                    {isHighDemand && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-md"
-                                        >
-                                            <div className="flex">
-                                                <div className="flex-shrink-0 text-amber-500 font-bold">💡</div>
-                                                <div className="ml-3">
-                                                    <p className="text-sm text-amber-800 leading-relaxed font-medium">
-                                                        <strong>{creatorName}</strong>さんは現在、非常に人気が高まっています。<br />
-                                                        より確実にマッチングを成立させるため、無料（Barter）ではなく、<strong>謝礼金（推奨: ¥30,000〜）</strong>を設定してオファーすることをお勧めします。
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                                    <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
+                                </label>
+
                                 <div className="flex flex-wrap gap-2">
                                     {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
                                         <button
@@ -921,14 +813,14 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 <div className="relative">
                                     <textarea
                                         className="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-800 leading-relaxed font-mono outline-none focus:ring-2 focus:ring-black resize-none"
-                                        defaultValue={`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for a Free Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`}
+                                        defaultValue={`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`}
                                     />
                                     <div className="absolute bottom-3 right-3 text-[10px] text-gray-400 bg-white/80 px-2 py-1 rounded backdrop-blur">
                                         AI Draft v1.2
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> 相手のVIBEに合わせて最適化されています。このまま送信推奨。
+                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、クリエイターを選んだ理由などを追記するとオファーが受諾されやすいです。
                                 </p>
                             </div>
                         </div>
@@ -1057,6 +949,10 @@ export default function VibeCatalogue({
     const [filterGenre, setFilterGenre] = useState<string>(initialGenre || 'ALL');
     const [filterRegion, setFilterRegion] = useState<string>('ALL');
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [isChatListOpen, setIsChatListOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [selectedChatAsset, setSelectedChatAsset] = useState<Asset | null>(null);
     const [synced, setSynced] = useState(false);
     const [freshness, setFreshness] = useState(85);
     const [assetInsights, setAssetInsights] = useState<Record<string, any>>({});
@@ -1349,23 +1245,114 @@ export default function VibeCatalogue({
     return (
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900 pb-32 pt-16">
             <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 z-40 px-6 flex items-center justify-between">
-                <div className="font-black text-xl tracking-tighter flex items-center gap-1.5">
+                <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer" onClick={() => setActiveTab("search")}>
                     NOTS<span className="text-yellow-500">C2C</span>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors">
+                <div className="flex items-center gap-3 relative">
+                    <button 
+                        onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsChatListOpen(false); setIsProfileOpen(false); }}
+                        className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors"
+                    >
                         <Bell className="w-5 h-5" />
                         <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
                     </button>
+                    {isNotificationOpen && (
+                        <div className="absolute top-14 right-16 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                            <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
+                            <div className="max-h-80 overflow-y-auto">
+                                <div className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer">
+                                    <div className="text-xs font-bold text-stone-900 mb-1">🎉 オファーが受諾されました</div>
+                                    <div className="text-[10px] text-stone-500">Elena Tokyoさんがオファーを受諾しました！チャットで詳細を詰めましょう。</div>
+                                </div>
+                                <div className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer">
+                                    <div className="text-xs font-bold text-stone-900 mb-1">📅 次のアクション：日程調整</div>
+                                    <div className="text-[10px] text-stone-500">Kenta Vlogさんとの撮影日程を調整してください。</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <button
-                        onClick={() => setIsChatOpen(true)}
+                        onClick={() => { setIsChatListOpen(!isChatListOpen); setIsNotificationOpen(false); setIsProfileOpen(false); }}
                         className="relative p-2.5 text-stone-400 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
                     >
                         <MessageCircle className="w-5 h-5" />
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
                     </button>
-                    <div className="w-8 h-8 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm">
-                        <img src="https://i.pravatar.cc/100?img=33" className="w-full h-full object-cover" alt="User" />
+                    {isChatListOpen && (
+                        <div className="absolute top-14 right-8 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                            <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Messages</div>
+                            <div className="max-h-80 overflow-y-auto">
+                                {(localAssets.length > 0 ? localAssets : initialAssets)
+                                    .filter(a => a.creator && (a.status === 'OFFERED' || a.status === 'COMPLETED' || a.status === 'approved' || a.status === 'ACTIVE' || a.status === 'PENDING_APPROVAL'))
+                                    .map(a => (
+                                    <button 
+                                        key={a.id} 
+                                        onClick={() => {
+                                            const fullCreator = initialCreators.find(c => c.id === a.creator_id) || {
+                                                id: a.creator_id || 'mock',
+                                                name: a.creator?.name || '',
+                                                tiktok_handle: a.creator?.tiktok_handle,
+                                                avatar_url: a.creator?.avatar_url,
+                                                thumbnail_url: a.creator?.avatar_url,
+                                                genre: ['LIFESTYLE'],
+                                                ethnicity: 'ASIAN',
+                                                vibe_tags: [],
+                                                followers: '1K',
+                                                is_public: true,
+                                                is_verified: false
+                                            } as Creator;
+                                            setSelectedCreator(fullCreator);
+                                            setIsChatOpen(true);
+                                            setIsChatListOpen(false);
+                                        }}
+                                        className="w-full p-4 flex items-center gap-3 hover:bg-stone-50 border-b border-stone-50 transition text-left"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0 border border-stone-200">
+                                            <img src={a.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80'} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <div className="text-xs font-bold text-stone-900 truncate">{a.creator?.name || a.creator?.tiktok_handle}</div>
+                                            <div className="text-[10px] text-stone-400 truncate mt-0.5">タップしてメッセージを開く</div>
+                                        </div>
+                                    </button>
+                                ))}
+                                {localAssets.length === 0 && (
+                                    <div className="p-8 text-center text-xs text-stone-400">現在メッセージはありません</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="relative">
+                        <button 
+                            onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotificationOpen(false); setIsChatListOpen(false); }}
+                            className="w-8 h-8 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm transition-transform active:scale-95"
+                        >
+                            <img src="https://i.pravatar.cc/100?img=33" className="w-full h-full object-cover" alt="User" />
+                        </button>
+                        {isProfileOpen && (
+                            <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                                <div className="p-4 border-b border-stone-100 mb-2">
+                                    <div className="text-sm font-black text-stone-900 truncate">{clientTag || "WAGYU OMAKASE 凛"}</div>
+                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-block px-1.5 py-0.5 rounded mt-1">
+                                        {isPremium ? "Premium Shop" : "Basic Shop"}
+                                    </div>
+                                </div>
+                                <div className="px-2 pb-2">
+                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
+                                        <User className="w-4 h-4" /> プロフィール編集
+                                    </button>
+                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
+                                        <Globe className="w-4 h-4" /> 店舗情報・リンク設定
+                                    </button>
+                                    <div className="my-1 border-t border-stone-100" />
+                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition">
+                                        <X className="w-4 h-4" /> ログアウト
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
@@ -1791,7 +1778,7 @@ export default function VibeCatalogue({
                                                                     <span className="text-[10px] font-bold text-stone-400">48h remaining</span>
                                                                 </div>
                                                                 <div className="w-full bg-stone-100 h-1 rounded-full overflow-hidden">
-                                                                    <motion.div 
+                                                                    <motion.div
                                                                         initial={{ width: 0 }}
                                                                         animate={{ width: '33%' }}
                                                                         className="h-full bg-blue-500"

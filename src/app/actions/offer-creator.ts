@@ -71,6 +71,7 @@ export async function offerCreator({
             shop_id: shopId,
             creator_id: creatorId,
             status: 'OFFERED',
+            offer_details: offerDetails // Saving offer details correctly
         })
         .select()
         .single();

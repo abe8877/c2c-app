@@ -182,7 +182,16 @@ type Lang = 'en' | 'ja';
 
 export default function CreatorJoinLandingPage() {
     const [lang, setLang] = useState<Lang>('en');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [inviteCode, setInviteCode] = useState('');
     const t = dict[lang];
+
+    const handleInviteSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (inviteCode.trim()) {
+            window.location.href = `/join/${inviteCode.trim()}`;
+        }
+    };
 
     return (
         <div className="min-h-screen bg-black text-slate-50 font-sans selection:bg-white selection:text-black">
@@ -218,12 +227,12 @@ export default function CreatorJoinLandingPage() {
                     {t.hero.desc}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <Link
-                        href="/join/D277KA3X"
+                    <button
+                        onClick={() => setIsModalOpen(true)}
                         className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-bold tracking-wide hover:bg-slate-200 transition-colors duration-300 flex items-center justify-center gap-2 border border-white"
                     >
                         {lang === 'en' ? 'Have an invitation code?' : '招待コードをお持ちの方'} <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    </button>
                     <Link
                         href="/join/apply"
                         className="w-full sm:w-auto bg-transparent text-white px-8 py-4 rounded-full font-bold tracking-wide hover:bg-white/10 transition-colors duration-300 flex items-center justify-center gap-2 border border-white/20"
@@ -547,12 +556,12 @@ export default function CreatorJoinLandingPage() {
                 </h2>
                 <p className="text-slate-400 mb-10 max-w-lg mx-auto leading-relaxed">{t.cta.desc}</p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link
-                        href="/join/D277KA3X"
+                    <button
+                        onClick={() => setIsModalOpen(true)}
                         className="w-full sm:w-auto bg-white text-black px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] flex items-center justify-center gap-2"
                     >
                         {lang === 'en' ? 'I HAVE AN INVITATION CODE' : '招待コードをお持ちの方'} <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    </button>
                     <Link
                         href="/join/apply"
                         className="w-full sm:w-auto bg-transparent text-white px-10 py-5 rounded-full font-bold tracking-widest text-sm hover:bg-white/5 transition-all duration-300 border border-white/20 flex items-center justify-center"
@@ -564,6 +573,48 @@ export default function CreatorJoinLandingPage() {
                     {t.cta.note}
                 </p>
             </section>
+
+            {/* Invite Code Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div 
+                        className="absolute inset-0"
+                        onClick={() => setIsModalOpen(false)}
+                    />
+                    <div className="relative w-full max-w-sm bg-zinc-900 border border-white/10 rounded-2xl p-8 shadow-2xl">
+                        <button 
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-white"
+                        >
+                            ✕
+                        </button>
+                        <h2 className="text-2xl font-black mb-2 text-white text-center">
+                            {lang === 'en' ? 'Enter Invitation Code' : '招待コード入力'}
+                        </h2>
+                        <p className="text-slate-400 text-sm text-center mb-6">
+                            {lang === 'en' ? 'Please enter the code you received.' : '受け取った招待コードを入力してください。'}
+                        </p>
+                        <form onSubmit={handleInviteSubmit} className="flex flex-col gap-4">
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="e.g. D277KA3X"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                                className="w-full bg-black border border-white/20 rounded-xl px-4 py-3 text-center text-white font-black tracking-widest uppercase focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {lang === 'en' ? 'ENTER' : '送信する'}
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

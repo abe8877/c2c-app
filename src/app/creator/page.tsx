@@ -18,8 +18,8 @@ export default async function CreatorDashboard() {
         .single();
 
     if (!creator) {
-        // プロフィールがない場合はオンボーディングへ（またはエラー表示）
-        return <div className="p-8 text-white">Creator profile not found. Please complete onboarding.</div>;
+        // プロフィールがない場合はログイン画面へリダイレクト（挙動確認用）
+        redirect("/login");
     }
 
     // 1. クリエイターデータの整形
@@ -63,7 +63,7 @@ export default async function CreatorDashboard() {
         shopName: a.shop?.name || "Unknown Shop",
         status: a.status as any,
         date: a.created_at ? new Date(a.created_at).toLocaleDateString() : "-",
-        shopRequirements: a.shop?.shop_vibe_tags || [],
+        shopRequirements: a.offer_details?.selectedTags || a.shop?.shop_vibe_tags || [],
         creatorTags: creator.vibe_tags || []
     }));
 
