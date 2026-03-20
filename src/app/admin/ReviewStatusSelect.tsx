@@ -4,7 +4,7 @@ import { useState } from "react";
 // ※プロジェクト環境に合わせてSupabaseクライアントのパスを調整してください
 import { createClient } from "@/utils/supabase/client";
 
-type ReviewStatus = "pending" | "approved" | "rejected";
+type ReviewStatus = "pending" | "approved" | "rejected" | "ai_recommended";
 
 interface ReviewStatusSelectProps {
     creatorId: string;
@@ -40,6 +40,7 @@ export default function ReviewStatusSelect({ creatorId, initialStatus }: ReviewS
         pending: "bg-zinc-100 text-zinc-600 border-zinc-200",
         approved: "bg-green-50 text-green-700 border-green-200",
         rejected: "bg-red-50 text-red-700 border-red-200",
+        ai_recommended: "bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm ring-1 ring-indigo-500/20",
     };
 
     return (
@@ -48,11 +49,12 @@ export default function ReviewStatusSelect({ creatorId, initialStatus }: ReviewS
                 value={status}
                 onChange={(e) => handleStatusChange(e.target.value as ReviewStatus)}
                 disabled={isUpdating}
-                className={`appearance-none cursor-pointer outline-none text-xs font-medium px-3 py-1.5 pr-8 rounded-full border transition-colors ${styles[status]} ${isUpdating ? "opacity-50" : ""}`}
+                className={`appearance-none cursor-pointer outline-none text-[10px] font-bold px-3 py-1.5 pr-8 rounded-full border transition-all ${styles[status]} ${isUpdating ? "opacity-50" : ""}`}
             >
                 <option value="pending">⏳ Pending</option>
                 <option value="approved">✓ Approved</option>
                 <option value="rejected">✕ Rejected</option>
+                <option value="ai_recommended">💎 AI Recommended</option>
             </select>
 
             {/* ドロップダウン用のカスタム矢印 */}

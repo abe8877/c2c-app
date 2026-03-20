@@ -30,8 +30,24 @@ export default function InsidersLP() {
         };
     }, []);
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "INSIDERS.",
+        "url": "https://insiders-hub.jp",
+        "description": "インバウンド集客に特化した、S/Aランククリエイター限定の招待制マッチングプラットフォーム。AIによるVIBE解析で、ブランドに最適なクリエイターを自動選定します。",
+        "publisher": {
+            "@type": "Organization",
+            "name": "株式会社nots"
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#fafafa] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
 
             {/* =========================================
           1. HERO SECTION

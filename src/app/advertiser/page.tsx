@@ -69,7 +69,9 @@ export default async function AdvertiserPage() {
 
             portfolio_video_urls: c.portfolio_video_urls || (c.portfolio_video_url ? [c.portfolio_video_url] : []),
             tier: c.tier || '-',
-            is_public: !!c.is_onboarded
+            is_public: !!c.is_onboarded,
+            is_hot: !!c.is_hot,
+            is_ai_recommended: !!c.is_ai_recommended
         };
     });
 

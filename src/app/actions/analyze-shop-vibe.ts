@@ -91,6 +91,9 @@ export async function analyzeShopVibe(url: string, genre?: string) {
                 query = query.contains('genre', [genre.toUpperCase()]);
             }
 
+            // Tier S または A かつ onboarded (公開中) のクリエイターのみカウント
+            query = query.in('tier', ['S', 'A']).eq('is_onboarded', true);
+
             const { count, error } = await query;
             if (error) throw error;
             matchCount = count || 0;

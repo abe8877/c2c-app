@@ -81,6 +81,9 @@ function AdminDashboard() {
     const [filterCategory, setFilterCategory] = useState('ALL');
     const [filterVibe, setFilterVibe] = useState('ALL');
     const [filterStatus, setFilterStatus] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [user, setUser] = useState<any>(null);
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     // --- Batch Action State ---
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -127,6 +130,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             try {
                 setLoading(true);
 
+                // ユーザー情報の取得
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
+
                 // クリエイター一覧
                 const { data, error } = await supabase
                     .from('creators')
@@ -151,6 +158,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     status: 'approved',
                     review_status: item.review_status || 'pending',
                     is_public: item.is_onboarded || false,
+                    is_ai_recommended: !!item.is_ai_recommended,
                     thumbnail_url: item.thumbnail_url || item.avatar_url || null
                 }));
                 setCreators(formattedData);
@@ -274,7 +282,13 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
         const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
         const matchStatus = filterStatus === 'ALL' || c.review_status === filterStatus;
-        return matchTier && matchCategory && matchVibe && matchStatus;
+        const matchSearch = !searchQuery ||
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.tiktokUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (c.ethnicity && c.ethnicity.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (c.genre && c.genre.some((g: string) => g.toLowerCase().includes(searchQuery.toLowerCase())));
+
+        return matchTier && matchCategory && matchVibe && matchStatus && matchSearch;
     });
 
     // ダミーログデータ
@@ -295,21 +309,50 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
     return (
         <>
             {/* Saving Indicator */}
-            <div className={`absolute top-20 right-8 bg-black text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-opacity duration-300 z-50 ${isSaving ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`absolute top-20 right-8 bg-black text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-300 z-[100] ${isSaving ? 'opacity-100' : 'opacity-0 invisible'}`}>
                 {isSaving ? <><Save size={16} className="animate-spin" /> Saving...</> : <><Check size={16} /> Saved</>}
             </div>
 
+            {/* Global Loader (グルグル表示) */}
+            {(loading || isActionLoading || isSaving) && (
+                <div className="fixed inset-0 bg-white/40 backdrop-blur-[1px] z-[200] flex items-center justify-center pointer-events-auto cursor-wait select-none">
+                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 flex flex-col items-center gap-4 animate-in zoom-in duration-300">
+                        <Loader2 size={48} className="animate-spin text-slate-900" />
+                        <p className="text-slate-900 font-black text-sm uppercase tracking-widest">Processing...</p>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0">
+            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 z-10">
                 <h1 className="text-xl font-bold flex items-center gap-2">
                     {activeTab === 'creators' ? 'Creator Database' : 'Matching Analysis Logs'}
                     <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">
                         {activeTab === 'creators' ? creators.length : (logTab === 'success' ? successLogs.length : logTab === 'lost' ? lostAssets.length : ongoingOffers.length)} Total
                     </span>
                 </h1>
-                <div className="flex gap-4">
-                    <button className="p-2 text-slate-400 hover:text-slate-600"><Search size={20} /></button>
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold text-xs">AD</div>
+                <div className="flex gap-4 items-center">
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="フリーワード検索..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all w-64"
+                        />
+                    </div>
+                    <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        <div className="text-right">
+                            <p className="text-[10px] font-black tracking-widest text-slate-400 uppercase leading-none mb-1">Admin Account</p>
+                            <p className="text-xs font-bold text-slate-900 leading-none truncate max-w-[120px]">
+                                {user?.email || 'admin@nots.jp'}
+                            </p>
+                        </div>
+                        <div className="w-10 h-10 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-slate-100 ring-offset-1">
+                            {user?.email?.[0].toUpperCase() || 'A'}
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -563,17 +606,35 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 </td>
 
                                                 {/* Public Status (Toggle) */}
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-6 py-4 text-center whitespace-nowrap">
                                                     <div className="flex items-center justify-center gap-3">
                                                         <ToggleSwitch
                                                             isOn={creator.is_public}
-                                                            onToggle={() => handleUpdate(creator.id, 'is_public', !creator.is_public)}
+                                                            onToggle={() => {
+                                                                if (!creator.is_public) {
+                                                                    if (window.confirm("このクリエイターを公開設定にしますか？\n（基準未達の場合はフィルタリングにより広告主UIには表示されない可能性があります）")) {
+                                                                        handleUpdate(creator.id, 'is_public', true);
+                                                                    }
+                                                                } else {
+                                                                    handleUpdate(creator.id, 'is_public', false);
+                                                                }
+                                                            }}
                                                         />
-                                                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full border min-w-[50px] text-center ${creator.is_public
-                                                            ? "bg-green-100 text-green-700 border-green-200"
-                                                            : "bg-stone-100 text-stone-500 border-stone-200"
+                                                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full border flex items-center gap-1.5 min-w-[100px] justify-center transition-all ${creator.is_public
+                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                                                            : "bg-amber-50 text-amber-600 border-amber-200"
                                                             }`}>
-                                                            {creator.is_public ? "Public" : "Hidden"}
+                                                            {creator.is_public ? (
+                                                                <>
+                                                                    <CheckCircle2 size={12} className="text-emerald-500" />
+                                                                    <span>Public</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="animate-pulse">🤖</span>
+                                                                    <span>System Hidden</span>
+                                                                </>
+                                                            )}
                                                         </span>
                                                     </div>
                                                 </td>

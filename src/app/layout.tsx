@@ -25,15 +25,14 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "INSIDERS - Beyond the Buzz",
-  description: "Viral is cheap. Insight is priceless. Apply for the exclusive curation network.",
+  title: "INSIDERS. - Inbound Marketing with AI & Elite Creators",
+  description: "インバウンド集客に特化した、S/Aランククリエイター限定の招待制マッチングプラットフォーム。AIによるVIBE解析で、ブランドに最適なクリエイターを自動選定します。",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'INSIDERS',
   },
 };
-
 
 export const viewport: Viewport = {
   themeColor: '#0f172a', // Dark Slate
@@ -44,15 +43,39 @@ export const viewport: Viewport = {
   viewportFit: 'cover', // ノッチ領域まで背景を広げる
 };
 
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "INSIDERS.",
+    "url": "https://insiders-hub.jp",
+    "description": "インバウンド集客に特化した、S/Aランククリエイター限定の招待制マッチングプラットフォーム。AIによるVIBE解析で、ブランドに最適なクリエイターを自動選定します。",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "author": {
+      "@type": "Organization",
+      "name": "株式会社nots"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "39800",
+      "priceCurrency": "JPY",
+      "description": "サブスクリプションモデル（月額 ¥39,800）"
+    }
+  };
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ja" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${playfairDisplay.variable} antialiased`}
         suppressHydrationWarning

@@ -50,6 +50,8 @@ export interface Creator {
     is_verified?: boolean;
     response_rate?: 'HIGH' | 'MEDIUM' | 'LOW';
     is_public?: boolean;
+    is_hot?: boolean;
+    is_ai_recommended?: boolean;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -646,7 +648,7 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     );
 };
 
-const OfferModal = ({ isOpen, onClose, creatorName, onSend }: { isOpen: boolean; onClose: () => void; creatorName: string; onSend: (details: any) => void }) => {
+const OfferModal = ({ isOpen, onClose, creatorName, isHot, onSend }: { isOpen: boolean; onClose: () => void; creatorName: string; isHot: boolean; onSend: (details: any) => void }) => {
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
@@ -745,6 +747,29 @@ const OfferModal = ({ isOpen, onClose, creatorName, onSend }: { isOpen: boolean;
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
                                     <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
                                 </label>
+                                <AnimatePresence>
+                                    {isHot && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mt-4"
+                                        >
+                                            <div className="flex gap-3">
+                                                <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                                                    <Sparkles className="w-4 h-4 text-amber-600" />
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="text-xs font-black text-amber-900 mb-1 leading-tight">
+                                                        💡 {creatorName}さんは現在、非常に人気が高まっています。
+                                                    </p>
+                                                    <p className="text-[10px] font-bold text-amber-700/80 leading-relaxed">
+                                                        より確実にマッチングを成立させるため、無料（Barter）ではなく、<span className="text-amber-900 font-black">謝礼金（推奨: ¥30,000〜）</span>を設定してオファーすることをお勧めします。
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                                 <div className="flex flex-wrap gap-2">
                                     {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
                                         <button
@@ -1039,7 +1064,12 @@ export default function VibeCatalogue({
 
         // 5. 合計スコア（上限は99%）
         const rawScore = baseScore + vibeBonus + tierBonus;
-        const score = Math.min(rawScore, 99);
+        let score = Math.min(rawScore, 99);
+
+        // 6. HOT Boost: 急上昇クリエイターを確実に上位へ (さらに+5ポイント、上限100へ拡大)
+        if (c.is_hot) {
+            score = Math.min(score + 5, 100);
+        }
 
         return { ...c, vibeMatchScore: score, matchedClusters: matched };
     }).sort((a, b) => {
@@ -1077,10 +1107,17 @@ export default function VibeCatalogue({
                     setStep('vibe_check');
                 } else {
                     // Fallback
-                    console.warn("Analysis failed, using dummy data");
+                    console.warn("Analysis failed, using fallback data");
                     setShopVibe(['#和モダン', '#シズル感', '#隠れ家']);
-                    setMatchCount(16);
                     setFilterGenre(selectedGenre);
+                    // フィルタ適用後の件数をセット
+                    const fallbackCount = initialCreators.filter(c => {
+                        const genreMatch = selectedGenre === 'All' || selectedGenre === 'ALL' || (c.genre && c.genre.includes(selectedGenre.toUpperCase()));
+                        const tierOk = c.tier === 'S' || c.tier === 'A';
+                        const publicOk = c.is_public !== false;
+                        return genreMatch && tierOk && publicOk;
+                    }).length;
+                    setMatchCount(fallbackCount);
                     setStep('vibe_check');
                 }
             } catch (error: any) {
@@ -1755,6 +1792,7 @@ export default function VibeCatalogue({
                         isOpen={isModalOpen}
                         onClose={() => setIsModalOpen(false)}
                         creatorName={selectedCreator?.name || ''}
+                        isHot={selectedCreator?.is_hot || false}
                         onSend={handleOfferSent}
                     />
                 )
