@@ -79,7 +79,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                             onClick={() => setIsChatOpen(true)}
                             className="flex-1 py-2 bg-zinc-800 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-zinc-700 transition"
                         >
-                            <MessageCircle className="w-3.5 h-3.5" /> AI自動翻訳チャット
+                            <MessageCircle className="w-3.5 h-3.5" /> 案件進行用チャット
                         </button>
                         <button
                             onClick={() => setShowDeliveryForm(!showDeliveryForm)}
