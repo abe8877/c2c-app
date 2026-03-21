@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Sparkles, ShieldCheck, ArrowRight, AlertCircle, ExternalLink, Crown, Mail, Key, ArrowLeft } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 
-const VALID_CODES = ['BETA2026', 'INSIDERS2026', 'NOTS', 'TESTVIP1'];
+const VALID_CODES = ['INVITATION2026'];
 
 export default function GatewayPage() {
     const router = useRouter();
@@ -121,12 +121,12 @@ export default function GatewayPage() {
                                     </div>
                                     <div>
                                         <h2 className="text-base font-bold text-slate-900">招待コードをお持ちの方</h2>
-                                        <p className="text-[11px] text-slate-500 font-medium">Invite Code を入力してアクセス</p>
+                                        <p className="text-[11px] text-slate-500 font-medium">コードを入力して無料でアクセス</p>
                                     </div>
                                 </div>
 
                                 <div className="relative">
-                                    <input type="text" value={inviteCode} onChange={(e) => { setInviteCode(e.target.value); setError(''); }} placeholder="招待コード (例: BETA2026)" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 text-slate-900 placeholder-slate-400 text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all uppercase" />
+                                    <input type="text" value={inviteCode} onChange={(e) => { setInviteCode(e.target.value); setError(''); }} placeholder="招待コード" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 text-slate-900 placeholder-slate-400 text-sm font-bold outline-none focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all uppercase" />
                                     {inviteCode && <div className="absolute right-4 top-1/2 -translate-y-1/2"><Sparkles className="w-4 h-4 text-teal-500 animate-pulse" /></div>}
                                 </div>
 
@@ -195,7 +195,6 @@ export default function GatewayPage() {
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-slate-900">招待コードをお持ちでない方</h2>
-                            <p className="text-[11px] text-slate-500 font-medium">審査リクエストまたはプレミアム参加</p>
                         </div>
                     </div>
                     <div className="space-y-3">
@@ -203,7 +202,7 @@ export default function GatewayPage() {
                             <ExternalLink className="w-4 h-4 text-slate-400" /> 審査リクエストを送る
                         </a>
                         <a href={stripePaymentUrl} className="w-full py-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 rounded-xl font-bold text-[13px] flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
-                            <Crown className="w-4 h-4" /> 審査をスキップしてプレミアムプランで始める
+                            <Crown className="w-4 h-4" /> 審査をスキップしてすぐにサービスを利用する
                         </a>
                     </div>
                 </motion.div>

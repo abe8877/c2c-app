@@ -1,5 +1,6 @@
 // src/app/advertiser/page.tsx
 import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
 import VibeCatalogue, { Creator } from './_components/VibeCatalogue';
 
 // ジャンルごとの高品質な画像リスト (Unsplash)
@@ -39,6 +40,11 @@ const getImageForGenre = (genre: string, index: number) => {
 
 export default async function AdvertiserPage() {
     const supabase = await createClient();
+
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    if (authError || !session) {
+        redirect('/login');
+    }
 
     const { data: creators, error } = await supabase
         .from('creators')

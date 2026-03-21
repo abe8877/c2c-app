@@ -236,11 +236,11 @@ const CreatorCard = ({
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-            {/* Top Badges: Genre only */}
+            {/* Top Badges */}
             <div className="absolute top-3 left-3 flex gap-1.5 z-10 flex-wrap">
                 {(() => {
-                    const safeGenres = Array.isArray(creator.genre) 
-                        ? creator.genre 
+                    const safeGenres = Array.isArray(creator.genre)
+                        ? creator.genre
                         : creator.genre ? [creator.genre] : [];
                     return safeGenres.slice(0, 3).map((g: string) => (
                         <span
@@ -251,6 +251,16 @@ const CreatorCard = ({
                         </span>
                     ));
                 })()}
+                {creator.is_hot && (
+                    <span className="backdrop-blur-md bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded border border-orange-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+                        <Flame className="w-2.5 h-2.5 fill-current" /> HOT
+                    </span>
+                )}
+                {(parseInt(creator.followers.replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
+                    <span className="backdrop-blur-md bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded border border-amber-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                        <Crown className="w-2.5 h-2.5 fill-current" /> 人気
+                    </span>
+                )}
             </div>
 
             {/* Bottom Content */}
@@ -269,22 +279,10 @@ const CreatorCard = ({
                             </div>
                         </div>
                     )}
-                    {creator.is_hot && (
-                        <div className="bg-orange-500/20 backdrop-blur-md border border-orange-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)] group/hot">
-                            <Flame className="w-2.5 h-2.5 text-orange-400 fill-orange-400" />
-                            <span className="text-[8px] font-black text-orange-400 uppercase tracking-tighter">HOT</span>
-                        </div>
-                    )}
                     {creator.is_ai_recommended && (
                         <div className="bg-indigo-500/20 backdrop-blur-md border border-indigo-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(99,102,241,0.3)] group/ai">
                             <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">AI RECOMMENDED</span>
-                        </div>
-                    )}
-                    {(parseInt(creator.followers.replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
-                        <div className="bg-amber-500/20 backdrop-blur-md border border-amber-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)] group/popular">
-                            <Crown className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                            <span className="text-[8px] font-black text-amber-400 uppercase tracking-tighter">人気</span>
                         </div>
                     )}
                 </div>
@@ -1340,21 +1338,21 @@ export default function VibeCatalogue({
                         </button>
                         {isProfileOpen && (
                             <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
-                                <div className="p-4 border-b border-stone-100 mb-2 text-left">
-                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-flex items-center gap-1 px-1.5 py-0.5 rounded mb-1.5 border border-yellow-200">
-                                        <Sparkles className="w-3 h-3 text-yellow-500" /> {isPremium ? "Premium Shop" : "Basic Shop"}
-                                    </div>
+                                <div className="p-4 border-b border-stone-100 mb-2">
                                     <div className="text-sm font-black text-stone-900 truncate">{clientTag || "WAGYU OMAKASE 凛"}</div>
+                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-block px-1.5 py-0.5 rounded mt-1">
+                                        {isPremium ? "Premium Shop" : "Basic Shop"}
+                                    </div>
                                 </div>
                                 <div className="px-2 pb-2">
                                     <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <User className="w-4 h-4" /> プロフィール編集
+                                        <User className="w-4 h-4" /> プロフィール・店舗情報編集
                                     </button>
-                                    <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <Globe className="w-4 h-4" /> 店舗情報・リンク設定
+                                    <button onClick={() => { setIsProfileOpen(false); window.location.href = '/advertiser/settings'; }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
+                                        <Globe className="w-4 h-4" /> 機能・サブスクリプション設定
                                     </button>
                                     <div className="my-1 border-t border-stone-100" />
-                                    <button 
+                                    <button
                                         onClick={async () => {
                                             const supabase = createClient();
                                             await supabase.auth.signOut();
@@ -1633,19 +1631,19 @@ export default function VibeCatalogue({
                                     {/* Action Proposal Tooltip on Hover */}
                                     <div className="absolute top-full w-80 pt-4 z-50 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none">
                                         <div className="pointer-events-auto shadow-2xl rounded-2xl overflow-hidden border border-stone-100">
-                                           {upsellInsight?.upsellPlan ? (
-                                               <ShopUpsellBanner
-                                                   upsellPlan={upsellInsight.upsellPlan}
-                                                   upsellMessage={upsellInsight.upsellMessage}
-                                               />
-                                           ) : (
+                                            {upsellInsight?.upsellPlan ? (
+                                                <ShopUpsellBanner
+                                                    upsellPlan={upsellInsight.upsellPlan}
+                                                    upsellMessage={upsellInsight.upsellMessage}
+                                                />
+                                            ) : (
                                                 <div className="bg-white p-4">
                                                     <p className="text-xs text-stone-500">現在ご提案できるアクションはありません</p>
                                                 </div>
-                                           )}
+                                            )}
                                         </div>
                                     </div>
-                                    
+
                                     {/* Move Add Video button here */}
                                     <button className="mt-4 w-full bg-stone-50 hover:bg-stone-100 text-stone-400 border-2 border-dashed border-stone-200 py-3 rounded-2xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase tracking-widest">
                                         <Plus className="w-3 h-3" /> 動画を追加

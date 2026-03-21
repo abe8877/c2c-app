@@ -59,7 +59,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
     const toggleRequestedElement = (tag: string) => {
         setFormData(prev => ({
             ...prev,
-            requested_elements: prev.requested_elements.includes(tag) 
+            requested_elements: prev.requested_elements.includes(tag)
                 ? prev.requested_elements.filter(t => t !== tag)
                 : [...prev.requested_elements, tag]
         }));
@@ -109,8 +109,8 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
     if (!isOpen) return null;
 
-    // Translation wrapper component
-    const AITextField = ({ label, field, placeholder, isTextarea = false }: { label: string, field: keyof typeof formData, placeholder: string, isTextarea?: boolean }) => (
+    // AI Translation wrapper helper function (returns JSX directly to avoid unmounting)
+    const renderAITextField = (label: string, field: keyof typeof formData, placeholder: string, isTextarea = false) => (
         <div className="space-y-2">
             <label className="text-sm font-bold text-gray-700">{label}</label>
             <div className="relative group">
@@ -237,7 +237,10 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 </select>
                                             </div>
                                         </div>
-                                        <AITextField label="店舗の魅力・コンセプト (英語)" field="description_en" placeholder="例: 厳選された和牛を提供する隠れ家風レストランです" isTextarea />
+                                        <div>
+                                            <label className="text-sm font-bold text-gray-700 block mb-2">店舗の魅力・コンセプト (英語)</label>
+                                            <textarea value={formData.description_en} onChange={e => updateField('description_en', e.target.value)} placeholder="例: Authentic Wagyu Omakase experience in the heart of Tokyo." rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
@@ -253,11 +256,20 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-100 pb-6">
-                                            <AITextField label="営業時間 (英語)" field="hours_en" placeholder="例: 月〜金 17:00-23:00" />
-                                            <AITextField label="定休日 (英語)" field="closed_days_en" placeholder="例: 不定休" />
+                                            <div>
+                                                <label className="text-sm font-bold text-gray-700 block mb-2">営業時間 (英語)</label>
+                                                <input type="text" value={formData.hours_en} onChange={e => updateField('hours_en', e.target.value)} placeholder="例: Mon-Sun 17:00-23:00" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-bold text-gray-700 block mb-2">定休日 (英語)</label>
+                                                <input type="text" value={formData.closed_days_en} onChange={e => updateField('closed_days_en', e.target.value)} placeholder="例: Irregular holidays" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                            </div>
                                         </div>
-                                        <AITextField label="住所 (英語)" field="address_en" placeholder="例: 東京都渋谷区〇〇" />
-                                        <AITextField label="アクセス情報 (英語)" field="access_info_en" placeholder="例: 渋谷駅ハチコウ口から徒歩3分" />
+                                        <div>
+                                            <label className="text-sm font-bold text-gray-700 block mb-2">住所 (英語)</label>
+                                            <input type="text" value={formData.address_en} onChange={e => updateField('address_en', e.target.value)} placeholder="例: 1-2-3 Shibuya, Shibuya-ku, Tokyo" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                        </div>
+                                        {renderAITextField("アクセス情報 (英語)", "access_info_en", "例: 渋谷駅ハチコウ口から徒歩3分")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">Google Map URL</label>
@@ -277,7 +289,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                     </div>
 
                                     <div className="space-y-6">
-                                        <AITextField label="提供するプリセットメニュー (英語)" field="preset_menu_en" placeholder="例: 特選和牛コース（8品）" />
+                                        {renderAITextField("クリエイターに提供するメニュー・サービス (英語)", "preset_menu_en", "例: 特選和牛コース（8品）")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-3">対応可能な食事制限</label>
@@ -350,7 +362,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 <input type="text" value={formData.preset_request} onChange={e => updateField('preset_request', e.target.value)} placeholder="顔出しNGなど" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                         </div>
-                                        <AITextField label="特別ルール・注意事項 (英語)" field="shoot_rules_en" placeholder="例: 他のお客様の顔が映らないよう配慮をお願いします" isTextarea />
+                                        {renderAITextField("特別ルール・注意事項 (英語)", "shoot_rules_en", "例: 他のお客様の顔が映らないよう配慮をお願いします", true)}
                                     </div>
                                 </motion.div>
                             )}
@@ -388,10 +400,6 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
                                     <div className="mt-8 p-6 bg-teal-50 border border-teal-100 rounded-3xl text-center space-y-3">
                                         <CheckCircle2 className="w-10 h-10 text-teal-400 mx-auto" />
-                                        <div>
-                                            <h4 className="font-black text-teal-900">すべての設定が完了しました！</h4>
-                                            <p className="text-xs font-bold text-teal-700 mt-1">保存ボタンを押してプロフィールを更新してください。</p>
-                                        </div>
                                     </div>
                                 </motion.div>
                             )}
@@ -421,8 +429,8 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             onClick={handleSave}
                             className="bg-gradient-to-r from-teal-500 to-emerald-400 text-white px-6 py-3 rounded-full text-sm font-black flex items-center gap-2 transition hover:opacity-90 shadow-lg shadow-teal-500/30 active:scale-95 border-2 border-white"
                         >
-                            <Sparkles className="w-4 h-4" /> 
-                            {currentStepIndex === 0 ? 'このまま保存して公開' : '保存して公開する'}
+                            <Sparkles className="w-4 h-4" />
+                            {currentStepIndex === 0 ? '保存して公開する' : '保存して公開する'}
                         </button>
                     </div>
                 </div>
