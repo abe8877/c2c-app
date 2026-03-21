@@ -724,7 +724,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${plan === 'barter' ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-300'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <div className="font-bold text-lg flex items-center gap-2">🎁 食事のみ</div>
+                                            <div className="font-bold text-lg flex items-center gap-2">🎁 ギフティング</div>
                                             {plan === 'barter' && <CheckCircle className="w-5 h-5 text-black" />}
                                         </div>
                                         <div className="text-xs text-gray-500">金銭報酬なし（商品提供のみ）</div>
@@ -734,7 +734,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${plan === 'paid' ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-300'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <div className="font-bold text-lg flex items-center gap-2">💰 報酬あり</div>
+                                            <div className="font-bold text-lg flex items-center gap-2">💰 報酬付きオファー</div>
                                             {plan === 'paid' && <CheckCircle className="w-5 h-5 text-black" />}
                                         </div>
                                         <div className="text-xs text-gray-500">食事提供 + 謝礼金</div>
@@ -780,7 +780,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         <div>
                                             <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
                                             <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
-                                                こちらのクリエイターは需要が非常に高いため、<span className="font-black">謝礼金（Rewards）の提示</span>を強く推奨します。無報酬の場合、承認率が著しく低下する可能性があります。
+                                                こちらのクリエイターは人気が高いため、<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
                                             </p>
                                         </div>
                                     </div>
