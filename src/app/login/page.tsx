@@ -68,7 +68,7 @@ export default function LoginPage() {
                     INSIDERS<span className="text-teal-500">.</span>
                 </h1>
                 <p className="text-slate-500 text-sm font-medium">
-                    広告主様・パートナー店舗様 ログイン
+                    広告主様・パートナー店舗様 ログインページ
                 </p>
             </motion.div>
 
@@ -87,6 +87,7 @@ export default function LoginPage() {
                                 <input
                                     type="email"
                                     required
+                                    autoComplete="username email"
                                     value={email}
                                     onChange={(e) => { setEmail(e.target.value); setError(''); }}
                                     placeholder="メールアドレス"
@@ -98,6 +99,7 @@ export default function LoginPage() {
                                 <input
                                     type="password"
                                     required
+                                    autoComplete="current-password"
                                     value={password}
                                     onChange={(e) => { setPassword(e.target.value); setError(''); }}
                                     placeholder="パスワード"

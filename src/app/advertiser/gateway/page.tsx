@@ -105,7 +105,7 @@ export default function GatewayPage() {
                 </h1>
                 <p className="text-slate-500 text-sm md:text-base max-w-md mx-auto leading-relaxed">
                     インバウンド特化型クリエイターマッチング。<br className="hidden md:block" />
-                    招待コードを入力して、VIBE解析を開始してください。
+                    招待コードを入力して、貴店の魅力解析をお試し下さい。
                 </p>
             </motion.div>
 

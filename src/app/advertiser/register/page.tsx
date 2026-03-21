@@ -69,6 +69,7 @@ export default function AdvertiserRegisterPage() {
                             <input
                                 type="email"
                                 required
+                                autoComplete="username email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="info@nots.jp"
