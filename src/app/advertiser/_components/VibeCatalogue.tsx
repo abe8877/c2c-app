@@ -238,14 +238,19 @@ const CreatorCard = ({
 
             {/* Top Badges: Genre only */}
             <div className="absolute top-3 left-3 flex gap-1.5 z-10 flex-wrap">
-                {(creator.genre || []).slice(0, 2).map((g) => (
-                    <span
-                        key={g}
-                        className="backdrop-blur-md bg-black/30 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 font-bold flex items-center gap-1"
-                    >
-                        {genreEmoji[g] || '✨'} {g}
-                    </span>
-                ))}
+                {(() => {
+                    const safeGenres = Array.isArray(creator.genre) 
+                        ? creator.genre 
+                        : creator.genre ? [creator.genre] : [];
+                    return safeGenres.slice(0, 3).map((g: string) => (
+                        <span
+                            key={g}
+                            className="backdrop-blur-md bg-black/30 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 font-bold flex items-center gap-1"
+                        >
+                            {genreEmoji[g] || '✨'} {g}
+                        </span>
+                    ));
+                })()}
             </div>
 
             {/* Bottom Content */}
@@ -1251,7 +1256,7 @@ export default function VibeCatalogue({
                     NOTS<span className="text-yellow-500">C2C</span>
                 </div>
                 <div className="flex items-center gap-3 relative">
-                    <button 
+                    <button
                         onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsChatListOpen(false); setIsProfileOpen(false); }}
                         className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors"
                     >
@@ -1288,37 +1293,37 @@ export default function VibeCatalogue({
                                 {(localAssets.length > 0 ? localAssets : initialAssets)
                                     .filter(a => a.creator && (a.status === 'OFFERED' || a.status === 'COMPLETED' || a.status === 'approved' || a.status === 'ACTIVE' || a.status === 'PENDING_APPROVAL'))
                                     .map(a => (
-                                    <button 
-                                        key={a.id} 
-                                        onClick={() => {
-                                            const fullCreator = initialCreators.find(c => c.id === a.creator_id) || {
-                                                id: a.creator_id || 'mock',
-                                                name: a.creator?.name || '',
-                                                tiktok_handle: a.creator?.tiktok_handle,
-                                                avatar_url: a.creator?.avatar_url,
-                                                thumbnail_url: a.creator?.avatar_url,
-                                                genre: ['LIFESTYLE'],
-                                                ethnicity: 'ASIAN',
-                                                vibe_tags: [],
-                                                followers: '1K',
-                                                is_public: true,
-                                                is_verified: false
-                                            } as Creator;
-                                            setSelectedCreator(fullCreator);
-                                            setIsChatOpen(true);
-                                            setIsChatListOpen(false);
-                                        }}
-                                        className="w-full p-4 flex items-center gap-3 hover:bg-stone-50 border-b border-stone-50 transition text-left"
-                                    >
-                                        <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0 border border-stone-200">
-                                            <img src={a.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80'} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <div className="text-xs font-bold text-stone-900 truncate">{a.creator?.name || a.creator?.tiktok_handle}</div>
-                                            <div className="text-[10px] text-stone-400 truncate mt-0.5">タップしてメッセージを開く</div>
-                                        </div>
-                                    </button>
-                                ))}
+                                        <button
+                                            key={a.id}
+                                            onClick={() => {
+                                                const fullCreator = initialCreators.find(c => c.id === a.creator_id) || {
+                                                    id: a.creator_id || 'mock',
+                                                    name: a.creator?.name || '',
+                                                    tiktok_handle: a.creator?.tiktok_handle,
+                                                    avatar_url: a.creator?.avatar_url,
+                                                    thumbnail_url: a.creator?.avatar_url,
+                                                    genre: ['LIFESTYLE'],
+                                                    ethnicity: 'ASIAN',
+                                                    vibe_tags: [],
+                                                    followers: '1K',
+                                                    is_public: true,
+                                                    is_verified: false
+                                                } as Creator;
+                                                setSelectedCreator(fullCreator);
+                                                setIsChatOpen(true);
+                                                setIsChatListOpen(false);
+                                            }}
+                                            className="w-full p-4 flex items-center gap-3 hover:bg-stone-50 border-b border-stone-50 transition text-left"
+                                        >
+                                            <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0 border border-stone-200">
+                                                <img src={a.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80'} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <div className="text-xs font-bold text-stone-900 truncate">{a.creator?.name || a.creator?.tiktok_handle}</div>
+                                                <div className="text-[10px] text-stone-400 truncate mt-0.5">タップしてメッセージを開く</div>
+                                            </div>
+                                        </button>
+                                    ))}
                                 {localAssets.length === 0 && (
                                     <div className="p-8 text-center text-xs text-stone-400">現在メッセージはありません</div>
                                 )}
@@ -1327,7 +1332,7 @@ export default function VibeCatalogue({
                     )}
 
                     <div className="relative">
-                        <button 
+                        <button
                             onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotificationOpen(false); setIsChatListOpen(false); }}
                             className="w-8 h-8 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm transition-transform active:scale-95"
                         >
@@ -1335,11 +1340,11 @@ export default function VibeCatalogue({
                         </button>
                         {isProfileOpen && (
                             <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
-                                <div className="p-4 border-b border-stone-100 mb-2">
-                                    <div className="text-sm font-black text-stone-900 truncate">{clientTag || "WAGYU OMAKASE 凛"}</div>
-                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-block px-1.5 py-0.5 rounded mt-1">
-                                        {isPremium ? "Premium Shop" : "Basic Shop"}
+                                <div className="p-4 border-b border-stone-100 mb-2 text-left">
+                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-flex items-center gap-1 px-1.5 py-0.5 rounded mb-1.5 border border-yellow-200">
+                                        <Sparkles className="w-3 h-3 text-yellow-500" /> {isPremium ? "Premium Shop" : "Basic Shop"}
                                     </div>
+                                    <div className="text-sm font-black text-stone-900 truncate">{clientTag || "WAGYU OMAKASE 凛"}</div>
                                 </div>
                                 <div className="px-2 pb-2">
                                     <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
@@ -1349,7 +1354,14 @@ export default function VibeCatalogue({
                                         <Globe className="w-4 h-4" /> 店舗情報・リンク設定
                                     </button>
                                     <div className="my-1 border-t border-stone-100" />
-                                    <button className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition">
+                                    <button 
+                                        onClick={async () => {
+                                            const supabase = createClient();
+                                            await supabase.auth.signOut();
+                                            window.location.href = '/login';
+                                        }}
+                                        className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition"
+                                    >
                                         <X className="w-4 h-4" /> ログアウト
                                     </button>
                                 </div>
@@ -1518,7 +1530,7 @@ export default function VibeCatalogue({
                                                 <button
                                                     key={tab.key}
                                                     onClick={() => setFilterGenre(tab.key)}
-                                                    className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-300 flex items-center gap-2 ${filterGenre === tab.key
+                                                    className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-300 ${filterGenre === tab.key
                                                         ? 'bg-black text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-110 ring-2 ring-black ring-offset-2 z-10'
                                                         : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600'
                                                         } ${tab.key === initialGenre ? 'border-yellow-400/50 border-2' : ''}`}
@@ -1534,12 +1546,7 @@ export default function VibeCatalogue({
                                         </div>
 
                                         <AnimatePresence>
-                                            {upsellInsight && (
-                                                <ShopUpsellBanner
-                                                    upsellPlan={upsellInsight.upsellPlan}
-                                                    upsellMessage={upsellInsight.upsellMessage}
-                                                />
-                                            )}
+                                            {/* ShopUpsellBanner moved to 資産鮮度 */}
                                         </AnimatePresence>
                                     </div>
 
@@ -1615,7 +1622,7 @@ export default function VibeCatalogue({
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.3 }}
-                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform relative"
                                 >
                                     <div className="text-5xl font-black text-green-500 flex items-center gap-1">
                                         <AnimatedCounter value={stats.freshness} />
@@ -1623,6 +1630,22 @@ export default function VibeCatalogue({
                                     </div>
                                     <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">資産鮮度</p>
 
+                                    {/* Action Proposal Tooltip on Hover */}
+                                    <div className="absolute top-full w-80 pt-4 z-50 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none">
+                                        <div className="pointer-events-auto shadow-2xl rounded-2xl overflow-hidden border border-stone-100">
+                                           {upsellInsight?.upsellPlan ? (
+                                               <ShopUpsellBanner
+                                                   upsellPlan={upsellInsight.upsellPlan}
+                                                   upsellMessage={upsellInsight.upsellMessage}
+                                               />
+                                           ) : (
+                                                <div className="bg-white p-4">
+                                                    <p className="text-xs text-stone-500">現在ご提案できるアクションはありません</p>
+                                                </div>
+                                           )}
+                                        </div>
+                                    </div>
+                                    
                                     {/* Move Add Video button here */}
                                     <button className="mt-4 w-full bg-stone-50 hover:bg-stone-100 text-stone-400 border-2 border-dashed border-stone-200 py-3 rounded-2xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase tracking-widest">
                                         <Plus className="w-3 h-3" /> 動画を追加
@@ -1964,9 +1987,9 @@ export default function VibeCatalogue({
                 creatorName={selectedVideo?.name || ''}
             />
 
-            <ShopSettingsModal 
-                isOpen={isSettingsOpen} 
-                onClose={() => setIsSettingsOpen(false)} 
+            <ShopSettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
             />
         </div >
     );

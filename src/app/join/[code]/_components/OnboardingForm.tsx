@@ -129,7 +129,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
                 {/* 新UI：Official Curation Status (マニュアル準拠) */}
                 <div className="w-full bg-[#0a0a0a] rounded-3xl border border-white/10 p-6 md:p-8 flex flex-col relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl rounded-full pointer-events-none" />
-                    
+
                     <div className="flex justify-between items-center pb-5 border-b border-white/5 mb-6">
                         <div>
                             <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-1">
@@ -174,7 +174,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
 
                         <div className={creator.id === 'new-applicant' ? "" : "bg-white/5 rounded-xl p-4 border border-white/5 mt-2"}>
                             <p className="text-[11px] text-zinc-300 leading-relaxed font-light">
-                                {creator.id === 'new-applicant' 
+                                {creator.id === 'new-applicant'
                                     ? "申請後、INSIDERS.キュレーションチームがあなたのSNSアカウントを厳査します。承認された場合、登録された連絡先へ通知が届きます。"
                                     : <>INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「Cinematic」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />下部のフォームを完了して本登録を済ませることで、保留中のオファーを開放できます。</>
                                 }
@@ -183,7 +183,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
 
                         {/* Current Display Preview */}
                         <div className="pt-6 border-t border-white/5">
-                            <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-4">Current Display Preview (現在の表示プレビュー)</p>
+                            <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-4">Current Display Preview</p>
                             <div className="flex justify-center">
                                 <div className="w-[180px] aspect-[9/16] rounded-2xl overflow-hidden relative shadow-2xl border border-white/10 group cursor-default">
                                     {/* Thumbnail Preview (Best Shot) */}
@@ -195,7 +195,7 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                         )}
                                     </div>
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10" />
-                                    
+
                                     {/* Badges */}
                                     <div className="absolute top-2 left-2 z-20 flex flex-wrap gap-1">
                                         <span className="bg-white/20 backdrop-blur-md text-[6px] text-white px-1.5 py-0.5 rounded font-bold border border-white/10 uppercase">FOOD</span>
@@ -222,14 +222,14 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                     {formData.portfolio_video_url && (
                                         <div className="absolute inset-0 flex items-center justify-center z-30 opacity-0 bg-black/60 transition-opacity pointer-events-none group-hover:opacity-100">
                                             <p className="text-[6px] text-white font-bold tracking-tighter text-center px-4">
-                                                ADVERTISERS WILL SEE YOUR PORTFOLIO VIA:<br/>
+                                                ADVERTISERS WILL SEE YOUR PORTFOLIO VIA:<br />
                                                 <span className="text-amber-400 truncate block w-full">{formData.portfolio_video_url}</span>
                                             </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                            <p className="text-[9px] text-zinc-500 text-center mt-3 font-medium">※広告主にはこのように表示されます（Tier、VIBE等）</p>
+                            <p className="text-[9px] text-zinc-500 text-center mt-3 font-medium">※広告主にはこのように表示されます</p>
                         </div>
                     </div>
                 </div>
@@ -255,12 +255,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                 className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all font-mono text-xs placeholder:text-zinc-700"
                                 placeholder="https://www.tiktok.com/@..."
                             />
-                            <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                                <p className="text-[9px] text-amber-400 font-bold leading-relaxed">
-                                    ⚠️ 注意: 動画は「公開(Public)」設定である必要があります。<br/>
-                                    下書き（Draft）や限定公開（Friends only / Private）状態のURLは、広告主側で正常にプレビューが表示されません。
-                                </p>
-                            </div>
                         </div>
 
                         <div className="space-y-4">

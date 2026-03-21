@@ -27,7 +27,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         genre: 'レストラン',
         area: '渋谷・原宿',
         description_en: 'Authentic Wagyu Omakase experience in the heart of Tokyo.',
-        
+
         // 2. Access & Operations
         hours_en: 'Mon-Sun: 17:00 - 23:00',
         closed_days_en: 'Irregular holidays',
@@ -44,6 +44,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         // 4. Shooting Rules
         preferred_shoot_time: 'Anytime',
         preset_request: '顔出し可能 / スタッフ映り込みOK',
+        requested_elements: ['看板メニュー', '店内の雰囲気'] as string[],
         shoot_rules_en: 'Please refrain from filming other customers. Flash photography is allowed.',
 
         // 5. Social Links
@@ -55,13 +56,22 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const toggleRequestedElement = (tag: string) => {
+        setFormData(prev => ({
+            ...prev,
+            requested_elements: prev.requested_elements.includes(tag) 
+                ? prev.requested_elements.filter(t => t !== tag)
+                : [...prev.requested_elements, tag]
+        }));
+    };
+
     const toggleDietaryOption = (option: string) => {
         setFormData(prev => {
             const exists = prev.dietary_options.includes(option);
             return {
                 ...prev,
-                dietary_options: exists 
-                    ? prev.dietary_options.filter(o => o !== option) 
+                dietary_options: exists
+                    ? prev.dietary_options.filter(o => o !== option)
                     : [...prev.dietary_options, option]
             };
         });
@@ -105,7 +115,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
             <label className="text-sm font-bold text-gray-700">{label}</label>
             <div className="relative group">
                 {isTextarea ? (
-                    <textarea 
+                    <textarea
                         value={formData[field] as string}
                         onChange={(e) => updateField(field, e.target.value)}
                         placeholder={placeholder}
@@ -113,7 +123,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800"
                     />
                 ) : (
-                    <input 
+                    <input
                         type="text"
                         value={formData[field] as string}
                         onChange={(e) => updateField(field, e.target.value)}
@@ -121,15 +131,15 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800"
                     />
                 )}
-                
+
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
+                    <button
                         type="button"
                         onClick={(e) => handleTranslate(field, e)}
                         disabled={isTranslating === field}
                         className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
-                            ${isTranslating === field 
-                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
+                            ${isTranslating === field
+                                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                                 : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300'}`}
                     >
                         {isTranslating === field ? (
@@ -146,7 +156,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
     return (
         <div className="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center p-4 backdrop-blur-sm" onClick={onClose}>
-            <motion.div 
+            <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -161,7 +171,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             <X className="w-6 h-6" />
                         </button>
                     </div>
-                    
+
                     <div className="space-y-2 flex-1 overflow-x-auto md:overflow-visible flex md:flex-col snap-x">
                         {STEPS.map((step, idx) => {
                             const isActive = currentStepIndex === idx;
@@ -171,9 +181,9 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                     key={step.id}
                                     onClick={() => setCurrentStepIndex(idx)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold shrink-0 snap-start
-                                        ${isActive 
-                                            ? 'bg-stone-800 text-white shadow-inner border border-stone-700/50' 
-                                            : isPast 
+                                        ${isActive
+                                            ? 'bg-stone-800 text-white shadow-inner border border-stone-700/50'
+                                            : isPast
                                                 ? 'text-stone-400 hover:bg-stone-800/50 hover:text-stone-300'
                                                 : 'text-stone-500 hover:bg-stone-800/30'}`}
                                 >
@@ -202,12 +212,12 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     <div className="flex-1 overflow-y-auto p-8 pt-10 pb-24 space-y-8">
                         <AnimatePresence mode="wait">
                             {currentStep === 'basic' && (
-                                <motion.div key="basic" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="space-y-6">
+                                <motion.div key="basic" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                     <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                                         <Info className="w-6 h-6 text-blue-500" /> 基本情報 (Basic Info)
                                     </h3>
                                     <p className="text-gray-500 text-sm font-bold">店舗の顔となる情報です。魅力的なプロフィールを作成しましょう。</p>
-                                    
+
                                     <div className="space-y-4">
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">店舗名 *</label>
@@ -233,11 +243,14 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             )}
 
                             {currentStep === 'access' && (
-                                <motion.div key="access" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="space-y-6">
-                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                        <MapPin className="w-6 h-6 text-red-500" /> アクセス・営業情報
-                                    </h3>
-                                    
+                                <motion.div key="access" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                            <MapPin className="w-6 h-6 text-red-500" /> アクセス・営業情報
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                    </div>
+
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-100 pb-6">
                                             <AITextField label="営業時間 (英語)" field="hours_en" placeholder="例: 月〜金 17:00-23:00" />
@@ -245,7 +258,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                         </div>
                                         <AITextField label="住所 (英語)" field="address_en" placeholder="例: 東京都渋谷区〇〇" />
                                         <AITextField label="アクセス情報 (英語)" field="access_info_en" placeholder="例: 渋谷駅ハチコウ口から徒歩3分" />
-                                        
+
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">Google Map URL</label>
                                             <input type="text" value={formData.google_map_url} onChange={e => updateField('google_map_url', e.target.value)} placeholder="https://maps.google.com/..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
@@ -255,26 +268,28 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             )}
 
                             {currentStep === 'inbound' && (
-                                <motion.div key="inbound" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="space-y-6">
-                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                        <Utensils className="w-6 h-6 text-orange-500" /> インバウンド・メニュー設定
-                                    </h3>
-                                    
+                                <motion.div key="inbound" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                            <Utensils className="w-6 h-6 text-orange-500" /> インバウンド・メニュー設定
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                    </div>
+
                                     <div className="space-y-6">
                                         <AITextField label="提供するプリセットメニュー (英語)" field="preset_menu_en" placeholder="例: 特選和牛コース（8品）" />
-                                        
+
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-3">対応可能な食事制限</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {['Vegan', 'Vegetarian', 'Halal-friendly', 'Gluten-Free', 'Dairy-Free'].map(option => (
-                                                    <button 
+                                                    <button
                                                         key={option}
                                                         onClick={() => toggleDietaryOption(option)}
-                                                        className={`px-4 py-2 border-2 rounded-xl text-xs font-bold transition-all ${
-                                                            formData.dietary_options.includes(option) 
-                                                                ? 'bg-black text-white border-black' 
-                                                                : 'bg-white text-gray-500 hover:border-gray-300 border-gray-200'
-                                                        }`}
+                                                        className={`px-4 py-2 border-2 rounded-xl text-xs font-bold transition-all ${formData.dietary_options.includes(option)
+                                                            ? 'bg-black text-white border-black'
+                                                            : 'bg-white text-gray-500 hover:border-gray-300 border-gray-200'
+                                                            }`}
                                                     >
                                                         {option} {formData.dietary_options.includes(option) && <CheckCircle2 className="w-3 h-3 inline ml-1" />}
                                                     </button>
@@ -299,13 +314,31 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             )}
 
                             {currentStep === 'rules' && (
-                                <motion.div key="rules" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="space-y-6">
-                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                        <Camera className="w-6 h-6 text-purple-500" /> 撮影ルール・要望設定
-                                    </h3>
-                                    
+                                <motion.div key="rules" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                            <Camera className="w-6 h-6 text-purple-500" /> 撮影ルール・要望設定
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                    </div>
+
                                     <div className="space-y-6">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <label className="text-sm font-bold text-gray-700 block">撮影で盛り込んでほしい要素</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
+                                                    <button
+                                                        key={tag}
+                                                        onClick={() => toggleRequestedElement(tag)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-bold border transition-all duration-200 ${formData.requested_elements.includes(tag) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                                                    >
+                                                        {tag}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">希望する撮影時間帯</label>
                                                 <select value={formData.preferred_shoot_time} onChange={e => updateField('preferred_shoot_time', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
@@ -323,11 +356,14 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             )}
 
                             {currentStep === 'social' && (
-                                <motion.div key="social" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="space-y-6">
-                                    <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                        <Globe className="w-6 h-6 text-pink-500" /> ソーシャルリンク設定
-                                    </h3>
-                                    
+                                <motion.div key="social" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                    <div className="space-y-1">
+                                        <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                            <Globe className="w-6 h-6 text-pink-500" /> ソーシャルリンク設定
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                    </div>
+
                                     <div className="space-y-4">
                                         <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex gap-4 items-center">
                                             <div className="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg text-white font-black">
@@ -363,29 +399,31 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     </div>
 
                     {/* Bottom Action Bar */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 md:px-8 py-5 flex items-center justify-between" style={{boxShadow: '0 -10px 30px rgba(0,0,0,0.05)'}}>
-                        <button 
-                            onClick={prevStep}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition ${currentStepIndex === 0 ? 'invisible' : ''}`}
-                        >
-                            <ChevronLeft className="w-4 h-4" /> 戻る
-                        </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 md:px-6 py-4 flex items-center justify-between" style={{ boxShadow: '0 -10px 30px rgba(0,0,0,0.05)' }}>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={prevStep}
+                                className={`flex items-center gap-2 px-3 py-2 text-sm font-bold text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-xl transition ${currentStepIndex === 0 ? 'invisible' : ''}`}
+                            >
+                                <ChevronLeft className="w-4 h-4" /> 戻る
+                            </button>
+                            {currentStepIndex < STEPS.length - 1 && (
+                                <button
+                                    onClick={nextStep}
+                                    className="bg-black text-white px-4 py-2 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-stone-800 transition active:scale-95 shadow-sm"
+                                >
+                                    次へ <ChevronRight className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
 
-                        {currentStepIndex < STEPS.length - 1 ? (
-                            <button 
-                                onClick={nextStep}
-                                className="bg-black text-white px-8 py-3 rounded-full text-sm font-black flex items-center gap-2 hover:bg-stone-800 transition shadow-lg hover:shadow-xl active:scale-95"
-                            >
-                                次へ <ChevronRight className="w-4 h-4" />
-                            </button>
-                        ) : (
-                            <button 
-                                onClick={handleSave}
-                                className="bg-gradient-to-r from-teal-500 to-emerald-400 text-white px-8 py-3 rounded-full text-sm font-black flex items-center gap-2 transition hover:opacity-90 shadow-lg shadow-teal-500/30 active:scale-95 border-2 border-white"
-                            >
-                                <Sparkles className="w-4 h-4" /> 保存して公開する
-                            </button>
-                        )}
+                        <button
+                            onClick={handleSave}
+                            className="bg-gradient-to-r from-teal-500 to-emerald-400 text-white px-6 py-3 rounded-full text-sm font-black flex items-center gap-2 transition hover:opacity-90 shadow-lg shadow-teal-500/30 active:scale-95 border-2 border-white"
+                        >
+                            <Sparkles className="w-4 h-4" /> 
+                            {currentStepIndex === 0 ? 'このまま保存して公開' : '保存して公開する'}
+                        </button>
                     </div>
                 </div>
             </motion.div>

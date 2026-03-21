@@ -62,9 +62,9 @@ export default function RootLayout({
     },
     "offers": {
       "@type": "Offer",
-      "price": "39800",
+      "price": "40000",
       "priceCurrency": "JPY",
-      "description": "サブスクリプションモデル（月額 ¥39,800）"
+      "description": "サブスクリプションモデル（月額 ¥40,000）"
     }
   };
 
