@@ -1026,19 +1026,25 @@ export default function VibeCatalogue({
     const [freeOffers, setFreeOffers] = useState(3);
     const [isPremium, setIsPremium] = useState(false);
     const [isFetchingInfo, setIsFetchingInfo] = useState(true);
+    const [shop, setShop] = useState<any>(null);
 
     useEffect(() => {
         const fetchShopInfo = async () => {
             const supabase = createClient();
+            // ログイン中のユーザーを取得
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { setIsFetchingInfo(false); return; }
+
             const { data, error } = await supabase
                 .from('shops')
-                .select('free_offers_remaining, is_premium')
-                .eq('id', 'demo-shop')
+                .select('name, is_premium, logo_url, free_offers_remaining')
+                .eq('id', user.id)
                 .single();
 
             if (data && !error) {
-                setFreeOffers(data.free_offers_remaining);
-                setIsPremium(data.is_premium);
+                setShop(data);
+                setFreeOffers(data.free_offers_remaining ?? 3);
+                setIsPremium(data.is_premium ?? false);
             }
             setIsFetchingInfo(false);
         };
@@ -1334,24 +1340,28 @@ export default function VibeCatalogue({
                     <div className="relative">
                         <button
                             onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotificationOpen(false); setIsChatListOpen(false); }}
-                            className="w-8 h-8 rounded-full bg-stone-200 overflow-hidden border-2 border-white shadow-sm transition-transform active:scale-95"
+                            className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden border-2 border-white shadow-sm transition-transform active:scale-95"
                         >
-                            <img src="https://i.pravatar.cc/100?img=33" className="w-full h-full object-cover" alt="User" />
+                            <img
+                                src={shop?.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(shop?.name || 'Shop')}&background=0D8ABC&color=fff`}
+                                className="w-full h-full object-cover"
+                                alt="Shop"
+                            />
                         </button>
                         {isProfileOpen && (
-                            <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
-                                <div className="p-4 border-b border-stone-100 mb-2">
-                                    <div className="text-sm font-black text-stone-900 truncate">{clientTag || "WAGYU OMAKASE 凛"}</div>
-                                    <div className="text-[10px] font-bold text-yellow-600 bg-yellow-50 inline-block px-1.5 py-0.5 rounded mt-1">
-                                        {isPremium ? "Premium Shop" : "Basic Shop"}
+                            <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50">
+                                <div className="p-4 border-b border-slate-100 mb-2">
+                                    <div className="text-sm font-black text-slate-900 truncate">{shop?.name || "店舗名未設定"}</div>
+                                    <div className="text-[10px] font-bold text-amber-600 bg-amber-50 inline-block px-1.5 py-0.5 rounded mt-1">
+                                        {shop?.is_premium ? "Premium Shop" : "Basic Shop"}
                                     </div>
                                 </div>
                                 <div className="px-2 pb-2">
                                     <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <User className="w-4 h-4" /> プロフィール・店舗情報編集
+                                        <User className="w-4 h-4" /> 店舗情報設定
                                     </button>
                                     <button onClick={() => { setIsProfileOpen(false); window.location.href = '/advertiser/settings'; }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <Globe className="w-4 h-4" /> 機能・サブスクリプション設定
+                                        <Globe className="w-4 h-4" /> 機能設定
                                     </button>
                                     <div className="my-1 border-t border-stone-100" />
                                     <button
@@ -1387,20 +1397,20 @@ export default function VibeCatalogue({
                                         <div className="flex items-center justify-center mb-6">
                                             <div className="flex -space-x-4">
                                                 {topCreators?.map((creator, i) => (
-                                                <div key={i} className="relative w-12 h-16 rounded-lg border-2 border-white shadow-md overflow-hidden transform transition-transform hover:-translate-y-2 hover:z-20 cursor-pointer bg-slate-100">
-                                                    {/* 動画のサムネイルを縦長（TikTok風）にクロップして表示 */}
-                                                    <img
-                                                        className="w-full h-full object-cover"
-                                                        src={creator.thumbnail_url} 
-                                                        alt={creator.name}
-                                                    />
-                                                    <div className="absolute inset-0 bg-slate-900/10" />
-                                                </div>
+                                                    <div key={i} className="relative w-12 h-16 rounded-lg border-2 border-white shadow-md overflow-hidden transform transition-transform hover:-translate-y-2 hover:z-20 cursor-pointer bg-slate-100">
+                                                        {/* 動画のサムネイルを縦長（TikTok風）にクロップして表示 */}
+                                                        <img
+                                                            className="w-full h-full object-cover"
+                                                            src={creator.thumbnail_url}
+                                                            alt={creator.name}
+                                                        />
+                                                        <div className="absolute inset-0 bg-slate-900/10" />
+                                                    </div>
                                                 ))}
                                                 {/* +1000のトラストバッジ */}
                                                 <div className="w-12 h-16 rounded-lg border-2 border-white bg-slate-900 text-white text-[11px] font-black flex flex-col items-center justify-center z-10 shadow-md">
-                                                <span className="text-teal-400 leading-none mb-0.5">1000+</span>
-                                                <span className="text-[8px] opacity-80 leading-none">Creators</span>
+                                                    <span className="text-teal-400 leading-none mb-0.5">1000+</span>
+                                                    <span className="text-[8px] opacity-80 leading-none">Creators</span>
                                                 </div>
                                             </div>
                                         </div>

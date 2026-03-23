@@ -3,21 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, MessageSquareText, Video, X } from 'lucide-react';
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function OnboardingModal() {
     const [isOpen, setIsOpen] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
     useEffect(() => {
-        // 初回ログイン時のみ表示するロジック (localStorageを利用)
-        const hasSeenOnboarding = localStorage.getItem('insiders_onboarding_seen');
-        if (!hasSeenOnboarding) {
-            setIsOpen(true);
-        }
-    }, []);
+        const checkOnboardingStatus = async () => {
+            // 1. ログイン中のユーザーを取得
+            const { data: { user } } = await supabase.auth.getUser();
 
-    const handleClose = () => {
+            if (user) {
+                setUserId(user.id);
+                // 2. shopsテーブルからフラグを取得
+                const { data: shop } = await supabase
+                    .from('shops')
+                    .select('has_seen_onboarding')
+                    .eq('id', user.id)
+                    .single();
+
+                // 3. まだ見ていなければモーダルを開く
+                if (shop && shop.has_seen_onboarding === false) {
+                    setIsOpen(true);
+                }
+            }
+        };
+        checkOnboardingStatus();
+    }, [supabase]);
+
+    const handleClose = async () => {
         setIsOpen(false);
-        localStorage.setItem('insiders_onboarding_seen', 'true');
+        if (userId) {
+            // 4. 閉じた瞬間にDBのフラグを true に更新
+            await supabase
+                .from('shops')
+                .update({ has_seen_onboarding: true })
+                .eq('id', userId);
+        }
     };
 
     const steps = [
