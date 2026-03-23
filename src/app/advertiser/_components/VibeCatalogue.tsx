@@ -491,10 +491,10 @@ function AnalyzingScreen() {
                 <div className="absolute inset-0 border-4 border-yellow-500 rounded-full border-t-transparent animate-spin"></div>
                 <Sparkles className="absolute inset-0 m-auto text-yellow-500 animate-pulse" size={48} />
             </div>
-            <h2 className="text-3xl font-black tracking-tighter mb-4 uppercase">店舗の魅力を言語化中...</h2>
+            <h2 className="text-3xl font-black tracking-tighter mb-4 uppercase">貴店の魅力を言語化中...</h2>
             <div className="inline-flex flex-col items-center gap-3 text-stone-400 font-black text-xs uppercase tracking-widest">
                 <p className="animate-pulse">URLを分析しています...</p>
-                <p className="animate-pulse delay-700">ターゲット層を定義しています...</p>
+                <p className="animate-pulse delay-700">親和性の高いクリエイターを選定しています...</p>
             </div>
         </div>
     );
@@ -924,12 +924,14 @@ export default function VibeCatalogue({
     initialCreators,
     initialAssets = [],
     clientTag,
-    stats = { offeredCount: 0, completedCount: 0, freshness: 0 }
+    stats = { offeredCount: 0, completedCount: 0, freshness: 0 },
+    topCreators
 }: {
     initialCreators: Creator[],
     initialAssets?: Asset[],
     clientTag?: string,
-    stats?: { offeredCount: number; completedCount: number; freshness: number; }
+    stats?: { offeredCount: number; completedCount: number; freshness: number; },
+    topCreators?: { thumbnail_url: string; name: string }[]
 }) {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -1382,19 +1384,33 @@ export default function VibeCatalogue({
                             {step === 'input' && (
                                 <div className="space-y-12 py-12 text-center">
                                     <div className="space-y-6">
-                                        <div className="flex justify-center -space-x-4">
-                                            {[11, 12, 13, 14, 15].map(i => (
-                                                <img
-                                                    key={i}
-                                                    src={`https://i.pravatar.cc/100?img=${i}`}
-                                                    className="w-12 h-12 rounded-full border-4 border-stone-50 shadow-sm"
-                                                    alt="avatar"
-                                                />
-                                            ))}
-                                            <div className="w-12 h-12 rounded-full border-4 border-stone-50 bg-yellow-400 flex items-center justify-center font-bold text-xs shadow-sm">+3k</div>
+                                        <div className="flex items-center justify-center mb-6">
+                                            <div className="flex -space-x-4">
+                                                {topCreators?.map((creator, i) => (
+                                                <div key={i} className="relative w-12 h-16 rounded-lg border-2 border-white shadow-md overflow-hidden transform transition-transform hover:-translate-y-2 hover:z-20 cursor-pointer bg-slate-100">
+                                                    {/* 動画のサムネイルを縦長（TikTok風）にクロップして表示 */}
+                                                    <img
+                                                        className="w-full h-full object-cover"
+                                                        src={creator.thumbnail_url} 
+                                                        alt={creator.name}
+                                                    />
+                                                    <div className="absolute inset-0 bg-slate-900/10" />
+                                                </div>
+                                                ))}
+                                                {/* +1000のトラストバッジ */}
+                                                <div className="w-12 h-16 rounded-lg border-2 border-white bg-slate-900 text-white text-[11px] font-black flex flex-col items-center justify-center z-10 shadow-md">
+                                                <span className="text-teal-400 leading-none mb-0.5">1000+</span>
+                                                <span className="text-[8px] opacity-80 leading-none">Creators</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="text-green-600 font-bold flex justify-center items-center gap-2 text-sm bg-green-50 w-fit mx-auto px-4 py-1.5 rounded-full border border-green-100">
-                                            <RefreshCw className="w-4 h-4 animate-spin-slow" /> 248組 が今週マッチングしました
+
+                                        {/* トラストバッジ（コピー変更） */}
+                                        <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-800 border border-teal-100 rounded-full px-4 py-1.5 mb-8 shadow-sm">
+                                            <Sparkles className="w-4 h-4 text-teal-500" />
+                                            <span className="text-[13px] font-bold tracking-wide">
+                                                独自のグローバルネットワーク <strong className="text-slate-900">1,000+名</strong> からAIが厳選
+                                            </span>
                                         </div>
                                         <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
                                             インバウンド集客を開始

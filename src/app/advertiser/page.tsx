@@ -2,6 +2,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import VibeCatalogue, { Creator } from './_components/VibeCatalogue';
+import OnboardingModal from './_components/OnboardingModal';
 
 // ジャンルごとの高品質な画像リスト (Unsplash)
 const GENRE_IMAGES: Record<string, string[]> = {
@@ -84,9 +85,18 @@ export default async function AdvertiserPage() {
         };
     });
 
-    // 1. (デモ用) 自分の店舗ID（client_tag）を取得
-    const { data: myShop } = await supabase.from('shops').select('*').limit(1).single();
-    const clientTag = myShop?.client_tag;
+    // 1. 本番用: ログインユーザーの店舗データ取得
+    const { data: myShop } = await supabase.from('shops').select('*').eq('id', session.user.id).single();
+    const clientTag = myShop?.client_tag || "WAGYU OMAKASE 凛";
+
+    // Supabaseからサムネイルを持っているS/Aランククリエイターを取得
+    const { data: topCreators } = await supabase
+        .from('creators')
+        .select('thumbnail_url, name')
+        .eq('is_public', true)
+        .not('thumbnail_url', 'is', null) // サムネがある人のみ
+        .order('followers', { ascending: false })
+        .limit(5);
 
     // 2. 統計情報の取得 (交渉中、獲得動画、資産鮮度)
     let stats = {
@@ -132,6 +142,15 @@ export default async function AdvertiserPage() {
     }
 
     return (
-        <VibeCatalogue initialCreators={enrichedCreators} initialAssets={assets} clientTag={clientTag} stats={stats} />
+        <>
+            <OnboardingModal />
+            <VibeCatalogue 
+                initialCreators={enrichedCreators} 
+                initialAssets={assets} 
+                clientTag={clientTag} 
+                stats={stats} 
+                topCreators={topCreators || []}
+            />
+        </>
     );
 }

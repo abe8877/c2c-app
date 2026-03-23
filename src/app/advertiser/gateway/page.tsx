@@ -172,8 +172,30 @@ export default function GatewayPage() {
                                     </div>
                                 )}
 
-                                <button type="submit" disabled={!email || password.length < 6 || isLoading} className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98]">
-                                    {isLoading ? 'アカウント作成中...' : '登録して貴店の魅力分析へ進む'}
+                                <button
+                                    type="submit"
+                                    disabled={!email || password.length < 6 || isLoading}
+                                    className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] relative overflow-hidden"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                            >
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                                            </motion.div>
+                                            <span>アカウント作成中...</span>
+                                            {/* ボタン全体に流れるような光のエフェクト */}
+                                            <motion.div
+                                                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+                                                animate={{ translateX: ['100%', '-100%'] }}
+                                                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                                            />
+                                        </>
+                                    ) : (
+                                        '登録して貴店の魅力分析へ進む'
+                                    )}
                                 </button>
                             </motion.form>
                         )}
