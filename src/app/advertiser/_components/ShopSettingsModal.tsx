@@ -150,7 +150,6 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     </button>
                 </div>
             </div>
-            <p className="text-[10px] text-gray-400 font-bold uppercase">💡 インバウンド向けに英語での提供が推奨されます。日本語で入力後、ボタンを押すと自動翻訳されます。</p>
         </div>
     );
 
@@ -216,7 +215,6 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                     <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                                         <Info className="w-6 h-6 text-blue-500" /> 基本情報
                                     </h3>
-                                    <p className="text-gray-500 text-sm font-bold">店舗の顔となる情報です。魅力的なプロフィールを作成しましょう。</p>
 
                                     <div className="space-y-4">
                                         <div>
@@ -225,20 +223,14 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">ジャンル</label>
+                                                <label className="text-sm font-bold text-gray-700 block mb-2">カテゴリ *（近いものを選択下さい）</label>
                                                 <select value={formData.genre} onChange={e => updateField('genre', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
-                                                    <option>レストラン</option><option>カフェ</option><option>アクティビティ</option><option>美容・サロン</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">エリア</label>
-                                                <select value={formData.area} onChange={e => updateField('area', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
-                                                    <option>渋谷・原宿</option><option>新宿・代々木</option><option>銀座・丸の内</option><option>浅草・上野</option>
+                                                    <option>FOOD</option><option>TRAVEL</option><option>EXPERIENCE</option><option>BEAUTY</option><option>SHOPPING</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-bold text-gray-700 block mb-2">店舗の魅力・コンセプト (英語)</label>
+                                            <label className="text-sm font-bold text-gray-700 block mb-2">コンセプトやイチオシポイント * （英語）</label>
                                             <textarea value={formData.description_en} onChange={e => updateField('description_en', e.target.value)} placeholder="例: Authentic Wagyu Omakase experience in the heart of Tokyo." rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                         </div>
                                     </div>
@@ -257,19 +249,19 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                     <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-100 pb-6">
                                             <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">営業時間 (英語)</label>
+                                                <label className="text-sm font-bold text-gray-700 block mb-2">営業時間（英語）</label>
                                                 <input type="text" value={formData.hours_en} onChange={e => updateField('hours_en', e.target.value)} placeholder="例: Mon-Sun 17:00-23:00" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                             <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">定休日 (英語)</label>
+                                                <label className="text-sm font-bold text-gray-700 block mb-2">定休日（英語）</label>
                                                 <input type="text" value={formData.closed_days_en} onChange={e => updateField('closed_days_en', e.target.value)} placeholder="例: Irregular holidays" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-bold text-gray-700 block mb-2">住所 (英語)</label>
+                                            <label className="text-sm font-bold text-gray-700 block mb-2">住所（英語）</label>
                                             <input type="text" value={formData.address_en} onChange={e => updateField('address_en', e.target.value)} placeholder="例: 1-2-3 Shibuya, Shibuya-ku, Tokyo" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                         </div>
-                                        {renderAITextField("アクセス情報 (英語)", "access_info_en", "例: 渋谷駅ハチコウ口から徒歩3分")}
+                                        {renderAITextField("アクセス情報（英語）", "access_info_en", "例: 渋谷駅ハチコウ口から徒歩3分")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">Google Map URL</label>
@@ -362,7 +354,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 <input type="text" value={formData.preset_request} onChange={e => updateField('preset_request', e.target.value)} placeholder="顔出しNGなど" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                         </div>
-                                        {renderAITextField("特別ルール・注意事項 (英語)", "shoot_rules_en", "例: 他のお客様の顔が映らないよう配慮をお願いします", true)}
+                                        {renderAITextField("特別ルール・注意事項（英語）", "shoot_rules_en", "例: 他のお客様の顔が映らないよう配慮をお願いします", true)}
                                     </div>
                                 </motion.div>
                             )}
@@ -396,10 +388,6 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 <input type="text" value={formData.tiktok_handle} onChange={e => updateField('tiktok_handle', e.target.value)} placeholder="@your_account" className="w-full bg-transparent border-b border-gray-300 py-2 outline-none focus:border-black font-bold text-gray-900" />
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div className="mt-8 p-6 bg-teal-50 border border-teal-100 rounded-3xl text-center space-y-3">
-                                        <CheckCircle2 className="w-10 h-10 text-teal-400 mx-auto" />
                                     </div>
                                 </motion.div>
                             )}

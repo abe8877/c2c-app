@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Bell, CreditCard, Shield, AlertCircle, CheckCircle2, Sparkles, Crown, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bell, Sparkles, Crown, ShieldCheck } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 
 export default function SettingsPage() {
     const router = useRouter();
     const [emailNotifications, setEmailNotifications] = useState(true);
-    const [lineNotifications, setLineNotifications] = useState(false);
+    // const [lineNotifications, setLineNotifications] = useState(false); // 使っていない場合はコメントアウト/削除でOK
     const [shop, setShop] = useState<any>(null);
+
+    // 🌟 追加：Stripeポータル遷移のローディング状態管理
+    const [isPortalLoading, setIsPortalLoading] = useState(false);
 
     const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,6 +34,26 @@ export default function SettingsPage() {
         };
         fetchShop();
     }, [supabase]);
+
+    // 🌟 追加：Stripeカスタマーポータルへの遷移ハンドラー
+    const handlePortalRedirect = async () => {
+        setIsPortalLoading(true);
+        try {
+            // Task 1で作成したAPI Routeを呼び出す
+            const res = await fetch('/api/stripe/portal', { method: 'POST' });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
+
+            // 取得したStripeのポータルURLへ遷移
+            window.location.href = data.url;
+        } catch (error: any) {
+            console.error(error);
+            alert(`エラー: ${error.message}`);
+        } finally {
+            setIsPortalLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
@@ -125,16 +148,11 @@ export default function SettingsPage() {
                                 クレジットカードの変更、領収書のダウンロード、プランのアップグレードや解約は専用ポータルから行えます。
                             </p>
                             <button
-                                onClick={async () => {
-                                    // Stripeのカスタマーポータルへ遷移（API構築後に稼働）
-                                    alert("Stripeカスタマーポータルへ遷移します（※API構築後に稼働します）");
-                                    // const res = await fetch('/api/stripe/create-portal', { method: 'POST' });
-                                    // const { url } = await res.json();
-                                    // if (url) window.location.href = url;
-                                }}
-                                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-lg transition-colors whitespace-nowrap shrink-0"
+                                onClick={handlePortalRedirect}
+                                disabled={isPortalLoading}
+                                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-lg transition-colors whitespace-nowrap shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                お支払い情報・プランの管理
+                                {isPortalLoading ? '読み込み中...' : 'お支払い情報・プランの管理'}
                             </button>
                         </div>
                     </div>

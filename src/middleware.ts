@@ -15,11 +15,17 @@ export async function middleware(request: NextRequest) {
     const ip = forwardedFor ? forwardedFor.split(',')[0] : request.headers.get('x-real-ip') ?? '127.0.0.1';
 
 
-    // APIルートのみを保護（Server Actions は各アクション内で個別にレートリミットをかける）
+    // APIルートのみを保護
     if (request.nextUrl.pathname.startsWith('/api')) {
-        const { success } = await ratelimit.limit(ip);
-        if (!success) {
-            return new NextResponse('Too Many Requests', { status: 429 });
+        // Vercel KV の環境変数がセットされている場合のみレートリミットを実行（ローカルでのクラッシュ防止）
+        if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+            const { success } = await ratelimit.limit(ip);
+            if (!success) {
+                return new NextResponse('Too Many Requests', { status: 429 });
+            }
+        } else {
+            // 環境変数がない場合は警告だけ出してスキップ
+            console.warn('⚠️ Vercel KV is not configured. Skipping rate limit.');
         }
     }
 
