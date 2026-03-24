@@ -10,13 +10,15 @@ export async function offerCreator({
     shopId,
     creatorName,
     creatorAvatar,
-    offerDetails
+    offerDetails,
+    barterDetails,
 }: {
     creatorId: string;
     shopId: string;
     creatorName: string;
     creatorAvatar?: string;
     offerDetails?: any;
+    barterDetails?: string;
 }) {
     const supabase = await createClient();
 
@@ -71,7 +73,8 @@ export async function offerCreator({
             shop_id: shopId,
             creator_id: creatorId,
             status: 'OFFERED',
-            offer_details: offerDetails // Saving offer details correctly
+            offer_details: offerDetails,
+            barter_details: barterDetails ?? null, // 必須提供価値（バーター内容）
         })
         .select()
         .single();
@@ -98,9 +101,9 @@ export async function offerCreator({
         console.error("Slack Fetch Error:", slackErr);
     }
 
-    return { 
-        success: true, 
+    return {
+        success: true,
         freeOffersRemaining: Math.max(0, remaining),
-        assetId: asset?.id 
+        assetId: asset?.id
     };
 }

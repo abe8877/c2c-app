@@ -3,47 +3,40 @@ import Stripe from 'stripe';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// Stripeインスタンスの初期化
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-02-25.clover',
-});
+// 🔥 追加：Vercelビルド時の静的解析エラーを回避し、常に動的に実行する
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        // Next.js 15 仕様 (cookiesはawaitが必要)
+        // 🔥 修正：Stripeの初期化をトップレベルから関数内部に移動
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+            apiVersion: '2026-02-25.clover',
+        });
+
         const cookieStore = await cookies();
 
-        // Supabase Server Clientの初期化（他のファイルに依存しない独立記述）
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
-                    getAll() {
-                        return cookieStore.getAll();
-                    },
+                    getAll() { return cookieStore.getAll(); },
                     setAll(cookiesToSet) {
                         try {
                             cookiesToSet.forEach(({ name, value, options }) =>
                                 cookieStore.set(name, value, options)
                             );
-                        } catch (error) {
-                            // Server Componentからの呼び出し時は無視
-                        }
+                        } catch (error) { }
                     },
                 },
             }
         );
 
-        // 1. セッションからユーザー情報を取得
+        // 1. ユーザー情報取得
         const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        if (authError || !user) {
-            console.error('[Auth Error]:', authError);
-            return NextResponse.json({ error: '認証エラー：ログインし直してください' }, { status: 401 });
-        }
-
-        // 2. shopsテーブルから stripe_customer_id を取得
+        // 2. 顧客ID取得
         const { data: shop, error: dbError } = await supabase
             .from('shops')
             .select('stripe_customer_id')
@@ -51,28 +44,19 @@ export async function POST(req: Request) {
             .single();
 
         if (dbError || !shop?.stripe_customer_id) {
-            console.error('[DB Error or No Customer]:', dbError, shop);
-            return NextResponse.json(
-                { error: 'Stripe顧客情報が見つかりません。テスト環境のDBを確認してください。' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'Stripe customer not found' }, { status: 400 });
         }
 
-        // 3. カスタマーポータルセッションの発行
+        // 3. ポータルセッション発行
         const session = await stripe.billingPortal.sessions.create({
             customer: shop.stripe_customer_id,
-            // 戻り先を広告主の設定画面に指定
             return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/advertiser/settings`,
         });
 
-        // 4. 発行したURLをフロントに返す
         return NextResponse.json({ url: session.url });
 
     } catch (error: any) {
-        console.error('[Stripe Portal Catch Error]:', error);
-        return NextResponse.json(
-            { error: `サーバーエラー: ${error.message}` },
-            { status: 500 }
-        );
+        console.error('[Stripe Portal Error]:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

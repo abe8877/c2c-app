@@ -229,10 +229,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 </select>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-gray-700 block mb-2">コンセプトやイチオシポイント * （英語）</label>
-                                            <textarea value={formData.description_en} onChange={e => updateField('description_en', e.target.value)} placeholder="例: Authentic Wagyu Omakase experience in the heart of Tokyo." rows={3} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
-                                        </div>
+                                        {renderAITextField('コンセプトやイチオシポイント *（英語）', 'description_en', '例: Authentic Wagyu Omakase experience in the heart of Tokyo.', true)}
                                     </div>
                                 </motion.div>
                             )}

@@ -684,6 +684,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
+    const [barterDetails, setBarterDetails] = useState('');
 
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
@@ -806,6 +807,23 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 </div>
                             </div>
 
+                            {/* 🎁 Barter（必須提供価値）入力エリア */}
+                            <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100">
+                                <label className="flex items-center gap-2 text-sm font-black text-slate-900 mb-1">
+                                    🎁 クリエイターへの提供内容 <span className="text-red-500 text-xs">*</span>
+                                </label>
+                                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                                    店頭で体験・提供する内容を具体的に記載してください。<br />
+                                    <span className="font-bold text-amber-600">人気メニューや独自の体験を提案するとクリエイターの承諾率が高まります。</span>
+                                </p>
+                                <textarea
+                                    value={barterDetails}
+                                    onChange={(e) => setBarterDetails(e.target.value)}
+                                    placeholder="例：ヘッドスパ60分無料、1泊2食付きペア宿泊、飲食代1万円分まで無料"
+                                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none h-20 text-sm placeholder:text-slate-400 shadow-inner"
+                                />
+                            </div>
+
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
@@ -818,7 +836,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 <div className="relative">
                                     <textarea
                                         className="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-800 leading-relaxed font-mono outline-none focus:ring-2 focus:ring-black resize-none"
-                                        defaultValue={`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`}
+                                        defaultValue={`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.${barterDetails ? `\nWe'd love to offer you: ${barterDetails}` : ''
+                                            }`}
                                     />
                                     <div className="absolute bottom-3 right-3 text-[10px] text-gray-400 bg-white/80 px-2 py-1 rounded backdrop-blur">
                                         AI Draft v1.2
@@ -832,7 +851,13 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
 
                         <div className="p-6 pt-0 shrink-0 bg-white">
                             <button
-                                onClick={() => onSend({ plan, amount, selectedTags })}
+                                onClick={() => {
+                                    if (!barterDetails.trim()) {
+                                        alert('「クリエイターへの提供価値」を入力してください。\n魅力的な提供内容がオファー承諾率を高めます！');
+                                        return;
+                                    }
+                                    onSend({ plan, amount, selectedTags, barterDetails });
+                                }}
                                 className="w-full bg-black text-white font-bold text-lg py-4 rounded-xl shadow-xl hover:bg-gray-800 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <Send className="w-5 h-5" />
@@ -1038,7 +1063,7 @@ export default function VibeCatalogue({
 
             const { data, error } = await supabase
                 .from('shops')
-                .select('name, is_premium, logo_url, free_offers_remaining')
+                .select('id, name, is_premium, logo_url, free_offers_remaining')
                 .eq('id', user.id)
                 .single();
 
@@ -1183,10 +1208,11 @@ export default function VibeCatalogue({
         try {
             const res = await offerCreator({
                 creatorId: selectedCreator.id,
-                shopId: 'demo-shop', // Mock ID
+                shopId: shop?.id || clientTag || 'demo-shop', // 本物のshop IDを使用
                 creatorName: selectedCreator.name,
                 creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url || undefined,
-                offerDetails: details
+                offerDetails: details,
+                barterDetails: details.barterDetails, // 提供価値を渡す
             });
 
             if (res.success) {
@@ -1196,6 +1222,22 @@ export default function VibeCatalogue({
                 }
                 if (res.assetId) {
                     setCurrentAssetId(res.assetId);
+                    // 新しいassetをlocalAssetsに追加して即時UIに反映
+                    setLocalAssets(prev => [
+                        ...prev,
+                        {
+                            id: res.assetId!,
+                            client_tag: clientTag || '',
+                            creator_id: selectedCreator.id,
+                            status: 'OFFERED',
+                            created_at: new Date().toISOString(),
+                            creator: {
+                                name: selectedCreator.name,
+                                tiktok_handle: selectedCreator.name,
+                                avatar_url: selectedCreator.thumbnail_url || selectedCreator.avatar || undefined,
+                            }
+                        } as Asset
+                    ]);
                 }
                 setIsSent(true);
                 setTimeout(() => {
@@ -1274,14 +1316,21 @@ export default function VibeCatalogue({
                         <div className="absolute top-14 right-16 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
-                                <div className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer">
-                                    <div className="text-xs font-bold text-stone-900 mb-1">🎉 オファーが受諾されました</div>
-                                    <div className="text-[10px] text-stone-500">Elena Tokyoさんがオファーを受諾しました！チャットで詳細を詰めましょう。</div>
-                                </div>
-                                <div className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer">
-                                    <div className="text-xs font-bold text-stone-900 mb-1">📅 次のアクション：日程調整</div>
-                                    <div className="text-[10px] text-stone-500">Kenta Vlogさんとの撮影日程を調整してください。</div>
-                                </div>
+                                {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'OFFERED').length === 0 && (
+                                    <div className="p-8 text-center text-xs text-stone-400">新しい通知はありません</div>
+                                )}
+                                {localAssets.filter(a => a.status === 'COMPLETED').map(a => (
+                                    <div key={`notif-completed-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
+                                        <div className="text-xs font-bold text-stone-900 mb-1">🎬 動画が納品されました</div>
+                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！「資産管理」タブで確認できます。</div>
+                                    </div>
+                                ))}
+                                {localAssets.filter(a => a.status === 'OFFERED').slice(-3).reverse().map(a => (
+                                    <div key={`notif-offered-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); const creator = initialCreators.find(c => c.id === a.creator_id); if (creator) { setSelectedCreator(creator); setIsChatOpen(true); } }}>
+                                        <div className="text-xs font-bold text-stone-900 mb-1">📤 オファー送信済み</div>
+                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんへのオファーを確認中です。返信をお待ちください。</div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

@@ -51,26 +51,26 @@ export default function OnboardingModal() {
     const steps = [
         {
             icon: <Sparkles className="w-5 h-5 text-amber-500" />,
-            title: "1. VIBE解析 & 検索",
-            desc: "AIが貴店と相性の良いインバウンドクリエイターを世界中から抽出し、カタログ化します。",
+            title: "1. 店舗分析 & マッチング",
+            desc: "URLを入力するだけで、貴店と相性の良いインバウンドクリエイターをピックアップします。",
             color: "bg-amber-50 border-amber-100"
         },
         {
             icon: <Send className="w-5 h-5 text-blue-500" />,
             title: "2. オファー送信",
-            desc: "気になるクリエイターに「招待オファー」をワンタップで送信。複雑な条件交渉は不要です。",
+            desc: "気になるクリエイターに案件オファーを簡単送信。テンプレを使えば面倒な条件交渉は不要。",
             color: "bg-blue-50 border-blue-100"
         },
         {
             icon: <MessageSquareText className="w-5 h-5 text-teal-500" />,
             title: "3. AIコンシェルジュと日程確定",
-            desc: "マッチング成立後、専用チャットが開通。言葉の壁はAIが自動翻訳し、日程と要望をスマートに確定させます。",
+            desc: "マッチング成立後、チャットが開通。AIが自動翻訳し、日程や要望を簡単に決められます。",
             color: "bg-teal-50 border-teal-100"
         },
         {
             icon: <Video className="w-5 h-5 text-indigo-500" />,
-            title: "4. 来店＆動画アセット納品",
-            desc: "クリエイターが来店・撮影。納品されたPR動画は「Asset Hub」で管理し、二次利用も可能です。",
+            title: "4. 来店＆動画納品",
+            desc: "クリエイターが来店・撮影。納品された動画は「Asset Hub」で管理し、二次利用も可能です。",
             color: "bg-indigo-50 border-indigo-100"
         }
     ];
