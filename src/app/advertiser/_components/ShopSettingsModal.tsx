@@ -214,7 +214,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                             {currentStep === 'basic' && (
                                 <motion.div key="basic" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                     <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                        <Info className="w-6 h-6 text-blue-500" /> 基本情報 (Basic Info)
+                                        <Info className="w-6 h-6 text-blue-500" /> 基本情報
                                     </h3>
                                     <p className="text-gray-500 text-sm font-bold">店舗の顔となる情報です。魅力的なプロフィールを作成しましょう。</p>
 
@@ -283,7 +283,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                 <motion.div key="inbound" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                     <div className="space-y-1">
                                         <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                            <Utensils className="w-6 h-6 text-orange-500" /> インバウンド・メニュー設定
+                                            <Utensils className="w-6 h-6 text-orange-500" /> メニュー情報
                                         </h3>
                                         <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
                                     </div>

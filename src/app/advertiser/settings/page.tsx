@@ -71,17 +71,6 @@ export default function SettingsPage() {
                                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                             </label>
                         </div>
-
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <div>
-                                <h3 className="font-bold text-slate-900 text-sm">LINE連携・通知</h3>
-                                <p className="text-xs text-slate-500 font-medium mt-1">LINEでマッチングの即時通知を受け取る</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" checked={lineNotifications} onChange={(e) => setLineNotifications(e.target.checked)} />
-                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                            </label>
-                        </div>
                     </div>
                 </motion.section>
 
@@ -98,7 +87,7 @@ export default function SettingsPage() {
                             <h3 className="font-bold text-teal-900 mb-1 flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-teal-600" /> 無料オファー特典（招待枠）
                             </h3>
-                            <p className="text-sm text-teal-700">残りの招待コード利用枠です。0になるとプレミアムへの移行が必要です。</p>
+                            <p className="text-sm text-teal-700">残りの招待コード利用枠です。0になるとベーシックプランへの移行が必要です。</p>
                         </div>
                         <div className="text-4xl font-black text-teal-600 drop-shadow-sm">
                             {shop?.free_offers_remaining ?? 0} <span className="text-sm font-bold text-teal-600/70">回</span>
@@ -120,7 +109,7 @@ export default function SettingsPage() {
                                     <ShieldCheck className="w-3 h-3 text-teal-400" /> 現在アクティブなプラン
                                 </div>
                                 <div className="text-xl font-black">
-                                    {shop?.is_premium ? "Premium Shop プラン" : "Basic Shop (無料招待枠) プラン"}
+                                    {shop?.is_premium ? "Premium Shop プラン" : "トライアルプラン"}
                                 </div>
                             </div>
                             <div className="text-right">

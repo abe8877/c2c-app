@@ -102,7 +102,7 @@ export default function OnboardingModal() {
                                 Welcome to INSIDERS. <span className="text-teal-400">✨</span>
                             </h2>
                             <p className="text-slate-300 text-sm">
-                                バズを資産に変える、インバウンド特化型マッチングプラットフォームへようこそ。
+                                バズを集客資産に変える、インバウンド特化型マッチングプラットフォームへようこそ。
                             </p>
                         </div>
 
@@ -130,7 +130,7 @@ export default function OnboardingModal() {
                                 onClick={handleClose}
                                 className="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors shadow-md shadow-teal-500/20"
                             >
-                                魅力分析（カタログ）を開始する
+                                クリエイターマッチングを開始する
                             </button>
                         </div>
                     </motion.div>

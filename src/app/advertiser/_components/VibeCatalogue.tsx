@@ -9,7 +9,8 @@ import {
     AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
-    Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target
+    Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target,
+    SettingsIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -1353,15 +1354,15 @@ export default function VibeCatalogue({
                                 <div className="p-4 border-b border-slate-100 mb-2">
                                     <div className="text-sm font-black text-slate-900 truncate">{shop?.name || "店舗名未設定"}</div>
                                     <div className="text-[10px] font-bold text-amber-600 bg-amber-50 inline-block px-1.5 py-0.5 rounded mt-1">
-                                        {shop?.is_premium ? "Premium Shop" : "Basic Shop"}
+                                        {shop?.is_premium ? "ベーシックプラン" : "トライアルプラン"}
                                     </div>
                                 </div>
                                 <div className="px-2 pb-2">
                                     <button onClick={() => { setIsSettingsOpen(true); setIsProfileOpen(false); }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <User className="w-4 h-4" /> 店舗情報設定
+                                        <User className="w-4 h-4" /> プロフィール編集
                                     </button>
                                     <button onClick={() => { setIsProfileOpen(false); window.location.href = '/advertiser/settings'; }} className="w-full text-left px-3 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-lg flex items-center gap-2 transition">
-                                        <Globe className="w-4 h-4" /> 機能設定
+                                        <SettingsIcon className="w-4 h-4" /> 設定
                                     </button>
                                     <div className="my-1 border-t border-stone-100" />
                                     <button
@@ -1419,7 +1420,7 @@ export default function VibeCatalogue({
                                         <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-800 border border-teal-100 rounded-full px-4 py-1.5 mb-8 shadow-sm">
                                             <Sparkles className="w-4 h-4 text-teal-500" />
                                             <span className="text-[13px] font-bold tracking-wide">
-                                                独自のグローバルネットワーク <strong className="text-slate-900">1,000+名</strong> からAIが厳選
+                                                1000組以上の精査済みクリエイター群から最適なクリエイターをご提案
                                             </span>
                                         </div>
                                         <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
