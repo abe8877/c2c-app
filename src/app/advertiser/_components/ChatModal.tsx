@@ -35,7 +35,9 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
     const supabase = createClient();
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     useEffect(() => {

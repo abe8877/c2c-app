@@ -10,7 +10,7 @@ type Step = 'basic' | 'access' | 'inbound' | 'rules' | 'social';
 const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
     { id: 'basic', label: '基本情報', icon: <Info className="w-4 h-4" /> },
     { id: 'access', label: 'アクセス・営業', icon: <MapPin className="w-4 h-4" /> },
-    { id: 'inbound', label: 'インバウンド・メニュー', icon: <Utensils className="w-4 h-4" /> },
+    { id: 'inbound', label: 'メニュー情報', icon: <Utensils className="w-4 h-4" /> },
     { id: 'rules', label: '撮影ルール', icon: <Camera className="w-4 h-4" /> },
     { id: 'social', label: 'ソーシャルリンク', icon: <Globe className="w-4 h-4" /> },
 ];
@@ -295,19 +295,6 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                         {option} {formData.dietary_options.includes(option) && <CheckCircle2 className="w-3 h-3 inline ml-1" />}
                                                     </button>
                                                 ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                                            <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">英語対応レベル</label>
-                                                <select value={formData.english_friendly_level} onChange={e => updateField('english_friendly_level', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
-                                                    <option>Basic (翻訳機など使用)</option><option>Conversational (日常会話程度)</option><option>Advanced (流暢)</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-sm font-bold text-gray-700 block mb-2">予約サイトURL (インバウンド向け)</label>
-                                                <input type="text" value={formData.reservation_url} onChange={e => updateField('reservation_url', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                         </div>
                                     </div>

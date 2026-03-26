@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { analyzeAssetInsight } from "@/app/actions/analyze-asset-insight";
 import { analyzeShopVibe } from "@/app/actions/analyze-shop-vibe";
 import { offerCreator } from '@/app/actions/offer-creator';
+import { translateText } from '@/app/actions/translate';
 import { createClient } from '@/utils/supabase/client';
 import ShopUpsellBanner from "./ShopUpsellBanner";
 import ShopSettingsModal from "./ShopSettingsModal";
@@ -549,7 +550,11 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     const nextId = useRef(5);
 
     const scrollToBottom = () => {
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        setTimeout(() => {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
     };
 
     const assistantTemplates: Record<string, { sent: string; reply: string }> = {
@@ -685,10 +690,35 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     const [amount, setAmount] = useState<number>(15000);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
     const [barterDetails, setBarterDetails] = useState('');
+    const [invitationMessage, setInvitationMessage] = useState(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`);
+    const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     };
+
+    const handleTranslate = async (text: string, field: 'barter' | 'message') => {
+        if (!text) return;
+        setIsTranslating(field);
+        try {
+            const result = await translateText(text);
+            if (result.success && result.translatedText) {
+                if (field === 'barter') setBarterDetails(result.translatedText);
+                else setInvitationMessage(result.translatedText);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsTranslating(null);
+        }
+    };
+
+    // Update message when barterDetails or plan changes, but only if user hasn't heavily customized it? 
+    // For now, let's keep it simple as in the current code where it was a defaultValue.
+    // Changing to controlled for easier translation.
+    useEffect(() => {
+        setInvitationMessage(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.${barterDetails ? `\nWe'd love to offer you: ${barterDetails}` : ''}`);
+    }, [plan, amount, barterDetails, creatorName]);
 
     return (
         <AnimatePresence>
@@ -739,7 +769,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             <div className="font-bold text-lg flex items-center gap-2">💰 報酬付きオファー</div>
                                             {plan === 'paid' && <CheckCircle className="w-5 h-5 text-black" />}
                                         </div>
-                                        <div className="text-xs text-gray-500">食事提供 + 謝礼金</div>
+                                        <div className="text-xs text-gray-500">商品提供 + 謝礼金</div>
                                     </div>
                                 </div>
 
@@ -776,9 +806,6 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 </AnimatePresence>
                                 {isHighDemand && (
                                     <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                                            <Crown className="w-5 h-5 text-amber-600" />
-                                        </div>
                                         <div>
                                             <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
                                             <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
@@ -788,7 +815,6 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     </div>
                                 )}
                             </div>
-
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
                                     <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
@@ -808,43 +834,62 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             </div>
 
                             {/* 🎁 Barter（必須提供価値）入力エリア */}
-                            <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100">
+                            <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100 group">
                                 <label className="flex items-center gap-2 text-sm font-black text-slate-900 mb-1">
-                                    🎁 クリエイターへの提供内容 <span className="text-red-500 text-xs">*</span>
+                                    🎁 クリエイターへの提供内容（英語）<span className="text-red-500 text-xs">*</span>
                                 </label>
                                 <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                                    店頭で体験・提供する内容を具体的に記載してください。<br />
+                                    店頭で体験・提供する内容を具体的に記載してください。
                                     <span className="font-bold text-amber-600">人気メニューや独自の体験を提案するとクリエイターの承諾率が高まります。</span>
                                 </p>
-                                <textarea
-                                    value={barterDetails}
-                                    onChange={(e) => setBarterDetails(e.target.value)}
-                                    placeholder="例：ヘッドスパ60分無料、1泊2食付きペア宿泊、飲食代1万円分まで無料"
-                                    className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none h-20 text-sm placeholder:text-slate-400 shadow-inner"
-                                />
+                                <div className="relative">
+                                    <textarea
+                                        value={barterDetails}
+                                        onChange={(e) => setBarterDetails(e.target.value)}
+                                        placeholder="例：ヘッドスパ60分無料、看板メニュー「〇〇セット」の提供"
+                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none h-20 text-sm placeholder:text-slate-400 shadow-inner"
+                                    />
+                                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleTranslate(barterDetails, 'barter')}
+                                            disabled={isTranslating === 'barter'}
+                                            className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
+                                                ${isTranslating === 'barter' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
+                                        >
+                                            {isTranslating === 'barter' ? '翻訳中...' : '日本語で入力してAI翻訳'}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                        <MessageSquare className="w-4 h-4" /> 招待メッセージ (英語)
+                                        <MessageSquare className="w-4 h-4" /> 招待メッセージ（英語）
                                     </label>
                                     <span className="text-xs font-bold text-yellow-600 flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
                                         <Sparkles className="w-3 h-3" /> NOTS推奨
                                     </span>
                                 </div>
-                                <div className="relative">
+                                <div className="relative group">
                                     <textarea
                                         className="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-800 leading-relaxed font-mono outline-none focus:ring-2 focus:ring-black resize-none"
-                                        defaultValue={`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.${barterDetails ? `\nWe'd love to offer you: ${barterDetails}` : ''
-                                            }`}
+                                        value={invitationMessage}
+                                        onChange={(e) => setInvitationMessage(e.target.value)}
                                     />
-                                    <div className="absolute bottom-3 right-3 text-[10px] text-gray-400 bg-white/80 px-2 py-1 rounded backdrop-blur">
-                                        AI Draft v1.2
+                                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => handleTranslate(invitationMessage, 'message')}
+                                            disabled={isTranslating === 'message'}
+                                            className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
+                                                ${isTranslating === 'message' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
+                                        >
+                                            {isTranslating === 'message' ? '翻訳中...' : '日本語で入力してAI翻訳'}
+                                        </button>
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、クリエイターを選んだ理由などを追記するとオファーが受諾されやすいです。
+                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、なぜあなたに依頼したいかを追記するとオファーが受諾されやすいです。
                                 </p>
                             </div>
                         </div>
@@ -989,65 +1034,7 @@ export default function VibeCatalogue({
     const [freshness, setFreshness] = useState(85);
     const [assetInsights, setAssetInsights] = useState<Record<string, any>>({});
     const [urlError, setUrlError] = useState<string | null>(null);
-    const [localAssets, setLocalAssets] = useState<Asset[]>(initialAssets.length > 0 ? initialAssets : [
-        {
-            id: 'mock-1',
-            client_tag: clientTag || 'demo-shop',
-            creator_id: 'c1',
-            status: 'OFFERED',
-            created_at: new Date().toISOString(),
-            creator: {
-                id: 'c1',
-                name: 'Alex Explorer',
-                tiktok_handle: 'alex_tokyo',
-                avatar_url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=256&auto=format&fit=crop',
-                vibe_tags: ['ADVENTURE', 'FOODIE', 'STREET']
-            } as any
-        },
-        {
-            id: 'mock-2',
-            client_tag: clientTag || 'demo-shop',
-            creator_id: 'c2',
-            status: 'OFFERED',
-            created_at: new Date().toISOString(),
-            creator: {
-                id: 'c2',
-                name: 'Mia Kim',
-                tiktok_handle: 'mia_lifestyle',
-                avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=256&auto=format&fit=crop',
-                vibe_tags: ['MINIMAL', 'CAFE', 'BEAUTY']
-            } as any
-        },
-        {
-            id: 'mock-3',
-            client_tag: clientTag || 'demo-shop',
-            creator_id: 'c3',
-            status: 'DECLINED',
-            created_at: new Date().toISOString(),
-            creator: {
-                id: 'c3',
-                name: 'Kenji Suzuki',
-                tiktok_handle: 'kenji_vlog',
-                avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&auto=format&fit=crop',
-                vibe_tags: ['CULTURE', 'NIGHTLIFE', 'URBAN']
-            } as any
-        },
-        {
-            id: 'mock-4',
-            client_tag: clientTag || 'demo-shop',
-            creator_id: 'c4',
-            status: 'COMPLETED',
-            created_at: new Date().toISOString(),
-            video_url: 'https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4',
-            creator: {
-                id: 'c4',
-                name: 'Yuki Takahashi',
-                tiktok_handle: 'yuki_eats',
-                avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop',
-                vibe_tags: ['FOODIE', 'CAFE', 'TOKYO']
-            } as any
-        }
-    ]);
+    const [localAssets, setLocalAssets] = useState<Asset[]>(initialAssets);
 
     const [freeOffers, setFreeOffers] = useState(3);
     const [isPremium, setIsPremium] = useState(false);
@@ -1079,7 +1066,7 @@ export default function VibeCatalogue({
 
     // Derived stats from localAssets
     const offeredCount = localAssets.filter(a => a.status === 'OFFERED' || a.status === 'DECLINED').length;
-    const completedCount = localAssets.filter(a => a.status === 'COMPLETED').length + 4; // +4 for mock acquired videos
+    const completedCount = localAssets.filter(a => a.status === 'COMPLETED').length; // Mock removed
     const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showPaywall, setShowPaywall] = useState(false);
@@ -1302,7 +1289,7 @@ export default function VibeCatalogue({
         <div className="min-h-screen bg-stone-50 font-sans text-stone-900 pb-32 pt-16">
             <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 z-40 px-6 flex items-center justify-between">
                 <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer" onClick={() => setActiveTab("search")}>
-                    NOTS<span className="text-yellow-500">C2C</span>
+                    INSIDERS.
                 </div>
                 <div className="flex items-center gap-3 relative">
                     <button
@@ -1346,7 +1333,7 @@ export default function VibeCatalogue({
                         <div className="absolute top-14 right-8 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Messages</div>
                             <div className="max-h-80 overflow-y-auto">
-                                {(localAssets.length > 0 ? localAssets : initialAssets)
+                                {localAssets
                                     .filter(a => a.creator && (a.status === 'OFFERED' || a.status === 'COMPLETED' || a.status === 'approved' || a.status === 'ACTIVE' || a.status === 'PENDING_APPROVAL'))
                                     .map(a => (
                                         <button
@@ -1473,11 +1460,10 @@ export default function VibeCatalogue({
                                             </span>
                                         </div>
                                         <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
-                                            インバウンド集客を開始
+                                            インバウンド集客特化クリエイターを探す
                                         </h1>
                                         <p className="text-stone-500 font-medium max-w-xl mx-auto">
-                                            あなたの店の魅力を解析。
-                                            「海外から見た日本」の文脈を理解したネイティブクリエイターをAIが即座に提案します。
+                                            “世界から見た日本”を深く理解した勝率の高い1,000組超のクリエイターネットワーク「INSIDERS.」 貴店を紹介するのに最適なネイティブクリエイターが、言語の壁を超えてSNSで認知を獲得する“デジタル看板”の役割を果たします。
                                         </p>
                                     </div>
 
@@ -1555,7 +1541,7 @@ export default function VibeCatalogue({
                             {step === 'vibe_check' && (
                                 <VibeCheckScreen
                                     tags={shopVibe}
-                                    count={matchCount}
+                                    count={filteredCreators.length}
                                     onRemoveTag={(tag: string) => setShopVibe(prev => prev.filter(t => t !== tag))}
                                     onConfirm={() => {
                                         setStep('result');
@@ -1581,7 +1567,7 @@ export default function VibeCatalogue({
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{matchCount || filteredCreators.length}名</span></p>
+                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名</span></p>
                                         </div>
                                         <button
                                             onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}
@@ -1659,11 +1645,8 @@ export default function VibeCatalogue({
                             <header className="flex justify-between items-end border-b border-stone-100 pb-8">
                                 <div className="space-y-1 text-left">
                                     <h2 className="text-4xl font-black tracking-tighter uppercase italic">Asset Hub</h2>
-                                    <p className="text-stone-400 text-sm font-medium uppercase tracking-widest text-left">動画資産の一元管理と展開</p>
+                                    <p className="text-stone-400 text-sm font-medium uppercase tracking-widest text-left">動画を集客資産として一元管理</p>
                                 </div>
-                                <button className="bg-white border-2 border-stone-100 hover:border-black text-black px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-sm transition-all active:scale-95 uppercase tracking-widest">
-                                    <UploadCloud className="w-4 h-4" /> 外部動画を取り込む
-                                </button>
                             </header>
 
                             {/* Dynamic KPI Cards */}
@@ -1833,6 +1816,16 @@ export default function VibeCatalogue({
                                             </div>
                                         );
                                     })}
+                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'OFFERED' || a.status === 'DECLINED').length === 0 && (
+                                        <>
+                                            <div className="bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-200 aspect-video flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-60">
+                                                <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Clock className="w-6 h-6" /></div>
+                                                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">現在交渉中のクリエイターはいません</p>
+                                            </div>
+                                            <div className="hidden md:block bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-100 aspect-video opacity-30" />
+                                            <div className="hidden md:block bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-100 aspect-video opacity-10" />
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -1914,29 +1907,23 @@ export default function VibeCatalogue({
                                             </div>
                                         ))}
 
-                                    {/* Mocking established acquired videos */}
-                                    {[1, 2].map((i) => (
-                                        <div key={`mock-${i}`} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all">
-                                            <div className="aspect-[9/16] bg-stone-200 relative">
-                                                <img src={`https://images.unsplash.com/photo-${1500000000000 + i * 100000}?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/0 transition-colors">
-                                                    <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-black">
-                                                        <Play fill="black" size={16} />
-                                                    </div>
-                                                </div>
-                                                <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase">
-                                                    Live
-                                                </div>
+                                    {/* Empty states for completed videos */}
+                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'COMPLETED' || a.status === 'FINALIZED').length === 0 && (
+                                        <>
+                                            <div className="bg-stone-50 rounded-3xl border-2 border-dashed border-stone-200 aspect-[9/16] flex flex-col items-center justify-center p-6 text-center space-y-3 opacity-60">
+                                                <div className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Play className="w-5 h-5" /></div>
+                                                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">獲得した動画はありません</p>
                                             </div>
-                                            <div className="p-4 text-left">
-                                                <p className="text-[10px] font-black text-stone-400 uppercase mb-1">2024.03.1{i}</p>
-                                                <h4 className="text-xs font-black truncate leading-tight">Authentic {shopVibe[0] || 'Experience'} in Tokyo</h4>
-                                            </div>
-                                        </div>
-                                    ))}
+                                            {[1, 2, 3].map(i => (
+                                                <div key={`empty-v-${i}`} className="hidden md:block bg-stone-50 rounded-3xl border-2 border-dashed border-stone-100 opacity-20" />
+                                            ))}
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* AssetDeploymentSection archived/hidden */}
+                            {/* 
                             <div className="pt-12">
                                 <div className="bg-white rounded-[40px] border border-stone-100 p-8 shadow-xl ring-1 ring-stone-200/50">
                                     <AssetDeploymentSection
@@ -1952,6 +1939,7 @@ export default function VibeCatalogue({
                                     />
                                 </div>
                             </div>
+                            */}
                         </main>
                     </motion.div>
                 )}
