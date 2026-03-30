@@ -11,8 +11,8 @@ import {
 
 export default function InsidersLP() {
     // --- State & Refs for GTM Hacks ---
-    const [selectedType, setSelectedType] = useState(null);
-    const solutionRef = useRef(null);
+    const [selectedType, setSelectedType] = useState<'A' | 'B' | null>(null);
+    const solutionRef = useRef<HTMLDivElement>(null);
 
     // --- Animation States for Mocks ---
     const [chatStep, setChatStep] = useState(0);
@@ -34,16 +34,16 @@ export default function InsidersLP() {
     }, []);
 
     // --- Handlers ---
-    const handleSelectType = (type) => {
+    const handleSelectType = (type: 'A' | 'B') => {
         setSelectedType(type);
         setTimeout(() => {
             solutionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 150);
     };
 
-    const scrollToDiagnosis = (e) => {
+    const scrollToDiagnosis = (e: React.MouseEvent) => {
         e.preventDefault();
-        document.getElementById('diagnosis').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('diagnosis')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
     const jsonLd = {
@@ -154,7 +154,7 @@ export default function InsidersLP() {
                                     すでにSNS運用には力を入れているが、海外向けはハードルが高い
                                 </h3>
                                 <p className="text-slate-500 text-sm leading-relaxed font-medium">
-                                    日本人の集客チャネルはやり尽くした。単価の高い外国人を呼びたいが、探すのが面倒だし、英語で依頼オペレーションを回す余裕がない…。
+                                    日本人の集客チャネルは確立し、内製もしている。単価の高い外国人客を集客したいが、探すのが面倒だし、英語で依頼オペレーションを回す余裕がない…。
                                 </p>
                             </div>
                         </button>
