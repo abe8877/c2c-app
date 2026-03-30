@@ -31,17 +31,24 @@ export async function updateSession(request: NextRequest) {
 
     // 保護されたルートへのアクセス制御
     const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-    const isDemoRoute = request.nextUrl.pathname.startsWith('/demo');
 
     // 未ログインユーザーはログイン画面へリダイレクト
-    if (!user && (isAdminRoute || isDemoRoute)) {
+    if (!user && isAdminRoute) {
         const url = request.nextUrl.clone();
         url.pathname = '/login';
         return NextResponse.redirect(url);
     }
 
-    // Adminルートへのアクセス時のRoleチェック
+    // Adminルートへのアクセス時のRole/Domainチェック
     if (user && isAdminRoute) {
+        // 1. ドメイン制限 (@nots-inc.com のみ)
+        if (!user.email?.endsWith('@nots-inc.com')) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/advertiser';
+            return NextResponse.redirect(url);
+        }
+
+        // 2. Roleチェック
         const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
@@ -52,7 +59,7 @@ export async function updateSession(request: NextRequest) {
         if (!roleData || !['super_admin', 'ops_manager', 'ops_member'].includes(roleData.role)) {
             // 権限がない場合はエラー画面かホームへ飛ばす
             const url = request.nextUrl.clone();
-            url.pathname = '/demo/advertiser'; // 一旦デモ画面へ逃がす
+            url.pathname = '/advertiser'; // 一旦広告主画面へ逃がす
             return NextResponse.redirect(url);
         }
     }

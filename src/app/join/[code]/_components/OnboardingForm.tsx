@@ -1,8 +1,9 @@
+// src/app/join/[code]/_components/OnboardingForm.tsx
 "use client";
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Upload, ChevronRight, Globe, Shield, Sparkles, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, Upload, ChevronRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { submitCreatorApplication } from '../actions';
 import TermsOfCuration from './TermsOfCuration';
 
@@ -11,7 +12,8 @@ const VIBE_OPTIONS = [
     'Retro', 'Nature', 'Cyberpunk', 'Traditional', 'Vlog'
 ];
 
-export function OnboardingForm({ creator }: { creator: any }) {
+// 🌟 修正1：propsに offer を追加
+export function OnboardingForm({ creator, offer }: { creator: any, offer?: any }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -84,8 +86,6 @@ export function OnboardingForm({ creator }: { creator: any }) {
             }
 
             await submitCreatorApplication(serverFormData);
-
-            // NOTE: ServerAction内でredirect処理を行っている前提
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Something went wrong.');
@@ -97,8 +97,8 @@ export function OnboardingForm({ creator }: { creator: any }) {
         <div className="max-w-2xl mx-auto flex flex-col gap-10 items-stretch relative px-4 pb-20">
             <div className="w-full flex flex-col gap-6">
 
-                {/* Pending Offer Card */}
-                {creator.id !== 'new-applicant' && (
+                {/* 🌟 修正2：Pending Offer Card を動的化 */}
+                {creator.id !== 'new-applicant' && offer && (
                     <div className="w-full bg-gradient-to-br from-amber-500/20 via-[#1a1a1a] to-[#0a0a0a] border border-amber-500/30 rounded-3xl p-6 shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)] relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 blur-3xl rounded-full pointer-events-none" />
 
@@ -110,16 +110,19 @@ export function OnboardingForm({ creator }: { creator: any }) {
                                 <div className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded inline-block mb-1.5">
                                     1 Pending Offer
                                 </div>
-                                <div className="text-lg font-bold text-white tracking-wide leading-tight">WAGYU OMAKASE 凛</div>
+                                {/* 動的化：店舗名 */}
+                                <div className="text-lg font-bold text-white tracking-wide leading-tight">{offer.shop_name}</div>
                             </div>
                         </div>
 
                         <div className="bg-black/60 rounded-2xl p-4 border border-white/5 relative z-10 backdrop-blur-sm">
                             <div className="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Offer Details</div>
-                            <div className="text-sm font-bold text-amber-400 flex items-center gap-2">
-                                <Sparkles className="w-4 h-4" /> 無料ご招待 ＋ 報酬 (¥50,000)
+                            {/* 動的化：必須提供価値 と 金額 */}
+                            <div className="text-sm font-bold text-amber-400 flex items-center gap-2 leading-relaxed">
+                                <Sparkles className="w-4 h-4 shrink-0" />
+                                <span>{offer.barter_details} <br className="md:hidden" />＋ 報酬 (¥{offer.offer_price?.toLocaleString()})</span>
                             </div>
-                            <p className="text-[10px] text-slate-500 mt-2 font-light leading-relaxed">
+                            <p className="text-[10px] text-slate-500 mt-3 font-light leading-relaxed">
                                 このオファーを受諾し、専用ダッシュボードにアクセスするには、以下のフォームを完了してINSIDERS.へ参加してください。
                             </p>
                         </div>

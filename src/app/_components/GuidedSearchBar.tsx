@@ -20,7 +20,7 @@ export function GuidedSearchBar({ defaultValue = '', defaultGenre = 'FOOD', clas
     const handleAnalyze = () => {
         if (!url.trim()) return;
         // 解析画面へジャンル付きで遷移
-        router.push(`/demo/analyzing?genre=${genre}`);
+        router.push(`/analyzing?genre=${genre}`);
     };
 
     return (

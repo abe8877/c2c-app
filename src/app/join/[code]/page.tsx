@@ -9,6 +9,7 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
 
     const supabase = await createClient();
 
+    // 1. クリエイター情報の取得
     const { data: creator } = await supabase
         .from('creators')
         .select('*')
@@ -40,6 +41,35 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
         redirect('/dashboard');
     }
 
+    // 🌟 2. ここから追加：保留中(PENDING)のオファー情報と店舗名を取得
+    let pendingOffer = null;
+    if (creator.id !== 'new-applicant') {
+        // assetsテーブルからオファーを取得
+        const { data: assetData } = await supabase
+            .from('assets')
+            .select('client_tag, offer_price, barter_details')
+            .eq('creator_id', creator.id)
+            .eq('status', 'PENDING')
+            .limit(1)
+            .maybeSingle();
+
+        if (assetData) {
+            // client_tagを使ってshopsテーブルから店舗名を取得
+            const { data: shopData } = await supabase
+                .from('shops')
+                .select('name')
+                .eq('client_tag', assetData.client_tag)
+                .maybeSingle();
+
+            // Formに渡す用にデータを整形
+            pendingOffer = {
+                shop_name: shopData?.name || 'VIP Client',
+                offer_price: assetData.offer_price,
+                barter_details: assetData.barter_details,
+            };
+        }
+    }
+
     // データが見つかったら表示
     return (
         <div className="min-h-screen bg-black text-white selection:bg-zinc-800 selection:text-white font-sans">
@@ -68,7 +98,8 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
             </section>
 
             <section className="max-w-xl mx-auto px-8 py-16">
-                <OnboardingForm creator={creator} />
+                {/* 🌟 修正：取得した pendingOffer を OnboardingForm に渡す */}
+                <OnboardingForm creator={creator} offer={pendingOffer} />
             </section>
         </div>
     );

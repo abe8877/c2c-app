@@ -22,7 +22,7 @@ export default function AdminLayout({
         { name: 'CREATORS', icon: Sparkles, href: '/admin' },
         { name: 'CS', icon: MessageCircle, href: '/admin/cs' },
         { name: 'MATCHING LOG', icon: BarChart3, href: '/admin?tab=logs' },
-        { name: 'SETTINGS', icon: Settings, href: '/admin/setting' },
+        { name: 'SETTINGS', icon: Settings, href: '/admin/settings' },
     ];
 
     return (
