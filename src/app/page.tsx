@@ -6,7 +6,7 @@ import {
     Search, CheckCircle2, ArrowRight, Sparkles,
     MessageSquare, AlertTriangle, ArrowUpRight, Globe, MapPin,
     RefreshCw, LayoutGrid, PlayCircle, MousePointer2, Database, Send,
-    Store, Smartphone, TrendingUp, Users, Repeat
+    Store, Smartphone, TrendingUp, Users, Repeat, Shield, Zap, Crown
 } from 'lucide-react';
 
 export default function InsidersLP() {
@@ -17,6 +17,7 @@ export default function InsidersLP() {
     // --- Animation States for Mocks ---
     const [chatStep, setChatStep] = useState(0);
     const [assetStep, setAssetStep] = useState(0);
+    const [advertiserStep, setAdvertiserStep] = useState(0);
 
     useEffect(() => {
         const chatInterval = setInterval(() => {
@@ -27,9 +28,14 @@ export default function InsidersLP() {
             setAssetStep((prev) => (prev >= 2 ? 0 : prev + 1));
         }, 4000);
 
+        const advertiserInterval = setInterval(() => {
+            setAdvertiserStep((prev) => (prev >= 4 ? 0 : prev + 1));
+        }, 2500);
+
         return () => {
             clearInterval(chatInterval);
             clearInterval(assetInterval);
+            clearInterval(advertiserInterval);
         };
     }, []);
 
@@ -68,38 +74,117 @@ export default function InsidersLP() {
             {/* =========================================
           1. HERO SECTION (Core Narrative Injected)
       ========================================= */}
-            <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-28 overflow-hidden bg-white border-b border-slate-100">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:4rem_4rem][mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+            <section className="relative pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden bg-slate-50 border-b border-slate-200">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem][mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
 
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
-                    {/* Updated Label */}
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold mb-8 shadow-sm">
-                        <RefreshCw className="w-4 h-4 text-indigo-500" />
-                        <span>ショート動画での直感を直予約に変えるインフラ</span>
-                    </div>
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+                        {/* 左：テキストエリア */}
+                        <div className="flex-1 text-center lg:text-left flex flex-col items-center lg:items-start">
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold mb-8 shadow-sm">
+                                <RefreshCw className="w-4 h-4 text-indigo-500" />
+                                <span>ショート動画での直感を直予約に変えるインフラ</span>
+                            </div>
 
-                    <h1 className="text-4xl sm:text-4xl lg:text-4xl font-black tracking-tight text-slate-900 mb-6 leading-[1.15]">
-                        あなたのお店を訪日客の目的地に。<br className="hidden sm:block" />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-                            インバウンド集客なら、『INSIDERS.』
-                        </span>
-                    </h1>
+                            <h1 className="text-4xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 leading-[1.15]">
+                                あなたのお店を訪日客の目的地に。<br className="hidden sm:block" />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                                    インバウンド集客なら、『INSIDERS.』
+                                </span>
+                            </h1>
 
-                    {/* Updated Core Narrative Subcopy */}
-                    <p className="text-base sm:text-lg text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto">
-                        INSIDERS.はインバウンドクリエイター特化型プラットフォームです。<br />独自の分析技術を用い、旅マエ・旅ナカの外国人のSNSに表示されているクリエイターを厳選。だから、今まさにSNSを見ながら「行きたいリスト」をつくっている外国人に貴店を知ってもらえる。<br className="hidden sm:block" />
-                        <br />英語ができなくても大丈夫。インバウンドクリエイターに特化したシステムが、翻訳や面倒な依頼交渉をすべて引き受けます。<br className="hidden sm:block" />
-                        <br />まずは、その威力を「初回3名への無料オファー」でお試しください。
-                    </p>
+                            <p className="text-base sm:text-lg text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                                INSIDERS.はインバウンドクリエイター特化型プラットフォームです。<br />独自の分析技術を用い、旅マエ・旅ナカの外国人のSNSに表示されているクリエイターを厳選。だから、今まさにSNSを見ながら「行きたいリスト」をつくっている外国人に貴店を知ってもらえる。<br className="hidden sm:block" />
+                                <br />英語ができなくても大丈夫。インバウンドクリエイターに特化したシステムが、翻訳や面倒な依頼交渉をすべて引き受けます。<br className="hidden sm:block" />
+                                <br />まずは、その威力を「初回3名への無料オファー」でお試しください。
+                            </p>
 
-                    <div className="flex flex-col items-center gap-3 w-full sm:w-auto">
-                        <button onClick={scrollToDiagnosis} className="w-full sm:w-auto px-10 py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group">
-                            無料で3名のクリエイターにオファーする
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <span className="text-sm text-slate-400 font-bold flex items-center gap-1.5">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> クレジットカード登録不要・システム利用料¥0でトライアル
-                        </span>
+                            <div className="flex flex-col items-center lg:items-start gap-3 w-full sm:w-auto">
+                                <button onClick={scrollToDiagnosis} className="w-full sm:w-auto px-10 py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group">
+                                    無料で3名のクリエイターにオファーする
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                                <span className="text-sm text-slate-400 font-bold flex items-center gap-1.5">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> クレジットカード登録不要・システム利用料¥0でトライアル
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 右：シズル感スマホモックアップ */}
+                        <div className="flex-1 relative w-full flex justify-center lg:justify-end">
+                            {/* Glow Behind */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[650px] bg-indigo-500/20 blur-3xl rounded-full" />
+                            
+                            <div className="relative w-[300px] h-[600px] bg-black rounded-[3rem] border-[10px] border-slate-900 shadow-2xl overflow-hidden shadow-indigo-500/20 flex flex-col justify-end">
+                                {/* TikTok Video Mockup */}
+                                <img src="/images/premium_japanese_food_tiktok_1774942957236.png" className="absolute inset-0 w-full h-full object-cover scale-[1.05]" alt="TikTok Sizzle" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                                
+                                {/* Comments Waterfall */}
+                                <div className="relative z-10 px-4 pb-20 overflow-hidden h-40 [mask-image:linear-gradient(to_top,black,transparent)] pointer-events-none">
+                                    <div className="animate-[slideUp_8s_linear_infinite] flex flex-col gap-3 opacity-90 text-[11px] text-white font-medium drop-shadow-md">
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@travel_jane</div> 
+                                            <div>I must go here! 😭🔥</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@mat_eats</div> 
+                                            <div>Added to my list! 🥩</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@tokyolover</div> 
+                                            <div>Wow, where is this??</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@alex_k</div> 
+                                            <div>A5 Wagyu is legendary.</div>
+                                        </div>
+                                        {/* Loop repeats mentally via css animation */}
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@sarah_travels</div> 
+                                            <div>Literally booking flights now ✈️</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@mike_d</div> 
+                                            <div>Need the location ASAP!</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@travel_jane</div> 
+                                            <div>I must go here! 😭🔥</div>
+                                        </div>
+                                        <div className="flex items-start gap-2 max-w-[85%]">
+                                            <div className="font-bold shrink-0">@mat_eats</div> 
+                                            <div>Added to my list! 🥩</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Magic Popups: Saved -> Reservation */}
+                                <div className="absolute bottom-6 left-3 right-3 flex flex-col gap-3 pointer-events-none z-20">
+                                    {/* Google Map Saved */}
+                                    <div className="animate-[bounce_4s_infinite] bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-indigo-100">
+                                        <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
+                                            <MapPin className="w-5 h-5 text-indigo-500" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-black text-slate-900 leading-tight mb-0.5">Saved to "Tokyo Trip" ⭐️</div>
+                                            <div className="text-[10px] font-bold text-slate-500">Google Maps</div>
+                                        </div>
+                                    </div>
+
+                                    {/* New Reservation */}
+                                    <div className="animate-[bounce_5s_infinite_0.5s] bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-rose-100">
+                                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
+                                            <TrendingUp className="w-5 h-5 text-rose-500" />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-black text-slate-900 leading-tight mb-0.5">予約完了 (2名) 🛎️</div>
+                                            <div className="text-[10px] font-bold text-slate-500">明日 19:00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -230,13 +315,40 @@ export default function InsidersLP() {
                                 </p>
                             </div>
 
-                            <div className="flex-1 relative flex justify-center w-full lg:w-auto">
-                                <div className="absolute inset-0 bg-indigo-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
-                                <div className="flex flex-col items-center">
-                                    <div className="text-[10px] font-bold text-indigo-500 mb-3 uppercase tracking-widest opacity-90">ADVERTISER UI</div>
-                                    <div className="relative w-[280px] h-[580px] bg-slate-50 rounded-[2.5rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-full items-center">
+                                {/* Creator Infinite Ticker Background */}
+                                <div className="absolute inset-y-0 -left-12 -right-12 overflow-hidden pointer-events-none opacity-40">
+                                    <div className="flex gap-4 items-center animate-[ticker_20s_linear_infinite] w-max whitespace-nowrap h-full pt-10">
+                                        {[
+                                            { flag: '🇺🇸', label: '78% Overseas', tag: '✈️ #TokyoTravel Top 1%' },
+                                            { flag: '🇬🇧', label: '85% Overseas', tag: '🍜 #JapanFood Top 3%' },
+                                            { flag: '🇫🇷', label: '72% Overseas', tag: '🗾 #VisitJapan Top 2%' },
+                                            { flag: '🇦🇺', label: '90% Overseas', tag: '✈️ #TokyoEats Top 1%' },
+                                            { flag: '🇩🇪', label: '68% Overseas', tag: '🏯 #JapanTrip Top 5%' },
+                                            { flag: '🇨🇦', label: '81% Overseas', tag: '🍣 #SushiTokyo Top 1%' },
+                                        ].map((data, i) => (
+                                            <div key={i} className="relative w-48 h-64 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-xl opacity-80 shrink-0">
+                                                <img src="/images/creator_portraits_ticker_1774942974356.png" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 shadow-sm">
+                                                    <div className="text-[9px] font-black text-white mb-1 flex gap-1 flex-wrap">
+                                                        <span className="bg-fuchsia-500 text-white px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(217,70,239,0.8)] animate-[neonPulse_2s_infinite]">{data.flag} {data.label}</span>
+                                                        <span className="bg-amber-500 text-white px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(245,158,11,0.6)]">{data.tag}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="absolute inset-0 bg-indigo-50/80 backdrop-blur-sm rounded-[3rem] -rotate-3 scale-105 -z-10" />
+                                <div>
+                                    <div className="text-[10px] font-bold text-indigo-500 mb-3 uppercase tracking-widest opacity-90 drop-shadow-sm bg-indigo-50 px-3 py-1 rounded-full relative overflow-hidden group/scan">
+                                        ADVERTISER UI — LIVE DEMO
+                                        <div className="absolute inset-x-0 h-0.5 bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,1)] animate-[scanning_3s_linear_infinite]" />
+                                    </div>
+                                    <div className="relative w-full max-w-[280px] h-[580px] bg-slate-50 rounded-[2.5rem] border-[6px] border-white shadow-2xl overflow-hidden flex flex-col group mx-auto">
                                         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide bg-white">
-                                            {/* UI Header */}
+                                            {/* Step 0: URL Input Header */}
                                             <div className="p-3 border-b border-white shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)] bg-white sticky top-0 z-20">
                                                 <div className="bg-white rounded-xl p-1.5 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.1)] border border-slate-50 flex items-center gap-2">
                                                     <div className="flex items-center gap-1 px-2 py-1 border-r border-slate-100 scale-90">
@@ -245,51 +357,104 @@ export default function InsidersLP() {
                                                     </div>
                                                     <div className="flex-1 flex items-center gap-1.5 text-slate-400">
                                                         <Search className="w-3 h-3 shrink-0" />
-                                                        <span className="text-[8px] truncate">URLを入力して...</span>
+                                                        <span className={`text-[8px] truncate transition-all duration-500 ${advertiserStep >= 1 ? 'text-slate-700 font-bold' : ''}`}>
+                                                            {advertiserStep >= 1 ? 'yakiniku-wagyu.com' : 'URLを入力して...'}
+                                                        </span>
                                                     </div>
-                                                    <div className="bg-black text-white text-[7px] font-black px-2 py-2 rounded-lg shrink-0 scale-90">
-                                                        分析 ✨
+                                                    <div className={`text-white text-[7px] font-black px-2 py-2 rounded-lg shrink-0 scale-90 transition-colors ${advertiserStep >= 1 ? 'bg-indigo-600 animate-pulse' : 'bg-black'}`}>
+                                                        {advertiserStep >= 1 ? '分析中...' : '分析 ✨'}
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* Analysis Result */}
-                                            <div className="p-5 text-center border-b border-slate-100">
-                                                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-emerald-50 text-emerald-600">
-                                                    <CheckCircle2 className="w-5 h-5" />
-                                                </div>
-                                                <h4 className="text-lg font-black text-slate-900 italic tracking-tighter mb-2">ANALYSIS COMPLETE</h4>
-                                                <p className="text-[8px] text-slate-400 mb-5 leading-tight">分析の結果、貴店の強みは<br />以下のように定義されました。</p>
 
-                                                <div className="flex flex-wrap justify-center gap-1 mb-6">
-                                                    {['#和モダン', '#隠れ家', '#自然光', '#シズル感', '#行列のできる店'].map(tag => (
-                                                        <span key={tag} className="px-2 py-1 bg-slate-50 rounded-lg border border-slate-100 text-[8px] font-bold text-slate-700 shadow-sm">{tag}</span>
-                                                    ))}
-                                                </div>
-
-                                                <div className="text-[9px] text-slate-400 mb-4 flex items-center justify-center gap-1.5">
-                                                    推薦クリエイター：
-                                                    <span className="text-lg font-black text-slate-900 border-b-2 border-yellow-400 leading-none">24名</span>
-                                                </div>
-                                            </div>
-                                            {/* Creator Catalog */}
-                                            <div className="p-4 bg-slate-50/50 border-b border-slate-100">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black text-slate-900">CREATOR CATALOG</span>
-                                                        <div className="bg-yellow-400 text-[6px] font-black px-1 rounded uppercase tracking-tighter">AI選定</div>
+                                            {/* Step 1: Analysis Result */}
+                                            <div className={`transition-all duration-700 ${advertiserStep >= 1 ? 'opacity-100 max-h-[400px]' : 'opacity-0 max-h-0'} overflow-hidden`}>
+                                                <div className="p-4 text-center border-b border-slate-100">
+                                                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2 text-emerald-600">
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    </div>
+                                                    <h4 className="text-sm font-black text-slate-900 italic tracking-tighter mb-1">ANALYSIS COMPLETE</h4>
+                                                    <p className="text-[7px] text-slate-400 mb-3">貴店の強みを定義しました</p>
+                                                    <div className="flex flex-wrap justify-center gap-1 mb-3">
+                                                        {['#和モダン', '#隠れ家', '#シズル感', '#A5和牛'].map(tag => (
+                                                            <span key={tag} className="px-1.5 py-0.5 bg-slate-50 rounded-md border border-slate-100 text-[7px] font-bold text-slate-700">{tag}</span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="text-[8px] text-slate-400 flex items-center justify-center gap-1">
+                                                        推薦クリエイター：
+                                                        <span className="text-sm font-black text-slate-900 border-b-2 border-yellow-400 leading-none">24名</span>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 gap-4">
-                                                    <div className="relative aspect-[9/16] rounded-2xl overflow-hidden group/card shadow-xl border-2 border-white">
-                                                        <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80" alt="Food Creator" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110" />
+                                            </div>
+
+                                            {/* Step 2: Creator Catalog */}
+                                            <div className={`transition-all duration-700 delay-300 ${advertiserStep >= 2 ? 'opacity-100 max-h-[600px]' : 'opacity-0 max-h-0'} overflow-hidden`}>
+                                                <div className="p-3 bg-slate-50/50 border-b border-slate-100">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-[9px] font-black text-slate-900">CREATOR CATALOG</span>
+                                                        <div className="bg-yellow-400 text-[5px] font-black px-1 rounded">AI選定</div>
+                                                    </div>
+                                                    <div className="relative aspect-[9/14] rounded-xl overflow-hidden shadow-lg border-2 border-white">
+                                                        <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80" alt="Food Creator" className="absolute inset-0 w-full h-full object-cover" />
                                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/10 z-10" />
-                                                        <div className="absolute top-2 left-2 z-20 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-lg text-[6px] text-white font-bold uppercase">FOOD</div>
-                                                        <div className="absolute bottom-3 left-3 z-20 text-white">
-                                                            <div className="text-xs font-black tracking-tight mb-0.5">@saki_japan</div>
-                                                            <div className="text-[8px] font-bold opacity-80">200k followers</div>
+                                                        <div className="absolute top-2 left-2 z-20 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-lg text-[5px] text-white font-bold uppercase">FOOD</div>
+                                                        <div className="absolute top-2 right-2 z-20 flex flex-col gap-1">
+                                                            <span className="bg-fuchsia-500 text-white text-[5px] font-black px-1 py-0.5 rounded shadow-[0_0_6px_rgba(217,70,239,0.6)] animate-[neonPulse_2s_infinite]">🇺🇸 82% Overseas</span>
+                                                            <span className="bg-amber-500 text-white text-[5px] font-black px-1 py-0.5 rounded shadow-[0_0_6px_rgba(245,158,11,0.6)]">✈️ #TokyoEats Top 1%</span>
+                                                        </div>
+                                                        <div className="absolute bottom-2 left-2 z-20 text-white">
+                                                            <div className="text-[10px] font-black tracking-tight">@saki_japan_eats</div>
+                                                            <div className="text-[7px] font-bold opacity-80">200k followers</div>
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+
+                                            {/* Step 3: Offer Compose */}
+                                            <div className={`transition-all duration-700 delay-500 ${advertiserStep >= 3 ? 'opacity-100 max-h-[300px]' : 'opacity-0 max-h-0'} overflow-hidden`}>
+                                                <div className="p-3">
+                                                    <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
+                                                        <div className="text-[8px] font-black text-indigo-600 mb-2 flex items-center gap-1">
+                                                            <Send className="w-3 h-3" /> オファーを作成
+                                                        </div>
+                                                        <div className="space-y-1.5 text-[7px]">
+                                                            <div className="bg-white rounded-lg px-2 py-1.5 border border-indigo-100 text-slate-700">📍 焼肉 和牛亭 渋谷店</div>
+                                                            <div className="bg-white rounded-lg px-2 py-1.5 border border-indigo-100 text-slate-700">🍽️ A5和牛コース体験（2名分）</div>
+                                                            <div className="bg-white rounded-lg px-2 py-1.5 border border-indigo-100 text-slate-700">📅 4月中の希望日</div>
+                                                        </div>
+                                                        <button className="w-full mt-2 bg-indigo-600 text-white text-[7px] font-black py-1.5 rounded-lg flex items-center justify-center gap-1">
+                                                            <Sparkles className="w-2.5 h-2.5" /> AI翻訳してオファー送信
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Step 4: Offer Complete */}
+                                            <div className={`transition-all duration-700 delay-700 ${advertiserStep >= 4 ? 'opacity-100 max-h-[300px]' : 'opacity-0 max-h-0'} overflow-hidden`}>
+                                                <div className="p-3">
+                                                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200 text-center">
+                                                        <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg shadow-emerald-200">
+                                                            <CheckCircle2 className="w-5 h-5 text-white" />
+                                                        </div>
+                                                        <div className="text-[10px] font-black text-emerald-700 mb-1">🎉 オファー送信完了！</div>
+                                                        <p className="text-[7px] text-emerald-600 leading-relaxed">AIが英語に翻訳して送信しました。<br />チャットで返信をお待ちください。</p>
+                                                        <div className="mt-2 flex gap-1 justify-center">
+                                                            <span className="bg-emerald-100 text-emerald-700 text-[6px] font-bold px-2 py-0.5 rounded-full">残り無料枠: 2/3</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Progress Steps */}
+                                        <div className="p-2 bg-white border-t border-slate-100">
+                                            <div className="flex items-center justify-center gap-1">
+                                                {['URL分析', 'AI解析', 'カタログ', 'オファー', '完了'].map((label, i) => (
+                                                    <div key={label} className="flex items-center gap-1">
+                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[5px] font-black transition-all duration-500 ${advertiserStep >= i ? 'bg-indigo-600 text-white scale-110' : 'bg-slate-200 text-slate-400'}`}>{i + 1}</div>
+                                                        {i < 4 && <div className={`w-3 h-0.5 rounded transition-colors duration-500 ${advertiserStep > i ? 'bg-indigo-600' : 'bg-slate-200'}`} />}
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
@@ -339,10 +504,15 @@ export default function InsidersLP() {
                                         </div>
 
                                         <div className={`flex flex-col items-end w-full transition-all duration-500 ${chatStep >= 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                                            <div className="bg-black text-white text-xs p-3 rounded-2xl rounded-tr-none max-w-[85%] relative shadow-md text-left">
-                                                Regarding the content: Please include our signature 'Matcha Parfait' and the interior vibe.
-                                                <div className="mt-2 pt-2 border-t border-white/20 flex items-center gap-1 text-[8px] text-white/60 font-bold">
-                                                    <Sparkles className="w-2 h-2" /> NOTS Translated
+                                            <div className="bg-black text-white text-xs p-3 rounded-2xl rounded-tr-none max-w-[85%] relative shadow-[0_10px_20px_-5px_rgba(139,92,246,0.3)] text-left overflow-hidden">
+                                                {/* ✨ Particle Magic Reveal */}
+                                                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-amber-400 opacity-20 pointer-events-none animate-pulse" />
+                                                
+                                                <span className="relative z-10 block animate-[textSwapMagic_8s_infinite] text-transparent bg-clip-text font-medium leading-relaxed">
+                                                    Hello! Thank you for the offer. I am available next week. Can I check the menu beforehand?
+                                                </span>
+                                                <div className="mt-2 pt-2 border-t border-white/20 flex items-center gap-1 text-[8px] text-fuchsia-300 font-bold relative z-10">
+                                                    <Sparkles className="w-3 h-3 text-amber-300 animate-spin-slow" /> AI MAGIC TRANSLATION
                                                 </div>
                                             </div>
                                         </div>
@@ -376,43 +546,68 @@ export default function InsidersLP() {
                             <div className="flex-1 relative flex justify-center w-full lg:w-auto">
                                 <div className="absolute inset-0 bg-emerald-50 rounded-[3rem] -rotate-3 scale-105 -z-10" />
                                 <div className="w-[340px] bg-white rounded-[2rem] border-[6px] border-slate-50 shadow-xl overflow-hidden p-6">
-                                    <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-6 pb-2 border-b border-slate-100 text-left">
-                                        <RefreshCw className="w-4 h-4 text-emerald-600" /> コンテンツの集客資産化
+                                    {/* Header */}
+                                    <div className="flex items-center gap-2 text-sm font-black text-slate-900 mb-5 pb-2 border-b border-slate-100 text-left">
+                                        <LayoutGrid className="w-4 h-4 text-emerald-600" /> ASSET HUB
+                                        <span className="ml-auto bg-emerald-100 text-emerald-700 text-[7px] font-bold px-2 py-0.5 rounded-full">3 ASSETS</span>
                                     </div>
 
-                                    {/* Fake Video Asset */}
-                                    <div className="mb-6 flex flex-col items-start">
-                                        <div className="text-[9px] font-bold text-slate-500 mb-3 uppercase tracking-widest">獲得した動画 (ASSET)</div>
-                                        <div className={`relative w-28 h-40 rounded-xl overflow-hidden border border-slate-200 transition-all duration-700 z-20 ${assetStep === 1 ? 'translate-x-32 translate-y-16 scale-50 opacity-50' : assetStep === 2 ? 'opacity-0' : 'translate-x-0 opacity-100'}`}>
-                                            <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=300&q=80" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                                <PlayCircle className="w-8 h-8 text-white" />
+                                    {/* Video Asset Cards */}
+                                    <div className="flex gap-3 mb-5">
+                                        {[0, 1, 2].map((idx) => (
+                                            <div key={idx} className={`relative w-24 h-32 rounded-xl overflow-hidden border-2 transition-all duration-700 ${assetStep >= 1 && idx === 0 ? 'border-emerald-400 animate-[assetGlow_2s_infinite]' : 'border-slate-200'}`}>
+                                                <img src="https://images.unsplash.com/photo-1559523182-a284c3fb7cff?auto=format&fit=crop&w=300&q=80" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                                    <PlayCircle className="w-6 h-6 text-white" />
+                                                </div>
+                                                {/* 権利クリア済みバッジ */}
+                                                <div className="absolute top-1 right-1 bg-emerald-500 rounded-full p-0.5">
+                                                    <Shield className="w-2.5 h-2.5 text-white" />
+                                                </div>
+                                                <div className="absolute bottom-1 inset-x-1">
+                                                    <div className="bg-black/60 backdrop-blur-sm rounded-md px-1 py-0.5 text-center">
+                                                        <div className="text-[5px] font-bold text-emerald-300">✅ 権利クリア済</div>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        ))}
+                                    </div>
+
+                                    {/* License Info */}
+                                    <div className={`bg-emerald-50 rounded-xl p-3 mb-4 border border-emerald-100 transition-all duration-700 ${assetStep >= 1 ? 'opacity-100' : 'opacity-60'}`}>
+                                        <div className="flex items-center gap-1.5 mb-1.5">
+                                            <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                                            <span className="text-[8px] font-black text-emerald-800">二次利用許諾：無期限</span>
                                         </div>
+                                        <p className="text-[7px] text-emerald-600 leading-relaxed">
+                                            Googleマップ・自社サイトでの利用に追加費用なし。<br />著作権トラブルのリスクゼロ。
+                                        </p>
                                     </div>
 
-                                    {/* Sync Destinations */}
-                                    <div className="grid grid-cols-2 gap-4 relative z-10">
-                                        <div className={`border rounded-xl p-4 text-left transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                    {/* Sync to Maps & Web */}
+                                    <div className="grid grid-cols-2 gap-3 relative z-10">
+                                        <div className={`border rounded-xl p-3 text-left transition-all duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30 shadow-md shadow-emerald-100' : 'border-slate-200 bg-white'}`}>
                                             <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
-                                                <MapPin className="w-3 h-3 text-red-500" /> Google Maps Sync
+                                                <MapPin className="w-3 h-3 text-red-500" /> Google Maps
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1 text-left">
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
                                                 <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
                                             </div>
+                                            <div className="text-[6px] text-slate-400 font-bold">{assetStep >= 2 ? '✅ 同期完了' : '🔄 同期中...'}</div>
                                         </div>
 
-                                        <div className={`border rounded-xl p-4 text-left transition-colors duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30' : 'border-slate-200 bg-white'}`}>
+                                        <div className={`border rounded-xl p-3 text-left transition-all duration-500 ${assetStep >= 1 ? 'border-emerald-400 bg-emerald-50/30 shadow-md shadow-emerald-100' : 'border-slate-200 bg-white'}`}>
                                             <div className="flex items-center gap-1 text-[8px] font-bold text-slate-700 mb-2">
-                                                <Globe className="w-3 h-3 text-blue-500" /> Web Widget
+                                                <Globe className="w-3 h-3 text-blue-500" /> 自社サイト
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1 text-left">
+                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
                                                 <div className={`h-1.5 rounded-full transition-all duration-1000 ${assetStep >= 2 ? 'bg-emerald-500 w-full' : 'bg-amber-400 w-[60%]'}`} />
                                             </div>
+                                            <div className="text-[6px] text-slate-400 font-bold">{assetStep >= 2 ? '✅ 同期完了' : '🔄 同期中...'}</div>
                                         </div>
                                     </div>
-                                    <div className="mt-6 text-[9px] text-center text-slate-400 font-bold leading-relaxed">
-                                        動画を同期して、貴店のデジタル接点を<br />自動でインバウンド仕様にアップデート。
+                                    <div className="mt-4 text-[8px] text-center text-slate-400 font-bold leading-relaxed bg-slate-50 rounded-lg p-2">
+                                        💎 毎月蓄積される「道標」が<br />24時間外国人を呼び込むデジタル資産に。
                                     </div>
                                 </div>
                             </div>
@@ -438,40 +633,76 @@ export default function InsidersLP() {
                         ただマップに動画を埋め込むだけではありません。これはあなたのお店を「24時間外国人を呼び込むデジタル資産」へと進化させるための第一歩です。
                     </p>
 
-                    <div className="grid md:grid-cols-4 gap-8 relative">
-                        {/* Connecting Line for Desktop */}
-                        <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-indigo-200 via-emerald-200 to-rose-200 z-0" />
-
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-indigo-50 flex items-center justify-center mb-6">
-                                <PlayCircle className="w-10 h-10 text-indigo-500" />
-                            </div>
-                            <h4 className="text-lg font-black text-slate-900 mb-2">1. 認知・爆発</h4>
-                            <p className="text-sm text-slate-500">本物のクリエイターの動画で、海外の潜在層のスマホに強烈にリーチします。</p>
+                    <div className="relative max-w-5xl mx-auto h-auto md:h-[600px] flex items-center justify-center">
+                        {/* Circular Infographic for Desktop */}
+                        <div className="hidden md:block absolute inset-0">
+                            {/* Rotating Background Ring */}
+                            <div className="absolute inset-0 border-2 border-dashed border-indigo-200 rounded-full animate-spin-slow opacity-30" />
+                            
+                            {/* Animated Flow Connections (SVG) */}
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 600 600">
+                                <circle cx="300" cy="300" r="220" fill="none" stroke="url(#flowGradient)" strokeWidth="4" strokeDasharray="10 15" className="animate-[flyWheel_10s_linear_infinite]" />
+                                <defs>
+                                    <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#4f46e5" />
+                                        <stop offset="50%" stopColor="#ec4899" />
+                                        <stop offset="100%" stopColor="#f43f5e" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
                         </div>
 
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-violet-50 flex items-center justify-center mb-6">
-                                <Users className="w-10 h-10 text-violet-500" />
+                        {/* Central Pulsing Seed (Asset) */}
+                        <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-slate-900 shadow-2xl items-center justify-center z-20 border border-white/10 group overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-rose-500/20 animate-pulse" />
+                            <div className="text-center relative z-10 px-4">
+                                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 backdrop-blur-md border border-white/20 animate-[pulse-glow_3s_infinite]">
+                                    <Database className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total Assets</div>
+                                <div className="text-lg font-black text-white leading-none">RECURRING REVENUE</div>
                             </div>
-                            <h4 className="text-lg font-black text-slate-900 mb-2">2. 直予約・来店</h4>
-                            <p className="text-sm text-slate-500">動画を見たZ世代が、OTAを通さずに直感で来店・予約に繋がります。</p>
                         </div>
 
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-emerald-50 flex items-center justify-center mb-6">
-                                <MapPin className="w-10 h-10 text-emerald-500" />
+                        {/* Steps (Positioned Circularly on Desktop, Stacked on Mobile) */}
+                        <div className="flex flex-col md:block w-full gap-0 md:gap-0">
+                            {/* Mobile Flow Lines (visible only on mobile) */}
+                            {[
+                                { icon: <PlayCircle className="w-8 h-8" />, bg: 'bg-indigo-600', shadow: 'shadow-indigo-200', title: '1. 認知・爆発', desc: 'クリエイター動画で、潜在層のスマホへリーチ。', pos: 'md:top-0 md:left-1/2 md:-translate-x-1/2' },
+                                { icon: <Users className="w-8 h-8" />, bg: 'bg-violet-600', shadow: 'shadow-violet-200', title: '2. 直接来店', desc: '動画を見た訪日客が、OTAを通さず来店。', pos: 'md:top-1/2 md:right-0 md:-translate-y-1/2' },
+                                { icon: <MapPin className="w-8 h-8" />, bg: 'bg-emerald-600', shadow: 'shadow-emerald-200', title: '3. 資産化', desc: 'Googleマップに動画が同期され、資産へ。', pos: 'md:bottom-0 md:left-1/2 md:-translate-x-1/2' },
+                                { icon: <TrendingUp className="w-8 h-8" />, bg: 'bg-rose-600', shadow: 'shadow-rose-200', title: '4. 自動流入', desc: 'マップが最適化され、次の客が自然に集まる。', pos: 'md:top-1/2 md:left-0 md:-translate-y-1/2' },
+                            ].map((step, idx) => (
+                                <div key={step.title}>
+                                    {/* Mobile Flow Connector */}
+                                    {idx > 0 && (
+                                        <div className="flex md:hidden justify-center py-1">
+                                            <div className="w-0.5 h-8 bg-gradient-to-b from-indigo-300 via-violet-400 to-rose-300 rounded-full opacity-60" />
+                                        </div>
+                                    )}
+                                    <div className={`relative md:absolute ${step.pos} z-30 transition-transform duration-500 hover:scale-105`}>
+                                        <div className="bg-white md:bg-white/80 md:backdrop-blur-xl p-5 md:p-6 rounded-[2rem] shadow-xl border border-slate-100 md:border-white w-full md:w-56 text-left md:text-center flex md:flex-col items-center gap-4 md:gap-0">
+                                            <div className={`w-14 h-14 md:w-16 md:h-16 rounded-full ${step.bg} text-white flex items-center justify-center md:mb-4 shrink-0 shadow-lg ${step.shadow}`}>
+                                                {step.icon}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm md:text-base font-black text-slate-900 mb-1">{step.title}</h4>
+                                                <p className="text-[10px] md:text-xs text-slate-500 leading-relaxed">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {/* Mobile Loop Arrow */}
+                            <div className="flex md:hidden justify-center pt-2">
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="w-0.5 h-6 bg-gradient-to-b from-rose-300 to-indigo-300 rounded-full opacity-60" />
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-rose-500 flex items-center justify-center shadow-lg">
+                                        <Repeat className="w-4 h-4 text-white" />
+                                    </div>
+                                    <div className="text-[9px] font-black text-slate-500 mt-1">サイクルが回り続ける</div>
+                                </div>
                             </div>
-                            <h4 className="text-lg font-black text-slate-900 mb-2">3. 動画の資産化</h4>
-                            <p className="text-sm text-slate-500">権利クリア済の動画をGoogleマップに同期し、お店の道標をアップデート。</p>
-                        </div>
-
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-white rounded-full shadow-lg border-4 border-rose-50 flex items-center justify-center mb-6">
-                                <TrendingUp className="w-10 h-10 text-rose-500" />
-                            </div>
-                            <h4 className="text-lg font-black text-slate-900 mb-2">4. 永続的な自然流入</h4>
-                            <p className="text-sm text-slate-500">マップが「インバウンド仕様」になることで、次の訪日客が自然に集まり続けます。</p>
                         </div>
                     </div>
                 </div>
@@ -483,14 +714,26 @@ export default function InsidersLP() {
             <section id="signup" className="py-24 bg-white border-t border-slate-100">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                    <div className="bg-slate-900 rounded-[2.5rem] p-10 sm:p-14 shadow-2xl text-center relative overflow-hidden mb-12">
-                        <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-indigo-500 to-violet-500" />
+                    <div className="group bg-[#050505] rounded-[2.5rem] p-10 sm:p-14 shadow-2xl shadow-indigo-500/10 text-center relative overflow-hidden mb-12 border border-white/10 hover:border-indigo-500/40 transition-all duration-700 hover:shadow-[0_0_120px_-15px_rgba(99,102,241,0.4)]">
+                        {/* Hologram Shine Sweep */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%)', backgroundSize: '200% 100%', animation: 'hologramShine 3s ease infinite' }} />
+                        {/* Glassmorphism Glow */}
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/20 via-fuchsia-500/10 to-transparent blur-[100px] rounded-full pointer-events-none group-hover:opacity-100 opacity-40 transition-opacity duration-700" />
+                        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-amber-500/10 via-violet-500/10 to-transparent blur-[80px] rounded-full pointer-events-none group-hover:opacity-80 opacity-0 transition-opacity duration-700" />
+                        
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-500 group-hover:h-1.5 transition-all duration-500" />
+
+                        {/* VIP Badge */}
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600/20 to-violet-600/20 border border-indigo-500/30 px-4 py-1.5 rounded-full mb-6">
+                            <Crown className="w-4 h-4 text-amber-400" />
+                            <span className="text-xs font-black text-indigo-300 uppercase tracking-widest">Genesis Offer</span>
+                        </div>
 
                         <h2 className="text-3xl font-black text-white mb-2">INSIDERS. スタンダード</h2>
                         <p className="text-slate-400 font-medium mb-8">単発の広告費ではなく、デジタル資産を築くための「インフラ維持費」</p>
 
                         <div className="flex items-end justify-center gap-2 mb-8">
-                            <span className="text-6xl font-black tracking-tighter text-white">¥39,800</span>
+                            <span className="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-300">¥39,800</span>
                             <span className="text-lg text-slate-500 font-bold pb-2">/ 月（税抜）</span>
                         </div>
 
@@ -509,14 +752,14 @@ export default function InsidersLP() {
                             </li>
                         </ul>
 
-                        {/* Free Trial Box */}
-                        <div className="bg-indigo-600/20 border border-indigo-500/30 rounded-2xl p-6 mb-8 max-w-lg mx-auto">
+                        {/* Free Trial Box - Neon Accent */}
+                        <div className="bg-gradient-to-br from-indigo-600/20 to-violet-600/20 border border-indigo-500/30 rounded-2xl p-6 mb-8 max-w-lg mx-auto backdrop-blur-sm group-hover:border-indigo-400/50 transition-colors duration-500">
                             <div className="text-indigo-300 font-bold text-sm mb-2 flex items-center justify-center gap-2">
-                                <Sparkles className="w-4 h-4" /> トライアルでお試しください
+                                <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> トライアルでお試しください
                             </div>
                             <div className="text-white font-black text-lg mb-2">
                                 最初の3名へのオファー（招待）まで<br className="hidden sm:block" />
-                                システム利用料 <span className="text-yellow-400">完全無料</span> でお試しいただけます。
+                                システム利用料 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-400 animate-pulse">完全無料</span> でお試しいただけます。
                             </div>
                             <p className="text-xs text-indigo-200/80 leading-relaxed mt-3 text-left">
                                 ※あなたが用意するのは、クリエイターへの「体験の無償提供」だけです。<br />
@@ -525,7 +768,7 @@ export default function InsidersLP() {
                         </div>
 
                         <Link href="/advertiser/gateway">
-                            <button className="w-full sm:w-auto px-12 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-900/50 transition-all flex items-center justify-center gap-2 mx-auto">
+                            <button className="w-full sm:w-auto px-12 py-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-900/50 transition-all flex items-center justify-center gap-2 mx-auto group-hover:shadow-[0_20px_60px_-10px_rgba(99,102,241,0.5)]">
                                 無料でクリエイター3名にオファーする
                                 <ArrowRight className="w-5 h-5" />
                             </button>
