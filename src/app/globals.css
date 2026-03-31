@@ -102,3 +102,29 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* Ticker scroll hijack prevention */
+.ticker-no-hijack {
+    touch-action: pan-y;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+@keyframes slideUpSticky {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.animate-slide-up-sticky {
+    animation: slideUpSticky 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite;
+}
