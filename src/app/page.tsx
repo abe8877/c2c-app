@@ -9,7 +9,7 @@ import {
     Database, MessageSquare, LayoutGrid, PlayCircle,
     Shield, MapPin, Globe, Repeat, Users, TrendingUp, TrendingDown,
     ArrowUpRight, Menu, X, RefreshCw, Clock, ShieldAlert, Heart, Bookmark, Pointer,
-    Star
+    Star, MessageCircle, Coffee
 } from 'lucide-react';
 
 const elenaIcon = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80";
@@ -398,7 +398,7 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                                     <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-8 shadow-2xl border-[6px] border-white rotate-6">
                                         <Check className="w-12 h-12 text-emerald-500" strokeWidth={5} />
                                     </div>
-                                    <h2 className="text-4xl font-black italic tracking-tighter text-slate-900 mb-3 uppercase">SENT!</h2>
+                                    <h2 className="text-3xl font-black tracking-tighter text-slate-900 mb-3 uppercase">オファー完了</h2>
                                     <p className="text-[11px] text-slate-400 font-bold leading-relaxed mb-8">Offer Sent to Elena.</p>
                                 </motion.div>
                             )}
@@ -447,33 +447,33 @@ function Header() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 top-20 bg-white/95 backdrop-blur-xl z-[110] lg:hidden overflow-y-auto px-6 py-12"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-white z-[110] lg:hidden flex flex-col items-center justify-center"
                     >
-                        <nav className="flex flex-col items-center gap-8">
+                        {/* Close button for full screen menu */}
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="absolute top-6 right-6 p-2 text-slate-900"
+                        >
+                            <X className="w-8 h-8" />
+                        </button>
+
+                        <nav className="flex flex-col items-center gap-10">
                             {navLinks.map((link, idx) => (
                                 <motion.a
                                     key={link.name}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: idx * 0.1 }}
                                     href={link.href}
                                     onClick={() => setIsOpen(false)}
-                                    className="text-xl font-black text-slate-900 uppercase tracking-widest hover:text-indigo-600 transition-colors"
+                                    className="text-2xl font-black text-slate-900 uppercase tracking-widest hover:text-indigo-600 transition-colors"
                                 >
                                     {link.name}
                                 </motion.a>
                             ))}
-                            <div className="flex flex-col gap-4 pt-8 w-full max-w-xs">
-                                <button className="w-full py-4 rounded-xl border-2 border-slate-900 text-slate-900 font-black">
-                                    ログイン
-                                </button>
-                                <button className="w-full py-4 rounded-xl bg-slate-900 text-white font-black">
-                                    会員登録
-                                </button>
-                            </div>
                         </nav>
                     </motion.div>
                 )}
@@ -568,14 +568,21 @@ export default function InsidersLP() {
                                 <span>あなたのお店がインバウンド客の目的地になる</span>
                             </div>
 
-                            {/* スマホ版のみ：バッジとアニメーションを上部に配置 */}
+                            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.2] lg:leading-[1.15]">
+                                訪日客の「行きたい！」を生み出すショート動画PR<br className="hidden sm:block" />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
+                                    『INSIDERS.』
+                                </span>
+                            </h1>
+
+                            {/* スマホ版のみ：バッジとアニメーションをラベル/タイトルの下に配置 */}
                             <div className="lg:hidden w-full overflow-visible mb-6">
-                                {/* 3つの実績/スペックバッジ (Mobile: Top) */}
+                                {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
                                 <div className="flex flex-wrap justify-center gap-2 mb-8 scale-90 origin-center">
                                     {[
                                         { icon: <Users className="w-3.5 h-3.5" />, text: "インバウンド特化 1,000組+" },
                                         { icon: <RefreshCw className="w-3.5 h-3.5" />, text: "動画利用料 ¥0" },
-                                        { icon: <Sparkles className="w-3.5 h-3.5" />, text: "月額3.98万円〜" },
+                                        { icon: <Sparkles className="w-3.5 h-3.5" />, text: "月額4万円〜" },
                                     ].map((badge, idx) => (
                                         <div key={idx} className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-100 rounded-lg shadow-sm">
                                             <div className="text-indigo-600">{badge.icon}</div>
@@ -589,19 +596,12 @@ export default function InsidersLP() {
                                 </div>
                             </div>
 
-                            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 sm:mb-8 leading-[1.2] sm:leading-[1.15]">
-                                ショート動画で「予約」を生み出す集客インフラ<br className="hidden sm:block" />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
-                                    『INSIDERS.』
-                                </span>
-                            </h1>
-
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
                             <div className="hidden lg:flex flex-wrap justify-center lg:justify-start gap-2.5 sm:gap-3 mb-10">
                                 {[
                                     { icon: <Users className="w-4 h-4" />, text: "インバウンド特化クリエイター 1,000組+" },
                                     { icon: <RefreshCw className="w-4 h-4" />, text: "動画の二次利用料 永久¥0" },
-                                    { icon: <Sparkles className="w-4 h-4" />, text: "定額オファーし放題 月額3.98万円" },
+                                    { icon: <Sparkles className="w-4 h-4" />, text: "定額オファーし放題 月額4万円" },
                                 ].map((badge, idx) => (
                                     <div key={idx} className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
                                         <div className="text-indigo-600 group-hover:scale-110 transition-transform">{badge.icon}</div>
@@ -640,168 +640,269 @@ export default function InsidersLP() {
                 <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
                     <div className="flex flex-col lg:flex-row gap-16 items-center mb-32">
                         <div className="flex-1 text-center lg:text-left">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black mb-6 tracking-widest uppercase">
-                                The Concept
-                            </div>
-                            <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-10 leading-[1.2]">
-                                「フォロワーが多いだけの外国人」へのPRは、もう通じません。
+                            <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-10 leading-[1.2]">
+                                検索・比較時代の終わり。<br />SNSは旅行客の行動を司どる“AIガイドブック”に。
                             </h2>
                             <div className="text-slate-500 text-base md:text-lg leading-relaxed space-y-6 font-medium">
                                 <p>
-                                    OTAの星の数で争う「比較ゲーム」から降りましょう。今の訪日客はショート動画を見て、直感で「ここに行きたい！」と決めています。
-                                </p>
-                                <p>
-                                    本当に必要なのは、今まさに日本旅行を計画している外国人のスマホに入り込み、彼らの「行きたいリスト」に食い込むこと。
+                                    旅行客の行動は完全にSNS前提になりました。<br />インバウンド集客を成功させるために必要なのは、今まさに日本旅行を検討している外国人のSNSに入り込んで、彼らの『行きたいリスト』に直接あなたのお店を保存させることです。
                                 </p>
                                 <p className="text-slate-900 font-black">
-                                    INSIDERS.は、訪日客に刺さるクリエイターとお店を繋ぎ、「一瞬のバズ」を「永続的な来店資産」に変える集客インフラです。
+                                    だからこそ、「フォロワー数が多いだけのインフルエンサー」にPRを頼んだり、「OTAで競合との上位表示を争い」をしても、彼らのSNSのおすすめタブに表示されなければ全く意味がないのです。
                                 </p>
                             </div>
                         </div>
                         <div className="flex-1 w-full max-w-xl">
-                            {/* Before/After Contrast UI */}
-                            <div className="relative rounded-[2.5rem] border border-slate-200/60 bg-white shadow-2xl p-6 sm:p-8 overflow-hidden group">
+                            {/* Z-Generation Journey Visualization (Polished) */}
+                            <div className="relative space-y-4">
+                                {[
+                                    {
+                                        step: "STEP 1",
+                                        tag: "旅マエ",
+                                        desc: "SNSのおすすめタブで直感的に発見",
+                                        icon: <PlayCircle className="w-6 h-6 text-indigo-600" />,
+                                        visual: (
+                                            <div className="relative w-full h-48 bg-slate-50 rounded-[2.5rem] overflow-hidden flex items-center justify-center gap-6 shadow-inner border border-slate-100">
+                                                {/* Left: Extra Narrow Smartphone Feed */}
+                                                <div className="relative w-20 sm:w-22 h-[88%] bg-slate-900 rounded-[1.2rem] border-[3px] border-slate-800 shadow-2xl overflow-hidden shrink-0">
+                                                    <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-indigo-500/20 to-transparent" />
 
-                                {/* 1. 上段：Before（消耗する比較ゲーム） */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    className="grayscale opacity-50 space-y-4"
-                                >
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
-                                        <X className="w-3 h-3" /> 従来のOTA検索（比較ゲーム）
-                                    </div>
-
-                                    {/* 検索窓風バー */}
-                                    <div className="w-full h-10 px-4 bg-slate-100 rounded-xl flex items-center gap-3">
-                                        <Search className="w-4 h-4 text-slate-300" />
-                                        <div className="h-2 w-32 bg-slate-200 rounded-full" />
-                                    </div>
-
-                                    {/* 比較カードリスト */}
-                                    <div className="space-y-3">
-                                        {[1, 2].map((i) => (
-                                            <div key={i} className="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-slate-200 rounded-lg shrink-0" />
-                                                <div className="flex-1 space-y-2">
-                                                    <div className="h-2 w-3/4 bg-slate-200 rounded-full" />
-                                                    <div className="flex gap-2">
-                                                        <div className="h-2 w-8 bg-slate-200 rounded-full" />
-                                                        <div className="h-2 w-12 bg-slate-200 rounded-full" />
+                                                    {/* Play Button Icon added to center */}
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                                                        <PlayCircle className="w-8 h-8 text-white" />
                                                     </div>
+
+                                                    <div className="absolute inset-x-2 top-2 h-0.5 flex gap-0.5">
+                                                        <div className="flex-1 bg-white/40 rounded-full" />
+                                                        <div className="flex-1 bg-white/10 rounded-full" />
+                                                        <div className="flex-1 bg-white/10 rounded-full" />
+                                                    </div>
+                                                    <motion.div
+                                                        animate={{ y: [30, -30], opacity: [0, 1, 0] }}
+                                                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                                    >
+                                                        <Pointer className="w-4 h-4 text-white/40" />
+                                                    </motion.div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 mb-1">
-                                                        <Star className="w-2.5 h-2.5 fill-slate-300" /> 4.2
-                                                    </div>
-                                                    <div className="text-[10px] font-black text-slate-500">¥15,000〜</div>
+
+                                                {/* Right: Reaction Sequence (Centered with Phone) */}
+                                                <div className="relative h-full flex flex-col justify-center items-start gap-3">
+                                                    {[
+                                                        { icon: <MessageCircle className="w-3 h-3 text-indigo-500 fill-indigo-50" />, text: "Best Sushi!", delay: 0 },
+                                                        { icon: <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />, text: "Liked!", delay: 1 },
+                                                        { icon: <Bookmark className="w-3 h-3 text-indigo-500 fill-indigo-500" />, text: "Saved!", delay: 2 },
+                                                    ].map((item, i) => (
+                                                        <motion.div
+                                                            key={i}
+                                                            initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                                                            animate={{ opacity: [0, 1, 1, 0], x: [10, 0, 0, -5], scale: [0.8, 1, 1, 0.9] }}
+                                                            transition={{ delay: item.delay, duration: 4, repeat: Infinity }}
+                                                            className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-slate-100 rounded-xl px-2.5 py-1.5 shadow-sm min-w-[90px]"
+                                                        >
+                                                            <div className="shrink-0">{item.icon}</div>
+                                                            <span className="text-[9px] font-black text-slate-700 whitespace-nowrap">{item.text}</span>
+                                                        </motion.div>
+                                                    ))}
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                </motion.div>
+                                        )
+                                    },
+                                    {
+                                        step: "STEP 2",
+                                        tag: "計画",
+                                        desc: "行きたいリストがそのまま旅程に",
+                                        icon: <Bookmark className="w-6 h-6 text-indigo-600" />,
+                                        visual: (
+                                            <div className="relative w-full h-48 bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl p-4">
+                                                <div className="absolute inset-0 bg-[#f8fafc] bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
 
-                                {/* 中央セパレーター */}
-                                <div className="relative py-10">
-                                    <div className="absolute inset-0 flex items-center">
-                                        <div className="w-full border-t border-slate-100" />
-                                    </div>
-                                    <div className="relative flex justify-center">
-                                        <div className="px-4 bg-white text-[10px] font-black text-slate-300 uppercase tracking-widest">VS</div>
-                                    </div>
-                                </div>
-
-                                {/* 2. 下段：After（直感的な目的地化） */}
-                                <div className="relative">
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-6">
-                                        <Sparkles className="w-3 h-3" /> INSIDERS.の直感ルート
-                                    </div>
-
-                                    {/* シズル感のある実写カード */}
-                                    <div className="relative flex justify-center py-4">
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95, rotate: 0 }}
-                                            whileInView={{ opacity: 1, scale: 1, rotate: -2 }}
-                                            transition={{ delay: 0.3, duration: 0.6 }}
-                                            viewport={{ once: true }}
-                                            className="relative w-48 h-64 rounded-[2rem] border-[6px] border-slate-900 shadow-2xl overflow-hidden group-hover:rotate-0 transition-transform duration-500"
-                                        >
-                                            <img
-                                                src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=500&q=80"
-                                                alt="Target Experience"
-                                                className="absolute inset-0 w-full h-full object-cover"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-
-                                            {/* 保存ホップアップ：グラスモーフィズム */}
-                                            <motion.div
-                                                initial={{ y: 20, opacity: 0 }}
-                                                whileInView={{ y: 0, opacity: 1 }}
-                                                transition={{ delay: 0.8, duration: 0.5 }}
-                                                className="absolute bottom-6 inset-x-4 p-4 bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl flex items-center gap-3 border border-white/50"
-                                            >
-                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-200">
-                                                    <Bookmark className="w-5 h-5 text-white" />
+                                                {/* Synchronized Header Loop (Centered & Narrow) */}
+                                                <div className="absolute top-4 inset-x-0 z-20 flex justify-center px-4">
+                                                    <motion.div
+                                                        animate={{ scale: [1, 1.02, 1], opacity: [0.8, 1, 0.8] }}
+                                                        transition={{ repeat: Infinity, duration: 2 }}
+                                                        className="bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-3 border border-indigo-500/10 max-w-[180px] w-full"
+                                                    >
+                                                        <Bookmark className="w-3 h-3 text-indigo-400 fill-indigo-400 shrink-0" />
+                                                        <div className="flex-1 text-center sm:text-left overflow-hidden">
+                                                            <div className="text-[7px] font-black italic tracking-widest leading-none opacity-40 uppercase truncate">TRIP LIST</div>
+                                                            <div className="text-[9px] font-bold text-indigo-200 truncate truncate">"TRAVEL LIST"</div>
+                                                        </div>
+                                                        <Check className="w-3 h-3 text-green-400" />
+                                                    </motion.div>
                                                 </div>
-                                                <div className="text-left">
-                                                    <div className="text-[11px] font-black text-slate-900 leading-tight">Saved to <br />"Tokyo Trip"</div>
-                                                    <div className="text-[8px] font-bold text-slate-500 mt-0.5">直感的にリスト保存</div>
+
+                                                {/* Sequence: Pins appearing -> Route forming (Centered Visual Area) */}
+                                                <div className="relative w-full h-full pt-16 flex justify-center">
+                                                    <div className="relative w-[210px] h-full overflow-visible">
+                                                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                                            <motion.path
+                                                                d="M 35,40 Q 75,65 105,45 T 175,35"
+                                                                fill="none"
+                                                                stroke="url(#route-gradient-step2-fixed)"
+                                                                strokeWidth="3.5"
+                                                                strokeLinecap="round"
+                                                                strokeDasharray="6 6"
+                                                                initial={{ pathLength: 0 }}
+                                                                animate={{ pathLength: [0, 0, 1, 1, 0] }}
+                                                                transition={{
+                                                                    repeat: Infinity,
+                                                                    duration: 5,
+                                                                    times: [0, 0.4, 0.7, 0.9, 1],
+                                                                    ease: "easeInOut"
+                                                                }}
+                                                            />
+                                                            <defs>
+                                                                <linearGradient id="route-gradient-step2-fixed" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                                    <stop offset="0%" stopColor="#6366f1" />
+                                                                    <stop offset="100%" stopColor="#a855f7" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                        </svg>
+
+                                                        {[
+                                                            { x: 35, y: 40, showAt: 0.1, hideAt: 0.95 },
+                                                            { x: 105, y: 45, showAt: 0.2, hideAt: 0.95 },
+                                                            { x: 175, y: 35, showAt: 0.3, hideAt: 0.95 },
+                                                        ].map((pin, i) => (
+                                                            <motion.div
+                                                                key={i}
+                                                                initial={{ scale: 0, opacity: 0 }}
+                                                                animate={{
+                                                                    scale: [0, 1, 1, 0],
+                                                                    opacity: [0, 1, 1, 0]
+                                                                }}
+                                                                transition={{
+                                                                    repeat: Infinity,
+                                                                    duration: 5,
+                                                                    times: [0, pin.showAt, pin.hideAt, 1]
+                                                                }}
+                                                                style={{ left: `${pin.x}px`, top: `${pin.y}px` }}
+                                                                className="absolute -translate-x-1/2 -translate-y-1/2"
+                                                            >
+                                                                <div className="relative">
+                                                                    <div className="absolute -inset-2 bg-indigo-500/20 blur-md rounded-full" />
+                                                                    <MapPin className="w-8 h-8 text-indigo-600 fill-indigo-50 relative" />
+                                                                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white shadow-sm" />
+                                                                </div>
+                                                            </motion.div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </motion.div>
-                                        </motion.div>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        step: "STEP 3",
+                                        tag: "旅ナカ",
+                                        desc: "スマホ片手に目的地へ直行。待ち時間も周辺スポットをSNSでリサーチ",
+                                        icon: <MapPin className="w-6 h-6 text-indigo-600" />,
+                                        visual: (
+                                            <div className="relative w-full h-48 bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl flex items-center justify-center">
+                                                <img
+                                                    src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80"
+                                                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                                                    alt="Walking in Shibuya"
+                                                />
+                                                <div className="absolute inset-x-4 top-2 h-0.5 bg-white/20 rounded-full overflow-hidden">
+                                                    <motion.div
+                                                        animate={{ x: ['-100%', '100%'] }}
+                                                        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                                                        className="w-1/2 h-full bg-indigo-400"
+                                                    />
+                                                </div>
 
-                                        {/* 背景のグロウ */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-48 h-48 bg-indigo-500/20 blur-3xl rounded-full" />
-                                    </div>
+                                                <div className="relative w-full h-full p-4 flex flex-col justify-between pt-6">
+                                                    <motion.div
+                                                        animate={{ y: [0, -2, 0] }}
+                                                        transition={{ repeat: Infinity, duration: 2 }}
+                                                        className="flex justify-start"
+                                                    >
+                                                    </motion.div>
 
-                                    {/* フローティングアイコン */}
+                                                    <div className="flex justify-end pr-1">
+                                                        <motion.div
+                                                            initial={{ y: 20, opacity: 0 }}
+                                                            animate={{ y: 0, opacity: 1 }}
+                                                            transition={{ delay: 0.5, type: "spring" }}
+                                                            className="bg-white p-3 rounded-2xl shadow-2xl flex gap-3 max-w-[170px] border border-slate-100"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                                                                <Coffee className="w-5 h-5 text-orange-600" />
+                                                            </div>
+                                                            <div className="space-y-0.5 overflow-hidden">
+                                                                <div className="text-[7px] font-black text-indigo-500 uppercase flex items-center gap-1">Next Discovery <ArrowUpRight className="w-2 h-2" /></div>
+                                                                <p className="text-[9px] font-black text-slate-900 truncate">Hidden Matcha Cafe</p>
+                                                                <p className="text-[8px] font-bold text-slate-500">★ 4.9 (200m away)</p>
+                                                            </div>
+                                                        </motion.div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="absolute inset-0 bg-[radial-gradient(transparent_50%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
+                                            </div>
+                                        )
+                                    }
+                                ].map((item, idx) => (
                                     <motion.div
-                                        animate={{ y: [0, -10, 0] }}
-                                        transition={{ repeat: Infinity, duration: 3 }}
-                                        className="absolute -right-2 top-0 w-12 h-12 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-slate-50"
+                                        key={item.step}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.2 }}
+                                        viewport={{ once: true }}
+                                        className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-50 flex flex-col sm:flex-row items-center gap-8 group hover:shadow-2xl transition-all duration-500"
                                     >
-                                        <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
+                                        <div className="flex-1 space-y-5 text-center sm:text-left">
+                                            <div className="flex flex-row items-center gap-3 justify-center sm:justify-start">
+                                                <span className="text-xs sm:text-sm font-black bg-indigo-600 text-white px-3 py-1.5 rounded-full uppercase tracking-tighter">
+                                                    {item.step}
+                                                </span>
+                                                <span className="text-xs sm:text-sm font-black text-slate-500 uppercase tracking-widest pl-3 border-l-2 border-indigo-100">
+                                                    {item.tag}
+                                                </span>
+                                            </div>
+                                            <p className="text-lg sm:text-xl font-bold text-slate-900 leading-tight tracking-tight">
+                                                {item.desc}
+                                            </p>
+                                        </div>
+                                        <div className="w-full sm:w-64 shrink-0 transform group-hover:scale-[1.02] transition-transform duration-500">
+                                            {item.visual}
+                                        </div>
                                     </motion.div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
 
                     <div id="problems" className="pt-20 border-t border-slate-100">
                         <div className="text-center mb-16">
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100 text-rose-600 text-[10px] font-black mb-4 tracking-widest uppercase">
-                                <AlertTriangle className="w-3.5 h-3.5" />
-                                <span>Critical Pains</span>
-                            </div>
                             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.2]">
-                                インバウンド集客で、<br className="sm:hidden" />
-                                こんな「バケツの穴」が空いていませんか？
+                                旧来のルールのせいで、<br className="sm:hidden" />
+                                「集客の穴」が空いていませんか？
                             </h2>
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-8">
                             {[
                                 {
-                                    icon: <TrendingDown className="w-8 h-8" />,
-                                    color: 'rose',
-                                    title: '利益を搾取される',
-                                    subtitle: '金銭面の負担',
-                                    desc: 'OTAに高い手数料を払って載せるしか集客方法がなく、利益が残らない。'
-                                },
-                                {
                                     icon: <ShieldAlert className="w-8 h-8" />,
                                     color: 'amber',
                                     title: '来店に繋がらない',
-                                    subtitle: '効果の不在',
-                                    desc: '「日本在住の外国人」にPR費用を払ってバズっても、実際の訪日客の来店に結びつかない。'
+                                    desc: 'インフルエンサーにPR費用を払ってバズっても、実際の訪日客の来店に結びつかない。'
+                                },
+                                {
+                                    icon: <TrendingDown className="w-8 h-8" />,
+                                    color: 'rose',
+                                    title: '利益の圧迫',
+                                    desc: 'OTAに高い手数料を払って載せるしか集客方法がなく、利益が残らない。'
                                 },
                                 {
                                     icon: <Clock className="w-8 h-8" />,
                                     color: 'indigo',
                                     title: '現場がパンクする',
                                     subtitle: '工数の崩壊',
-                                    desc: '自力で海外インフルエンサーを探しても、英語の交渉や日程調整に途方もない時間がかかる。'
+                                    desc: '来店が読めず、適切な準備ができない。受入体制が不足したり、過剰だったり'
                                 }
                             ].map((pain, idx) => (
                                 <div key={idx} className="bg-slate-50 p-8 sm:p-10 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
@@ -811,7 +912,6 @@ export default function InsidersLP() {
                                         </div>
                                         <h3 className="text-xl font-black text-slate-900">{pain.title}</h3>
                                     </div>
-                                    <div className={`text-xs font-black text-${pain.color}-500 mb-6 uppercase tracking-wider`}>（{pain.subtitle}）</div>
                                     <p className="text-slate-500 text-sm leading-relaxed font-bold">
                                         {pain.desc}
                                     </p>
@@ -822,8 +922,8 @@ export default function InsidersLP() {
                         {/* Bridge Copy */}
                         <div className="mt-20 text-center max-w-3xl mx-auto">
                             <p className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
-                                これらの「インバウンド集客の常識」を<br className="sm:hidden" />
-                                <span className="text-indigo-600">INSIDERS.が覆します。</span>
+                                インバウンド集客のハードルを<br className="sm:hidden" />
+                                <span className="text-indigo-600">INSIDERS.が解消します。</span>
                             </p>
                             <div className="mt-10 flex justify-center">
                                 <div className="flex flex-col items-center gap-2 animate-bounce">
@@ -834,20 +934,17 @@ export default function InsidersLP() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* =========================================
           5. CORE VALUES & UI MOCKUPS (The Proof & Core Narrative)
       ========================================= */}
-            <section id="solution" className="py-16 sm:py-24 bg-white border-t border-slate-100 overflow-hidden">
+            < section id="solution" className="py-16 sm:py-24 bg-white border-t border-slate-100 overflow-hidden" >
                 <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black mb-6 tracking-widest uppercase">
-                            Core Features
-                        </div>
                         <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.2]">
-                            貴店を旅の目的地にするための、<br />
-                            4つの圧倒的価値
+                            インバウンド向けショート動画PRのために<br />
+                            『INSIDERS.』が支える4つのポイント
                         </h2>
                     </div>
 
@@ -882,7 +979,7 @@ export default function InsidersLP() {
                                         </thead>
                                         <tbody>
                                             {[
-                                                { item: "費用", standard: "1回 20万〜30万円", insiders: "月額 39,800円 (定額でオファーし放題)", highlight: true },
+                                                { item: "費用", standard: "1回 20万〜30万円", insiders: "月額 4万円 (定額でオファーし放題)", highlight: true },
                                                 { item: "ターゲット", standard: "日本人や在日外国人が中心", insiders: "訪日インテントの高い海外ネイティブ" },
                                                 { item: "動画の二次利用", standard: "不可・高額なライセンス料", insiders: "完全無料 (無期限の利用許諾)", highlight: true },
                                                 { item: "英語対応", standard: "自力で対応・代理店が仲介", insiders: "AIチャットで日本語のまま即時完結" }
@@ -908,7 +1005,7 @@ export default function InsidersLP() {
                                     <Database className="w-5 h-5 font-black" /> Point 02. THE CREATORS
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
-                                    「ここに行きたい！」を生み出す、厳選されたクリエイター群
+                                    「ここに行きたい！」を生み出す、厳選されたクリエイター群（INSIDE感を出したい）
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
@@ -1100,18 +1197,15 @@ export default function InsidersLP() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* =========================================
           6. THE INBOUND FLYWHEEL (Linear Journey)
       ========================================= */}
-            <section className="py-24 bg-white border-t border-slate-100 relative overflow-hidden">
+            < section className="py-24 bg-white border-t border-slate-100 relative overflow-hidden" >
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.05),transparent_50%)]" />
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4 bg-indigo-50 px-4 py-1.5 rounded-full">
-                        <Repeat className="w-4 h-4" /> The Inbound Flywheel
-                    </div>
                     <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-slate-900">
                         単発の「買い切り集客」からの脱却。<br className="hidden sm:block" />
                         インバウンド集客の「正のサイクル」
@@ -1196,12 +1290,12 @@ export default function InsidersLP() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* =========================================
           7. PRICING & SaaS TRIAL OFFER (インフラ維持費としての正当化)
       ========================================= */}
-            <section id="signup" className="py-24 bg-white border-t border-slate-100">
+            < section id="signup" className="py-24 bg-white border-t border-slate-100" >
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     <div className="group bg-slate-50 rounded-[2.5rem] p-10 sm:p-14 shadow-2xl shadow-indigo-100/50 text-center relative overflow-hidden mb-12 border border-slate-200 transition-all duration-700 hover:shadow-indigo-200/50">
@@ -1281,7 +1375,7 @@ export default function InsidersLP() {
                     </div>
 
                 </div>
-            </section>
+            </section >
 
             {/* =========================================
               9. STICKY FOOTER CTA (Mobile Conversion Trigger)
@@ -1326,6 +1420,6 @@ export default function InsidersLP() {
                 </div>
             </footer>
 
-        </div>
+        </div >
     );
 }
