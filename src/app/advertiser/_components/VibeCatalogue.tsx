@@ -42,6 +42,7 @@ export interface Creator {
     name: string;
     genre: string[];
     ethnicity: string;
+    nationality?: string;
     vibe_tags: string[];
     followers: string;
     thumbnail_url: string | null;
@@ -289,7 +290,13 @@ const CreatorCard = ({
                     )}
                 </div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-white/70 text-xs font-bold">{creator.followers} followers</span>
+                    <div className="flex flex-col">
+                        <span className="text-white/70 text-xs font-bold">{creator.followers} followers</span>
+                        <span className="text-white/40 text-[8px] font-black uppercase tracking-widest mt-1 px-1.5 py-0.5 bg-white/5 rounded border border-white/5 w-fit">
+                            AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}
+                        </span>
+                    </div>
+
                     {/* VIBEマッチ度バッジ */}
                     {hasScore && (
                         <span className={`text-[10px] font-bold whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 90

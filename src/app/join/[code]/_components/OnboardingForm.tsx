@@ -331,9 +331,9 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                 <div className="mb-12 pt-8 border-t border-white/5">
                     <h3 className="text-2xl font-light font-playfair italic text-white mb-2">Connection</h3>
                     <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
-                        Coordination is handled through direct intelligence channels.<br/>
+                        Coordination is handled through direct intelligence channels.<br />
                         <span className="text-amber-500/80 font-medium text-[10px] mt-1 inline-block">
-                            ※本名や連絡先IDは厳重に保護され、マッチングが成立するまで広告主には一切公開されません。
+                            ※これらの情報は報酬のお支払い・トラブル時のサポートにのみ使用されます。運営によって厳重に保護され、広告主に公開されることは一切ありません。
                         </span>
                     </p>
 
@@ -349,25 +349,29 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                     placeholder="Confidential"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Nationality</label>
-                                <div className="relative">
-                                    <select
-                                        value={formData.nationality}
-                                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                                        className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
-                                    >
-                                        <option value="Japan">Japan 🇯🇵</option>
-                                        <option value="USA">USA 🇺🇸</option>
-                                        <option value="China">China 🇨🇳</option>
-                                        <option value="Korea">Korea 🇰🇷</option>
-                                        <option value="Other">Other 🌏</option>
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                                        <ChevronRight size={14} className="rotate-90" />
-                                    </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                Primary Audience Region (主なリーチ層)
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={formData.nationality}
+                                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                                    className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
+                                >
+                                    <option value="Japan">Japan (Domestic)</option>
+                                    <option value="North America">North America</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="Greater China">Greater China (Mainland/HK/TW)</option>
+                                    <option value="Southeast Asia">Southeast Asia</option>
+                                    <option value="Oceania">Oceania</option>
+                                    <option value="Global / Mixed">Global / Mixed</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                    <ChevronRight size={14} className="rotate-90" />
                                 </div>
                             </div>
+                        </div>
                         </div>
 
                         <div className="space-y-2">

@@ -11,14 +11,23 @@ export async function authAction<T, R>(
     action: (payload: T, context: AuthContext) => Promise<R>
 ): Promise<R> {
     const supabase = await createClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (error || !user) {
+    if (authError || !user) {
         console.error('Unauthorized attempt to access secure action.');
         throw new Error('Unauthorized Access: INSIDERS. Security Protocol');
     }
 
-    return action(payload, { user });
+    try {
+        return await action(payload, { user });
+    } catch (error: any) {
+        if (error.digest?.startsWith('NEXT_REDIRECT') || error.message?.includes('NEXT_REDIRECT')) {
+            throw error;
+        }
+        console.error('Auth Action Error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Action failed. Please try again.';
+        throw new Error(errorMessage);
+    }
 }
 
 /**
@@ -29,12 +38,16 @@ export async function publicAction<T, R>(
     action: (payload: T, context: PublicContext) => Promise<R>
 ): Promise<R> {
     try {
-        // 認証チェックは行わないが、共通のエラーハンドリングや
-        // 将来的なBot対策（reCAPTCHAトークンの検証など）をここに集約可能
         return await action(payload, {});
     } catch (error: any) {
+        // Next.jsのredirectはエラーを投げて処理されるため、そのまま再スローする
+        if (error.digest?.startsWith('NEXT_REDIRECT') || error.message?.includes('NEXT_REDIRECT')) {
+            throw error;
+        }
+
         console.error('Public Action Error:', error);
-        // エラーが既に分かりやすいメッセージを持っている場合はそれを投げ、そうでなければ汎用的なメッセージにする
-        throw new Error(error.message || 'Action failed. Please try again.');
+        // 安全なメッセージのみを投げる
+        const errorMessage = error instanceof Error ? error.message : 'Action failed. Please try again.';
+        throw new Error(errorMessage);
     }
 }
