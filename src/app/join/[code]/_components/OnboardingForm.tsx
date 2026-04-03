@@ -349,29 +349,31 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                     placeholder="Confidential"
                                 />
                             </div>
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
-                                Primary Audience Region (主なリーチ層)
-                            </label>
-                            <div className="relative">
-                                <select
-                                    value={formData.nationality}
-                                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                                    className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
-                                >
-                                    <option value="Japan">Japan (Domestic)</option>
-                                    <option value="North America">North America</option>
-                                    <option value="Europe">Europe</option>
-                                    <option value="Greater China">Greater China (Mainland/HK/TW)</option>
-                                    <option value="Southeast Asia">Southeast Asia</option>
-                                    <option value="Oceania">Oceania</option>
-                                    <option value="Global / Mixed">Global / Mixed</option>
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                                    <ChevronRight size={14} className="rotate-90" />
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                    Primary Audience Region (主なリーチ層)
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        value={formData.nationality}
+                                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                                        className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
+                                    >
+                                        <option value="Japan">Japan (Domestic)</option>
+                                        <option value="Asia">Asia (excl. Japan)</option>
+                                        <option value="Middle East">Middle East</option>
+                                        <option value="Europe">Europe</option>
+                                        <option value="North America">North America</option>
+                                        <option value="Latin America">Latin America</option>
+                                        <option value="Africa">Africa</option>
+                                        <option value="Oceania">Oceania</option>
+                                        <option value="Global / Mixed">Global / Mixed</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                        <ChevronRight size={14} className="rotate-90" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         </div>
 
                         <div className="space-y-2">
