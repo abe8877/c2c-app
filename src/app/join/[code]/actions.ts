@@ -114,7 +114,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
                     contact_app: contactApp,
                     contact_id: contactId,
                     vibe_tags: vibeTags,
-                    status: 'onboarded',
+                    status: 'under_review',
                     is_onboarded: true,
                     invite_code: generatedCode,
                     tier: 'B' // 一般応募はTier Bから
@@ -159,6 +159,6 @@ export const submitCreatorApplication = async (formData: FormData) => {
         }
 
         // 7. ダッシュボードへリダイレクト
-        redirect('/creator/dashboard');
+        redirect('/creator');
     });
 };

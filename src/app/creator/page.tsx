@@ -13,13 +13,61 @@ export default async function CreatorDashboard() {
     // クリエイタープロフィールの取得
     const { data: creator } = await supabase
         .from('creators')
-        .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot')
+        .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot, status')
         .eq('id', user.id)
         .single();
 
     if (!creator) {
         // プロフィールがない場合はログイン画面へリダイレクト（挙動確認用）
         redirect("/creator/login");
+    }
+    
+    // 🌟 3. ダッシュボード: 審査中ガード (Gatekeeper) の実装
+    if (creator.status === 'under_review' || creator.status === 'pending') {
+        return (
+            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 selection:bg-zinc-800">
+                <div className="max-w-md w-full text-center space-y-12">
+                    {/* Spinning Loading Animation with Glassmorphism Effect */}
+                    <div className="relative">
+                        <div className="w-24 h-24 rounded-full border-2 border-white/5 mx-auto flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-full border-t-2 border-emerald-500 animate-spin" />
+                        </div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <div className="w-4 h-4 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <p className="text-[10px] tracking-[0.4em] font-black text-zinc-500 uppercase">System Status</p>
+                            <h1 className="text-3xl font-playfair italic font-light tracking-tight text-white flex items-center justify-center gap-3">
+                                審査中 <span className="text-zinc-600 font-sans not-italic text-sm tracking-widest">(Under Review)</span>
+                            </h1>
+                        </div>
+                        
+                        <div className="p-6 bg-zinc-950 border border-white/5 rounded-3xl space-y-4">
+                            <p className="text-xs text-zinc-400 font-light tracking-wide leading-relaxed">
+                                ご応募ありがとうございます。<br />
+                                現在キュレーションチームがあなたのポートフォリオと<span className="text-white font-medium border-b border-zinc-700">VIBE</span>を審査しています。<br />
+                                結果が出るまで、今しばらくお待ちください。
+                            </p>
+                            
+                            <div className="pt-4 border-t border-white/5 flex flex-col gap-4">
+                                <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-600 font-medium tracking-widest uppercase">
+                                    Curator: <span className="text-zinc-400">Reviewing Portfolio</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-8">
+                            <a href="/creator/login" className="text-[10px] tracking-[0.2em] font-medium uppercase text-zinc-500 hover:text-white transition-colors border-b border-zinc-800 pb-1">
+                                Logout and Exit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     // 1. クリエイターデータの整形

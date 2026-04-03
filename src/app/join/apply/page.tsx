@@ -36,7 +36,7 @@ export default async function ApplyPage() {
             </section>
 
             <section className="max-w-xl mx-auto px-8 py-16">
-                <OnboardingForm creator={defaultCreator as any} />
+                <OnboardingForm creator={defaultCreator as any} isApplyMode={true} />
             </section>
         </div>
     );

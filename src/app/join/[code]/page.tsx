@@ -12,7 +12,7 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
     // 1. クリエイター情報の取得
     const { data: creator } = await supabase
         .from('creators')
-        .select('*')
+        .select('id, invite_code, is_onboarded, tiktok_handle, vibe_tags, tier, scouted_video_url, portfolio_video_url, avatar_url')
         .ilike('invite_code', code)
         .single();
 
