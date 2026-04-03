@@ -17,10 +17,6 @@ export default async function ApplyPage() {
     return (
         <div className="min-h-screen bg-black text-white selection:bg-zinc-800 selection:text-white font-sans">
             <section className="relative h-[40vh] flex flex-col justify-end p-8 border-b border-white/5">
-                <div className="absolute inset-0 opacity-20 overflow-hidden pointer-events-none bg-zinc-900">
-                    <img src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale brightness-50" alt="Background" />
-                </div>
-
                 <div className="relative z-10 max-w-4xl mx-auto w-full text-center">
                     <p className="text-[10px] tracking-[0.3em] font-medium text-zinc-500 uppercase mb-6">
                         Open Application

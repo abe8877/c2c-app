@@ -330,7 +330,12 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
 
                 <div className="mb-12 pt-8 border-t border-white/5">
                     <h3 className="text-2xl font-light font-playfair italic text-white mb-2">Connection</h3>
-                    <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">Coordination is handled through direct intelligence channels.</p>
+                    <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
+                        Coordination is handled through direct intelligence channels.<br/>
+                        <span className="text-amber-500/80 font-medium text-[10px] mt-1 inline-block">
+                            ※本名や連絡先IDは厳重に保護され、マッチングが成立するまで広告主には一切公開されません。
+                        </span>
+                    </p>
 
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
