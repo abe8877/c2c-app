@@ -879,7 +879,7 @@ export default function InsidersLP() {
                         <div className="text-center mb-16">
                             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.2]">
                                 旧来のルールのせいで、<br className="sm:hidden" />
-                                「集客の穴」が空いていませんか？
+                                集客の穴が空いていませんか？
                             </h2>
                         </div>
 
@@ -902,7 +902,7 @@ export default function InsidersLP() {
                                     color: 'indigo',
                                     title: '現場がパンクする',
                                     subtitle: '工数の崩壊',
-                                    desc: '来店が読めず、適切な準備ができない。受入体制が不足したり、過剰だったり'
+                                    desc: '来店が読めず、外国人の受入体制が整備できない。受入体制が不足したり、過剰だったり'
                                 }
                             ].map((pain, idx) => (
                                 <div key={idx} className="bg-slate-50 p-8 sm:p-10 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
@@ -943,8 +943,8 @@ export default function InsidersLP() {
                 <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
                         <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.2]">
-                            インバウンド向けショート動画PRのために<br />
-                            『INSIDERS.』が支える4つのポイント
+                            <span className="text-indigo-600">INSIDERS.が支える</span><br />
+                            インバウンド×ショート動画PR
                         </h2>
                     </div>
 
@@ -1002,16 +1002,16 @@ export default function InsidersLP() {
                         <div className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-14 max-w-6xl mx-auto px-2 sm:px-0">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                    <Database className="w-5 h-5 font-black" /> Point 02. THE CREATORS
+                                    <Database className="w-5 h-5 font-black" /> Point 02. ハイレベルなクリエイター網
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     「ここに行きたい！」を生み出す、厳選されたクリエイター群（INSIDE感を出したい）
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "AIによる自動選定", desc: "貴店のURLを入れるだけで、最も相性の良いクリエイターを特定。" },
-                                        { title: "訪日インテント解析", desc: "今まさに日本旅行を計画している外国人のスマホに直接リーチ。" },
-                                        { title: "本物だけをリスト化", desc: "予約に直結する成果を出しているクリエイターのみを厳選。" }
+                                        { title: "独自技術によるクリエイターピック", desc: "日本の「インサイド情報」を深く知り、訪日客から信頼されているクリエイターだけを厳選。" },
+                                        { title: "最適なクリエイターの推薦", desc: "貴店のURLを入れるだけで、最も相性の良いクリエイターを推薦。クリエイターへのサポートもやってます。" },
+                                        { title: "常時更新", desc: "予約に直結する成果を出しているクリエイターのみを厳選。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">

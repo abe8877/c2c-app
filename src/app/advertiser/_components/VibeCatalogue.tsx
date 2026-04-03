@@ -690,7 +690,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     const [amount, setAmount] = useState<number>(15000);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
     const [barterDetails, setBarterDetails] = useState('');
-    const [invitationMessage, setInvitationMessage] = useState(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`);
+    const [invitationMessage, setInvitationMessage] = useState('');
+    const [isManualMessage, setIsManualMessage] = useState(false);
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
     const toggleTag = (tag: string) => {
@@ -717,8 +718,10 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     // For now, let's keep it simple as in the current code where it was a defaultValue.
     // Changing to controlled for easier translation.
     useEffect(() => {
-        setInvitationMessage(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.${barterDetails ? `\nWe'd love to offer you: ${barterDetails}` : ''}`);
-    }, [plan, amount, barterDetails, creatorName]);
+        if (!isManualMessage) {
+            setInvitationMessage(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`);
+        }
+    }, [plan, amount, barterDetails, creatorName, isManualMessage]);
 
     return (
         <AnimatePresence>
@@ -875,7 +878,10 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     <textarea
                                         className="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-800 leading-relaxed font-mono outline-none focus:ring-2 focus:ring-black resize-none"
                                         value={invitationMessage}
-                                        onChange={(e) => setInvitationMessage(e.target.value)}
+                                        onChange={(e) => {
+                                            setInvitationMessage(e.target.value);
+                                            setIsManualMessage(true);
+                                        }}
                                     />
                                     <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
@@ -889,7 +895,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、なぜあなたに依頼したいかを追記するとオファーが受諾されやすいです。
+                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、依頼したい理由等を追記するとオファーが受諾されやすいです。
                                 </p>
                             </div>
                         </div>

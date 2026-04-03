@@ -7,19 +7,19 @@ export default async function CreatorDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        redirect("/creator/login");
     }
 
     // クリエイタープロフィールの取得
     const { data: creator } = await supabase
         .from('creators')
-        .select('*')
+        .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot')
         .eq('id', user.id)
         .single();
 
     if (!creator) {
         // プロフィールがない場合はログイン画面へリダイレクト（挙動確認用）
-        redirect("/login");
+        redirect("/creator/login");
     }
 
     // 1. クリエイターデータの整形
@@ -31,13 +31,14 @@ export default async function CreatorDashboard() {
         assetsGenerated: 0, // あとで集計
         nextMilestone: 15,
         hitKeywords: creator.vibe_tags || [], // HitKeywordsの代わりに一旦vibe_tagsを使用
+        isHot: creator.is_hot || false,
     };
 
     // 2. 招待（マッチングする店舗）の取得
     // 本来はVibeマッチングロジックを通しますが、デモ用に最新の店舗をいくつか取得
     const { data: shops } = await supabase
         .from('shops')
-        .select('*')
+        .select('id, name, genre, shop_vibe_tags')
         .limit(5);
 
     const exclusiveInvites = (shops || []).map(shop => ({
@@ -52,20 +53,23 @@ export default async function CreatorDashboard() {
     const { data: assetsFetched } = await supabase
         .from('assets')
         .select(`
-            *,
+            id, status, created_at, offer_details,
             shop: shops ( name, shop_vibe_tags )
         `)
         .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
 
-    const assets = (assetsFetched || []).map(a => ({
-        id: a.id,
-        shopName: a.shop?.name || "Unknown Shop",
-        status: a.status as any,
-        date: a.created_at ? new Date(a.created_at).toLocaleDateString() : "-",
-        shopRequirements: a.offer_details?.selectedTags || a.shop?.shop_vibe_tags || [],
-        creatorTags: creator.vibe_tags || []
-    }));
+    const assets = (assetsFetched || []).map(a => {
+        const shopData = Array.isArray(a.shop) ? a.shop[0] : a.shop;
+        return {
+            id: a.id,
+            shopName: shopData?.name || "Unknown Shop",
+            status: a.status as any,
+            date: a.created_at ? new Date(a.created_at).toLocaleDateString() : "-",
+            shopRequirements: a.offer_details?.selectedTags || shopData?.shop_vibe_tags || [],
+            creatorTags: creator.vibe_tags || []
+        };
+    });
 
     // 実績数の集計
     creatorData.assetsGenerated = assets.filter(a => a.status === 'APPROVED' || a.status === 'COMPLETED' || a.status === 'approved').length;
