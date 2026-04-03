@@ -349,14 +349,14 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                     <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
                         Coordination is handled through direct intelligence channels.<br />
                         <span className="text-amber-500/80 font-medium text-[10px] mt-1 inline-block">
-                            ※これらの情報は報酬のお支払い・トラブル時のサポートにのみ使用されます。運営によって厳重に保護され、広告主に公開されることは一切ありません。
+                            ※これらの情報は報酬のお支払い・トラブル時のサポートにのみ使用されます。<br />運営によって厳重に保護され、広告主に公開されることは一切ありません。
                         </span>
                     </p>
 
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Signature Name</label>
+                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Real Name</label>
                                 <input
                                     type="text"
                                     value={formData.real_name}
@@ -367,7 +367,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                             </div>
                             <div className="space-y-4">
                                 <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
-                                    Primary Audience Region (主なリーチ層)
+                                    Primary Audience Region
                                 </label>
                                 <div className="relative">
                                     <select

@@ -41,10 +41,10 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
             if (creatorCheckError || !creatorData) {
                 console.error("Invite code check error:", creatorCheckError);
-                throw new Error("無効な招待コードです。URLが正しいかご確認ください。");
+                return { success: false, error: "無効な招待コードです。URLが正しいかご確認ください。" };
             }
             if (creatorData.is_onboarded || creatorData.status === 'onboarded') {
-                throw new Error("この招待コードは既に使用されています。");
+                return { success: false, error: "この招待コードは既に使用されています。" };
             }
             creatorId = creatorData.id;
         }
@@ -57,18 +57,19 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
         if (authError || !authData.user) {
             console.error("Auth error:", authError);
-            throw new Error("アカウントの作成に失敗しました。既に登録済みのメールアドレスの可能性があります。");
+            return { success: false, error: "アカウントの作成に失敗しました。既に登録済みのメールアドレスの可能性があります。" };
         }
 
         // 3. 厳格なRBAC適用（user_rolesへcreatorとしてINSERT）
         const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
             user_id: authData.user.id,
-            role: 'creator'
+            role: 'creator',
+            status: 'active'
         });
 
         if (roleError) {
-            console.error("Role insert error:", roleError);
-            throw new Error("権限の付与に失敗しました。");
+            console.error("Role Assign Error (Debug Info):", roleError);
+            return { success: false, error: "権限の付与に失敗しました。運営にお問い合わせください。" };
         }
 
         let finalAvatarUrl = avatarUrl;
@@ -76,7 +77,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
         // 4. Storageへの安全な画像アップロード (Service Role)
         if (avatarFile && avatarFile.size > 0) {
             if (!avatarFile.type.startsWith('image/')) {
-                throw new Error("画像ファイルを選択してください。");
+                return { success: false, error: "画像ファイルを選択してください。" };
             }
             const extension = avatarFile.name.split('.').pop() || 'png';
             const filePath = `creator_${authData.user.id}_${Date.now()}.${extension}`;
@@ -89,7 +90,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
             if (uploadError) {
                 console.error("Upload error:", uploadError);
-                throw new Error("画像のアップロードに失敗しました。");
+                return { success: false, error: "画像のアップロードに失敗しました。" };
             }
 
             const { data: { publicUrl } } = supabaseAdmin.storage
@@ -124,7 +125,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
             if (insertError) {
                 console.error("Creator insert failed:", insertError);
-                throw new Error("プロフィールの作成に失敗しました。");
+                return { success: false, error: "プロフィールの作成に失敗しました。" };
             }
             creatorId = newCreator.id;
         } else {
@@ -148,7 +149,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
             if (updateError) {
                 console.error("Creator update failed:", updateError);
-                throw new Error("プロフィールの更新に失敗しました。");
+                return { success: false, error: "プロフィールの更新に失敗しました。" };
             }
         }
 
