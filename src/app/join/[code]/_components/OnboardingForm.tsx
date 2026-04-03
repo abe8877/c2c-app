@@ -85,8 +85,24 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                 serverFormData.append('avatar_url', formData.avatar_url);
             }
 
-            await submitCreatorApplication(serverFormData);
+            const result = await submitCreatorApplication(serverFormData);
+
+            // Server Action がエラーオブジェクトを返した場合
+            if (result && !result.success) {
+                setError(result.error || 'Something went wrong.');
+                setLoading(false);
+                return;
+            }
+
+            // 成功した場合（リダイレクト等の処理へ）
+            // 注意: redirect() はエラーを投げるので、基本的には catch ブロックに行くか、
+            // そのまま遷移します。
+
         } catch (err: any) {
+            // Next.jsのredirectはエラーを投げて処理されるため、そのまま再スローする
+            if (err.digest?.startsWith('NEXT_REDIRECT') || err.message?.includes('NEXT_REDIRECT')) {
+                throw err;
+            }
             console.error(err);
             setError(err.message || 'Something went wrong.');
             setLoading(false);

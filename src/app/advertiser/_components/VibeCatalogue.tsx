@@ -268,7 +268,21 @@ const CreatorCard = ({
 
             {/* Bottom Content */}
             <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-left">
-                <div className="flex items-center gap-2 mb-1">
+                {/* VIBEマッチ度バッジ - Moved above name as requested */}
+                {hasScore && (
+                    <div className="mb-2">
+                        <span className={`text-[11px] font-black tracking-tight whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 90
+                            ? 'text-amber-400'
+                            : (creator.vibeMatchScore ?? 0) >= 80
+                                ? 'text-teal-400'
+                                : 'text-white/70'
+                            }`}>
+                            マッチ度 {creator.vibeMatchScore}%
+                        </span>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-2 mb-3">
                     <h3 className="text-white font-black text-base tracking-tight">@{creator.name}</h3>
                     {creator.is_verified && (
                         <div className="bg-teal-500/20 backdrop-blur-md border border-teal-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(20,184,166,0.3)] group/verified">
@@ -289,25 +303,19 @@ const CreatorCard = ({
                         </div>
                     )}
                 </div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex flex-col">
-                        <span className="text-white/70 text-xs font-bold">{creator.followers} followers</span>
-                        <span className="text-white/40 text-[8px] font-black uppercase tracking-widest mt-1 px-1.5 py-0.5 bg-white/5 rounded border border-white/5 w-fit">
-                            AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}
-                        </span>
+
+                <div className="flex flex-col gap-1.5">
+                    {/* FOLLOWERS - Unified Glass Box UI */}
+                    <div className="flex items-center gap-1.5 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit">
+                        <Users className="w-3 h-3 text-white/50" />
+                        {creator.followers} followers
                     </div>
 
-                    {/* VIBEマッチ度バッジ */}
-                    {hasScore && (
-                        <span className={`text-[10px] font-bold whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 90
-                            ? 'text-amber-400'
-                            : (creator.vibeMatchScore ?? 0) >= 80
-                                ? 'text-teal-400'
-                                : 'text-white/70'
-                            }`}>
-                            マッチ度 {creator.vibeMatchScore}%
-                        </span>
-                    )}
+                    {/* AUDIENCE - Vertical stack, Unified Glass Box UI */}
+                    <div className="flex items-center gap-1.5 text-white/90 text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit">
+                        <Globe className="w-3 h-3 text-white/50" />
+                        AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}
+                    </div>
                 </div>
             </div>
 
