@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient as createServerClient } from "@/utils/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 
@@ -16,7 +17,7 @@ export async function sendMessage({
     content: string;
     senderType: 'shop' | 'creator';
 }) {
-    const supabase = await createClient();
+    const supabase = await createServerClient();
 
     // 1. AI Translation (Using the fastest model gemini-3-flash-preview)
     let translatedContent = "";
@@ -41,7 +42,7 @@ export async function sendMessage({
     }
 
     // 2. Save to Database
-    const senderId = senderType === 'shop' ? 'demo-shop' : 'demo-creator-id';
+    const senderId = senderType === 'shop' ? 'demo-shop' : 'demo-creator-id'; // Auth実装後はここを更新
 
     const { data, error } = await supabase
         .from('messages')
@@ -60,6 +61,49 @@ export async function sendMessage({
         throw new Error("Failed to send message: " + error.message);
     }
 
+    // 3. Trigger n8n Webhook Notification
+    try {
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        // 送信先（相手）の情報を取得
+        const { data: asset } = await supabaseAdmin
+            .from('assets')
+            .select(`
+                shop_id,
+                creator_id,
+                shops ( name, email ),
+                creators ( name, email )
+            `)
+            .eq('id', assetId)
+            .single();
+
+        if (asset) {
+            const recipient = senderType === 'shop' ? (asset.creators as any) : (asset.shops as any);
+            const senderName = senderType === 'shop' ? (asset.shops as any)?.name : (asset.creators as any)?.name;
+            const n8nChatWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+
+            if (n8nChatWebhookUrl && recipient?.email) {
+                fetch(n8nChatWebhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'CHAT',
+                        recipientEmail: recipient.email,
+                        senderName: senderName || 'Partner',
+                        content: content,
+                        subject: `[INSIDERS] New message from ${senderName || 'your partner'}`,
+                        assetId: assetId
+                    })
+                }).catch(err => console.error("n8n Chat Notification Error:", err));
+            }
+        }
+    } catch (notifErr) {
+        console.error("Chat Notification Trigger Error:", notifErr);
+    }
+
     return { success: true, message: data };
 }
 
@@ -75,7 +119,7 @@ export async function getAssistantResponse({
     shopId: string;
     dates?: string[];
 }) {
-    const supabase = await createClient();
+    const supabase = await createServerClient();
 
     // 1. Fetch shop presets
     const { data: shop, error: shopError } = await supabase

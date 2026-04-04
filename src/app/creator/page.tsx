@@ -88,7 +88,7 @@ export default async function CreatorDashboard() {
         id: creator.id,
         name: creator.name || creator.tiktok_handle || "New Creator",
         tier: creator.tier ? `Tier ${creator.tier}` : "Tier B",
-        avatarUrl: creator.avatar_url || creator.thumbnail_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: creator.avatar_url || creator.thumbnail_url || null,
         assetsGenerated: 0,
         nextMilestone: 15,
         hitKeywords: creator.vibe_tags || [],

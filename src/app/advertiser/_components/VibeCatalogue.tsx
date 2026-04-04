@@ -1061,6 +1061,7 @@ export default function VibeCatalogue({
     const [isPremium, setIsPremium] = useState(false);
     const [isFetchingInfo, setIsFetchingInfo] = useState(true);
     const [shop, setShop] = useState<any>(null);
+    const [hasNewNotifications, setHasNewNotifications] = useState(true);
 
     useEffect(() => {
         const fetchShopInfo = async () => {
@@ -1216,7 +1217,7 @@ export default function VibeCatalogue({
         try {
             const res = await offerCreator({
                 creatorId: selectedCreator.id,
-                shopId: shop?.id || clientTag || 'demo-shop', // 本物のshop IDを使用
+                shopId: shop?.id || 'demo-shop', // clientTag (店舗名) ではなく UUID を使用
                 creatorName: selectedCreator.name,
                 creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url || undefined,
                 offerDetails: details,
@@ -1314,17 +1315,24 @@ export default function VibeCatalogue({
                 </div>
                 <div className="flex items-center gap-3 relative">
                     <button
-                        onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsChatListOpen(false); setIsProfileOpen(false); }}
+                        onClick={() => {
+                            setIsNotificationOpen(!isNotificationOpen);
+                            setIsChatListOpen(false);
+                            setIsProfileOpen(false);
+                            setHasNewNotifications(false);
+                        }}
                         className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors"
                     >
                         <Bell className="w-5 h-5" />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                        {hasNewNotifications && (
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                        )}
                     </button>
                     {isNotificationOpen && (
                         <div className="absolute top-14 right-16 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
-                                {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'OFFERED').length === 0 && (
+                                {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'DECLINED').length === 0 && (
                                     <div className="p-8 text-center text-xs text-stone-400">新しい通知はありません</div>
                                 )}
                                 {localAssets.filter(a => a.status === 'COMPLETED').map(a => (
@@ -1333,10 +1341,10 @@ export default function VibeCatalogue({
                                         <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！「資産管理」タブで確認できます。</div>
                                     </div>
                                 ))}
-                                {localAssets.filter(a => a.status === 'OFFERED').slice(-3).reverse().map(a => (
-                                    <div key={`notif-offered-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); const creator = initialCreators.find(c => c.id === a.creator_id); if (creator) { setSelectedCreator(creator); setIsChatOpen(true); } }}>
-                                        <div className="text-xs font-bold text-stone-900 mb-1">📤 オファー送信済み</div>
-                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんへのオファーを確認中です。返信をお待ちください。</div>
+                                {localAssets.filter(a => a.status === 'DECLINED').map(a => (
+                                    <div key={`notif-declined-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
+                                        <div className="text-xs font-bold text-red-600 mb-1">⚠️ オファーが辞退されました</div>
+                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんが今回は案件を見送りました。別のクリエイターを探してみましょう。</div>
                                     </div>
                                 ))}
                             </div>
@@ -2058,7 +2066,11 @@ export default function VibeCatalogue({
             <ChatModal
                 isOpen={isChatOpen}
                 onClose={() => setIsChatOpen(false)}
-                assetId={`mock-${selectedCreator?.id || 'demo'}`}
+                assetId={(() => {
+                    // 選択中のクリエイターに紐づく最新の asset を取得
+                    const asset = localAssets.find(a => a.creator_id === selectedCreator?.id);
+                    return asset?.id || currentAssetId || `mock-${selectedCreator?.id || 'demo'}`;
+                })()}
                 partnerName={selectedCreator?.name || 'Support Team'}
                 currentUserType="shop"
             />

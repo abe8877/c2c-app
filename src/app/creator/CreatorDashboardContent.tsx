@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame, Plus, Globe } from "lucide-react";
+import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame, Plus, Globe, User } from "lucide-react";
 import Image from "next/image";
 import CreatorAiFeedback from "./_components/CreatorAiFeedback";
 import { submitAssetDelivery, updateCreatorPortfolio } from "@/app/actions/creator";
@@ -47,6 +47,9 @@ const dict = {
         submitButton: "Submit",
         hotTag: "HOT",
         invited: "INVITED",
+        profileIncomplete: "Profile Icon Not Set",
+        profilePrompt: "Update your profile icon to increase your trust and offer rate! 📈",
+        updateIcon: "Update Now",
         status: {
             PENDING: "PENDING",
             APPROVED: "APPROVED",
@@ -86,6 +89,9 @@ const dict = {
         submitButton: "提出する",
         hotTag: "HOT",
         invited: "招待中",
+        profileIncomplete: "アイコン未設定",
+        profilePrompt: "プロフィール画像を設定すると、信頼度が上がりオファー率が劇的にアップします！📈",
+        updateIcon: "今すぐ登録",
         status: {
             PENDING: "審査中",
             APPROVED: "承認済み",
@@ -317,7 +323,7 @@ export default function CreatorDashboardContent({
                             )}
                         </h1>
                     </motion.div>
-                    
+
                     <div className="flex items-center gap-4">
                         <motion.button
                             initial={{ opacity: 0, scale: 0.8 }}
@@ -333,20 +339,49 @@ export default function CreatorDashboardContent({
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            className="relative"
+                            className="relative group cursor-pointer"
                         >
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/50 relative z-10">
-                            <Image
-                                src={creatorData.avatarUrl}
-                                alt="Avatar"
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
-                        <div className="absolute inset-0 bg-amber-500 blur-xl opacity-30 z-0"></div>
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/50 relative z-10 flex items-center justify-center bg-zinc-900">
+                                {creatorData.avatarUrl ? (
+                                    <Image
+                                        src={creatorData.avatarUrl}
+                                        alt="Avatar"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <User className="w-6 h-6 text-zinc-500" />
+                                )}
+                            </div>
+                            <div className={`absolute inset-0 blur-xl opacity-30 z-0 ${creatorData.avatarUrl ? 'bg-amber-500' : 'bg-red-500 animate-pulse'}`}></div>
                         </motion.div>
                     </div>
                 </header>
+
+                {!creatorData.avatarUrl && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="px-6 mb-6"
+                    >
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center shrink-0">
+                                    <User className="w-5 h-5 text-red-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-0.5">{t.profileIncomplete}</p>
+                                    <p className="text-xs text-zinc-300 font-medium leading-tight">
+                                        {t.profilePrompt}
+                                    </p>
+                                </div>
+                            </div>
+                            <button className="bg-red-500 text-white text-[10px] font-black px-3 py-2 rounded-lg whitespace-nowrap hover:bg-red-600 transition shadow-lg shadow-red-500/20">
+                                {t.updateIcon}
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* 2. Tier Card (The "Black Card" Experience) */}
                 <motion.section
