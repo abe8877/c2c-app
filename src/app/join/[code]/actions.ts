@@ -66,7 +66,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
         const { error: roleError } = await supabaseAdmin
             .from('user_roles')
             .insert({
-                user_id: userId, // ⚠️ DBのカラム名が 'auth_id' の場合はここを直す必要があるかもしれません（エラーを見れば分かります）
+                auth_id: userId, 
                 role: 'creator',
                 status: 'active'
             });
@@ -111,9 +111,9 @@ export const submitCreatorApplication = async (formData: FormData) => {
             const { data: newCreator, error: insertError } = await supabaseAdmin
                 .from('creators')
                 .insert({
-                    user_id: userId,
+                    auth_id: userId, // 🔴 user_id から auth_id に修正
                     email: email,
-                    portfolio_video_url: portfolioUrl,
+                    portfolio_video_urls: [portfolioUrl], // 🔴 複数形にし、配列 [ ] で囲む
                     avatar_url: finalAvatarUrl,
                     real_name: realName,
                     nationality: nationality,
@@ -138,16 +138,16 @@ export const submitCreatorApplication = async (formData: FormData) => {
             const { error: updateError } = await supabaseAdmin
                 .from('creators')
                 .update({
-                    user_id: userId,
+                    auth_id: userId, // 🔴 user_id から auth_id に修正
                     email: email,
-                    portfolio_video_url: portfolioUrl,
+                    portfolio_video_urls: [portfolioUrl], // 🔴 複数形にし、配列 [ ] で囲む
                     avatar_url: finalAvatarUrl,
                     real_name: realName,
                     nationality: nationality,
                     contact_app: contactApp,
                     contact_id: contactId,
                     vibe_tags: vibeTags,
-                    status: 'onboarded',
+                    status: 'onboarded', // 招待組はここでオンボーディング完了
                     is_onboarded: true,
                     updated_at: new Date().toISOString(),
                 })

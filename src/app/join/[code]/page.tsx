@@ -10,11 +10,15 @@ export default async function JoinPage({ params }: { params: Promise<{ code: str
     const supabase = await createClient();
 
     // 1. クリエイター情報の取得
-    const { data: creator } = await supabase
+    const { data: creator, error: dbError } = await supabase
         .from('creators')
-        .select('id, invite_code, is_onboarded, tiktok_handle, vibe_tags, tier, scouted_video_url, portfolio_video_url, avatar_url')
+        .select('id, auth_id, invite_code, is_onboarded, tiktok_handle, vibe_tags, tier, scouted_video_url, portfolio_video_urls, avatar_url')
         .ilike('invite_code', code)
         .single();
+
+    if (dbError) {
+        console.error("🔥 [DEBUG] JoinPage creators query error:", dbError);
+    }
 
     if (!creator) {
         return (

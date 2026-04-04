@@ -127,7 +127,7 @@ export function OnboardingForm({
     }, [initialLang]);
 
     const [formData, setFormData] = useState({
-        portfolio_video_url: creator.portfolio_video_url || creator.scouted_video_url || '',
+        portfolio_video_url: (creator.portfolio_video_urls && creator.portfolio_video_urls[0]) || creator.scouted_video_url || '',
         avatar_url: creator.avatar_url || '',
         vibe_tags: creator.vibe_tags || [],
         real_name: '',
