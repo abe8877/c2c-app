@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Upload, ChevronRight, CheckCircle2, Sparkles, Globe } from 'lucide-react';
+import { AlertCircle, Upload, ChevronRight, CheckCircle2, Sparkles, Globe, Eye, EyeOff } from 'lucide-react';
 import { submitCreatorApplication } from '../actions';
 import TermsOfCuration from './TermsOfCuration';
 
@@ -119,6 +119,7 @@ export function OnboardingForm({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
     const t = dict[lang];
 
     // 親コンポーネントからの言語変更を反映
@@ -162,7 +163,8 @@ export function OnboardingForm({
         setError('');
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         setError('');
         if (!formData.real_name || !formData.contact_id || !formData.email || !formData.password) {
             setError(t.missingFields);
@@ -210,7 +212,7 @@ export function OnboardingForm({
     };
 
     return (
-        <div className="max-w-2xl mx-auto flex flex-col gap-10 items-stretch relative px-4 pb-20">
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto flex flex-col gap-10 items-stretch relative px-4 pb-20">
             <div className="w-full flex flex-col gap-6">
 
                 {/* Apply Mode: Application Review Message */}
@@ -496,11 +498,29 @@ export function OnboardingForm({
                             <div className="space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.email}</label>
-                                    <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder="your@email.com" />
+                                    <input type="email" name="email" autoComplete="username" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder="your@email.com" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.password}</label>
-                                    <input type="password" minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder={t.minChars} />
+                                    <div className="relative">
+                                        <input 
+                                            type={showPassword ? "text" : "password"} 
+                                            name="password"
+                                            autoComplete="new-password"
+                                            minLength={6} 
+                                            value={formData.password} 
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
+                                            className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 pr-12 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" 
+                                            placeholder={t.minChars} 
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -519,10 +539,10 @@ export function OnboardingForm({
                         {t.processing}
                     </div>
                 ) : (
-                    <TermsOfCuration onAccept={handleSubmit} />
+                    <TermsOfCuration />
                 )}
 
             </div>
-        </div>
+        </form>
     );
 }

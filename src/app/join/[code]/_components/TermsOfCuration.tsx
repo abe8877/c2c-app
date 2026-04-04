@@ -7,10 +7,9 @@ import { Check, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 interface TermsOfCurationProps {
-    onAccept: () => void;
 }
 
-export default function TermsOfCuration({ onAccept }: TermsOfCurationProps) {
+export default function TermsOfCuration({ }: TermsOfCurationProps) {
     const [agreements, setAgreements] = useState({
         asset: false,
         integrity: false,
@@ -125,8 +124,8 @@ export default function TermsOfCuration({ onAccept }: TermsOfCurationProps) {
                 transition={{ duration: 0.4, ease: "easeOut" }}
             >
                 <button
+                    type="submit"
                     disabled={!allChecked}
-                    onClick={onAccept}
                     className={`w-full py-4 text-xs font-black tracking-widest uppercase transition-all duration-500 flex items-center justify-center gap-2 ${allChecked
                             ? 'bg-white text-black shadow-[0_0_30px_-5px_rgba(255,255,255,0.3)] hover:bg-slate-200'
                             : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'

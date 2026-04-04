@@ -81,7 +81,7 @@ export function OnboardingPageContent({
                     {creator.scouted_video_url ? (
                         <video src={creator.scouted_video_url} className="w-full h-full object-cover grayscale brightness-50" muted autoPlay loop playsInline />
                     ) : (
-                        <img src="https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?auto=format&fit=crop&q=80" className="w-full h-full object-cover grayscale brightness-50" />
+                        <img src="/images/premium_creators.png" className="w-full h-full object-cover grayscale brightness-50" />
                     )}
                 </div>
 

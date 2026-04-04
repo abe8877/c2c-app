@@ -106,14 +106,21 @@ export const submitCreatorApplication = async (formData: FormData) => {
         }
 
         // 6. creatorsテーブルをUPDATEまたはINSERT
+
+        // 🌟 TikTok URLからハンドルネーム（@以降）を自動抽出。抽出できなければ一時IDを付与
+        const handleMatch = portfolioUrl ? portfolioUrl.match(/@([a-zA-Z0-9_.]+)/) : null;
+        const tiktokHandle = handleMatch ? handleMatch[1] : `creator_${Math.floor(Date.now() / 1000)}`;
+
         if (isApply) {
             const generatedCode = Math.random().toString(36).substring(2, 10).toUpperCase();
             const { data: newCreator, error: insertError } = await supabaseAdmin
                 .from('creators')
                 .insert({
-                    auth_id: userId, // 🔴 user_id から auth_id に修正
+                    auth_id: userId,
                     email: email,
-                    portfolio_video_urls: [portfolioUrl], // 🔴 複数形にし、配列 [ ] で囲む
+                    tiktok_handle: tiktokHandle, // 🔴 抽出したハンドルネームをセット（必須項目をクリア）
+                    name: tiktokHandle,          // 念のため表示名(name)もハンドルと同じにしておく
+                    portfolio_video_urls: [portfolioUrl],
                     avatar_url: finalAvatarUrl,
                     real_name: realName,
                     nationality: nationality,
@@ -128,7 +135,6 @@ export const submitCreatorApplication = async (formData: FormData) => {
                 .select('id')
                 .single();
 
-            // 🔥 デバッグログ: creatorsのINSERTエラーを出力
             if (insertError) {
                 console.error("🔥 [DEBUG] creators INSERT Error:", insertError);
                 return { success: false, error: `クリエイター登録エラー: ${insertError.message}` };
@@ -138,22 +144,23 @@ export const submitCreatorApplication = async (formData: FormData) => {
             const { error: updateError } = await supabaseAdmin
                 .from('creators')
                 .update({
-                    auth_id: userId, // 🔴 user_id から auth_id に修正
+                    auth_id: userId,
                     email: email,
-                    portfolio_video_urls: [portfolioUrl], // 🔴 複数形にし、配列 [ ] で囲む
+                    tiktok_handle: tiktokHandle,
+                    name: tiktokHandle,
+                    portfolio_video_urls: [portfolioUrl],
                     avatar_url: finalAvatarUrl,
                     real_name: realName,
                     nationality: nationality,
                     contact_app: contactApp,
                     contact_id: contactId,
                     vibe_tags: vibeTags,
-                    status: 'onboarded', // 招待組はここでオンボーディング完了
+                    status: 'onboarded',
                     is_onboarded: true,
                     updated_at: new Date().toISOString(),
                 })
                 .eq('invite_code', inviteCode);
 
-            // 🔥 デバッグログ: creatorsのUPDATEエラーを出力
             if (updateError) {
                 console.error("🔥 [DEBUG] creators UPDATE Error:", updateError);
                 return { success: false, error: `クリエイター更新エラー: ${updateError.message}` };
