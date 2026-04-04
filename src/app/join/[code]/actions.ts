@@ -66,7 +66,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
         const { error: roleError } = await supabaseAdmin
             .from('user_roles')
             .insert({
-                auth_id: userId, 
+                user_id: userId,
                 role: 'creator',
                 status: 'active'
             });
