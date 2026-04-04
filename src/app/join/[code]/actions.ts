@@ -60,27 +60,32 @@ export const submitCreatorApplication = async (formData: FormData) => {
             return { success: false, error: "アカウントの作成に失敗しました。既に登録済みのメールアドレスの可能性があります。" };
         }
 
-        // 3. 厳格なRBAC適用（user_rolesへcreatorとしてINSERT）
-        const { error: roleError } = await supabaseAdmin.from('user_roles').insert({
-            user_id: authData.user.id,
-            role: 'creator',
-            status: 'active'
-        });
+        const userId = authData.user.id;
 
+        // 4. 厳格なRBAC適用（user_rolesへcreatorとしてINSERT）
+        const { error: roleError } = await supabaseAdmin
+            .from('user_roles')
+            .insert({
+                user_id: userId, // ⚠️ DBのカラム名が 'auth_id' の場合はここを直す必要があるかもしれません（エラーを見れば分かります）
+                role: 'creator',
+                status: 'under_review'
+            });
+
+        // 🔥 デバッグログ: user_rolesのINSERTエラーを出力
         if (roleError) {
-            console.error("Role Assign Error (Debug Info):", roleError);
-            return { success: false, error: "権限の付与に失敗しました。運営にお問い合わせください。" };
+            console.error("🔥 [DEBUG] user_roles INSERT Error:", roleError);
+            return { success: false, error: `権限付与エラー: ${roleError.message}` };
         }
 
         let finalAvatarUrl = avatarUrl;
 
-        // 4. Storageへの安全な画像アップロード (Service Role)
+        // 5. Storageへの安全な画像アップロード (Service Role)
         if (avatarFile && avatarFile.size > 0) {
             if (!avatarFile.type.startsWith('image/')) {
                 return { success: false, error: "画像ファイルを選択してください。" };
             }
             const extension = avatarFile.name.split('.').pop() || 'png';
-            const filePath = `creator_${authData.user.id}_${Date.now()}.${extension}`;
+            const filePath = `creator_${userId}_${Date.now()}.${extension}`;
 
             const { error: uploadError } = await supabaseAdmin.storage
                 .from('avatars')
@@ -100,13 +105,13 @@ export const submitCreatorApplication = async (formData: FormData) => {
             finalAvatarUrl = publicUrl;
         }
 
-        // 5. creatorsテーブルをUPDATEまたはINSERT
+        // 6. creatorsテーブルをUPDATEまたはINSERT
         if (isApply) {
             const generatedCode = Math.random().toString(36).substring(2, 10).toUpperCase();
             const { data: newCreator, error: insertError } = await supabaseAdmin
                 .from('creators')
                 .insert({
-                    user_id: authData.user.id,
+                    user_id: userId,
                     email: email,
                     portfolio_video_url: portfolioUrl,
                     avatar_url: finalAvatarUrl,
@@ -123,16 +128,17 @@ export const submitCreatorApplication = async (formData: FormData) => {
                 .select('id')
                 .single();
 
+            // 🔥 デバッグログ: creatorsのINSERTエラーを出力
             if (insertError) {
-                console.error("Creator insert failed:", insertError);
-                return { success: false, error: "プロフィールの作成に失敗しました。" };
+                console.error("🔥 [DEBUG] creators INSERT Error:", insertError);
+                return { success: false, error: `クリエイター登録エラー: ${insertError.message}` };
             }
             creatorId = newCreator.id;
         } else {
             const { error: updateError } = await supabaseAdmin
                 .from('creators')
                 .update({
-                    user_id: authData.user.id,
+                    user_id: userId,
                     email: email,
                     portfolio_video_url: portfolioUrl,
                     avatar_url: finalAvatarUrl,
@@ -147,19 +153,20 @@ export const submitCreatorApplication = async (formData: FormData) => {
                 })
                 .eq('invite_code', inviteCode);
 
+            // 🔥 デバッグログ: creatorsのUPDATEエラーを出力
             if (updateError) {
-                console.error("Creator update failed:", updateError);
-                return { success: false, error: "プロフィールの更新に失敗しました。" };
+                console.error("🔥 [DEBUG] creators UPDATE Error:", updateError);
+                return { success: false, error: `クリエイター更新エラー: ${updateError.message}` };
             }
         }
 
-        // 6. オートメール / サムネイル生成Webhookのトリガー (サムネイルがない場合のみ)
+        // 7. オートメール / サムネイル生成Webhookのトリガー (サムネイルがない場合のみ)
         const { triggerN8nWebhook } = await import('@/app/actions/creator');
         if (!finalAvatarUrl && creatorId) {
             triggerN8nWebhook(creatorId, portfolioUrl);
         }
 
-        // 7. ダッシュボードへリダイレクト
+        // 8. ダッシュボードへリダイレクト
         redirect('/creator');
     });
 };
