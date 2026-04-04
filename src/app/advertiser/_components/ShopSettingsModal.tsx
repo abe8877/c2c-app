@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, ChevronRight, ChevronLeft, MapPin, Camera, Utensils, Globe, Info, Clock, CheckCircle2 } from 'lucide-react';
 import { translateText } from '@/app/actions/translate';
+import { upsertShop } from '@/app/actions/shop';
 
 type Step = 'basic' | 'access' | 'inbound' | 'rules' | 'social';
 
@@ -22,34 +23,34 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
     // Form State
     const [formData, setFormData] = useState({
         // 1. Basic Info
-        name: 'WAGYU OMAKASE 凛',
+        name: '',
         logo_url: '',
-        genre: 'レストラン',
-        area: '渋谷・原宿',
-        description_en: 'Authentic Wagyu Omakase experience in the heart of Tokyo.',
+        genre: 'FOOD',
+        area: '',
+        description_en: '',
 
         // 2. Access & Operations
-        hours_en: 'Mon-Sun: 17:00 - 23:00',
-        closed_days_en: 'Irregular holidays',
-        address_en: '1-2-3 Shibuya, Shibuya-ku, Tokyo',
-        access_info_en: '3 minute walk from Shibuya Station Hachiko Exit',
-        google_map_url: 'https://maps.google.com/...',
+        hours_en: '',
+        closed_days_en: '',
+        address_en: '',
+        access_info_en: '',
+        google_map_url: '',
 
         // 3. Inbound & Menu
-        preset_menu_en: 'Premium Wagyu Tasting Course (8 items)',
+        preset_menu_en: '',
         dietary_options: [] as string[],
         english_friendly_level: 'Basic',
-        reservation_url: 'https://tablecheck.com/...',
+        reservation_url: '',
 
         // 4. Shooting Rules
         preferred_shoot_time: 'Anytime',
-        preset_request: '顔出し可能 / スタッフ映り込みOK',
-        requested_elements: ['看板メニュー', '店内の雰囲気'] as string[],
-        shoot_rules_en: 'Please refrain from filming other customers. Flash photography is allowed.',
+        preset_request: '',
+        requested_elements: [] as string[],
+        shoot_rules_en: '',
 
         // 5. Social Links
-        instagram_handle: '@wagyu_rin_tokyo',
-        tiktok_handle: '@wagyu_rin',
+        instagram_handle: '',
+        tiktok_handle: '',
     });
 
     const updateField = (field: keyof typeof formData, value: any) => {
@@ -100,9 +101,28 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
     const nextStep = () => setCurrentStepIndex(i => Math.min(STEPS.length - 1, i + 1));
     const prevStep = () => setCurrentStepIndex(i => Math.max(0, i - 1));
-    const handleSave = () => {
-        alert("設定を保存しました！");
-        onClose();
+    const [isSaving, setIsSaving] = useState(false);
+    const handleSave = async () => {
+        if (!formData.name) {
+            alert("店舗名は必須です");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const res = await upsertShop(formData);
+            if (res.success) {
+                alert("設定を保存しました！");
+                onClose();
+            } else {
+                alert("エラー: " + res.error);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("保存中に予期せぬエラーが発生しました");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const currentStep = STEPS[currentStepIndex].id;
@@ -120,7 +140,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                         onChange={(e) => updateField(field, e.target.value)}
                         placeholder={placeholder}
                         rows={3}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800 placeholder:text-stone-300"
                     />
                 ) : (
                     <input
@@ -128,7 +148,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                         value={formData[field] as string}
                         onChange={(e) => updateField(field, e.target.value)}
                         placeholder={placeholder}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black transition shadow-inner font-medium text-sm text-gray-800 placeholder:text-stone-300"
                     />
                 )}
 
@@ -219,7 +239,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                     <div className="space-y-4">
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">店舗名 *</label>
-                                            <input type="text" value={formData.name} onChange={e => updateField('name', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold" />
+                                            <input type="text" value={formData.name} onChange={e => updateField('name', e.target.value)} placeholder="例：SUSHI TOKYO 渋谷店" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold placeholder:text-stone-300" />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
@@ -229,7 +249,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 </select>
                                             </div>
                                         </div>
-                                        {renderAITextField('コンセプトやイチオシポイント *（英語）', 'description_en', '例: Authentic Wagyu Omakase experience in the heart of Tokyo.', true)}
+                                        {renderAITextField('コンセプトやイチオシポイント *（英語）', 'description_en', '例：Authentic Edo-mae sushi experience in the heart of Shibuya, perfect for foreign visitors seeking traditional flavors.', true)}
                                     </div>
                                 </motion.div>
                             )}
@@ -399,10 +419,11 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
                         <button
                             onClick={handleSave}
-                            className="bg-gradient-to-r from-teal-500 to-emerald-400 text-white px-6 py-3 rounded-full text-sm font-black flex items-center gap-2 transition hover:opacity-90 shadow-lg shadow-teal-500/30 active:scale-95 border-2 border-white"
+                            disabled={isSaving}
+                            className={`bg-gradient-to-r from-teal-500 to-emerald-400 text-white px-6 py-3 rounded-full text-sm font-black flex items-center gap-2 transition hover:opacity-90 shadow-lg shadow-teal-500/30 active:scale-95 border-2 border-white ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <Sparkles className="w-4 h-4" />
-                            {currentStepIndex === 0 ? '保存して公開する' : '保存して公開する'}
+                            {isSaving ? '保存中...' : '保存して公開する'}
                         </button>
                     </div>
                 </div>

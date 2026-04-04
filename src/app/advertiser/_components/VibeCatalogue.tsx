@@ -321,9 +321,9 @@ const CreatorCard = ({
 
             {/* Hover Overlay: Buttons */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
-                <button
+                    <button
                     onClick={(e) => { e.stopPropagation(); onOffer(creator); }}
-                    className="bg-white text-black font-black px-6 py-3 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 hover:scale-105 active:scale-95 text-xs flex items-center gap-2 uppercase tracking-wide"
+                    className="bg-white text-black font-black px-4 py-2.5 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 hover:scale-105 active:scale-95 text-[10px] flex items-center gap-1.5 uppercase tracking-wide"
                 >
                     ✨ Offer This Creator
                 </button>
@@ -719,8 +719,12 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
         try {
             const result = await translateText(text);
             if (result.success && result.translatedText) {
-                if (field === 'barter') setBarterDetails(result.translatedText);
-                else setInvitationMessage(result.translatedText);
+                if (field === 'barter') {
+                    setBarterDetails(result.translatedText);
+                } else {
+                    setInvitationMessage(result.translatedText);
+                    setIsManualMessage(true);
+                }
             }
         } catch (e) {
             console.error(e);
@@ -1216,7 +1220,8 @@ export default function VibeCatalogue({
 
         // 🔴 追加: 店舗のUUIDが取得できていない場合は送信をブロック
         if (!shop?.id) {
-            alert("店舗情報が取得できていません。ページを再読み込みしてください。");
+            alert("店舗の基本情報が未登録です。プロフィール設定から店舗情報を保存してください。");
+            setIsSettingsOpen(true);
             return;
         }
 

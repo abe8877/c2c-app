@@ -51,15 +51,15 @@ export async function analyzeShopVibe(url: string, genre?: string) {
             console.warn('Metadata fetch failed:', e);
         }
 
-        // 3. AI 解析 (gemini-3-flash-preview)
+        // 3. AI 解析 (gemini-1.5-flash)
         let vibeTags = ['和モダン', '落ち着いた雰囲気', '隠れ家', 'フォトジェニック', '体験'];
         let shopName = '不明な店舗';
         let mappedVibeClusters: string[] = ['Modern', 'Authentic'];
 
         try {
-            console.log('AI Analysis starting with gemini-3-flash-preview...');
+            console.log('AI Analysis starting with gemini-1.5-flash...');
             const { object } = await generateObject({
-                model: google('gemini-3-flash-preview'),
+                model: google('gemini-1.5-flash'),
                 schema: z.object({
                     shopName: z.string().describe('Name of the shop'),
                     vibeTags: z.array(z.string()).describe('5 VIBE tags in Japanese without hashtags'),

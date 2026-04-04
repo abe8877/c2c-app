@@ -19,7 +19,7 @@ export async function sendMessage({
 }) {
     const supabase = await createServerClient();
 
-    // 1. AI Translation (Using the fastest model gemini-3-flash-preview)
+    // 1. AI Translation (Using the fastest model gemini-1.5-flash)
     let translatedContent = "";
     try {
         let systemPrompt = "";
@@ -30,7 +30,7 @@ export async function sendMessage({
         }
 
         const { text } = await generateText({
-            model: google('gemini-3-flash-preview'),
+            model: google('gemini-1.5-flash'),
             system: systemPrompt,
             prompt: content,
         });
@@ -161,7 +161,7 @@ export async function getAssistantResponse({
 
     try {
         const { text } = await generateText({
-            model: google('gemini-3-flash-preview'),
+            model: google('gemini-1.5-flash'),
             system: systemPrompt,
             prompt: prompt,
         });
