@@ -1214,14 +1214,20 @@ export default function VibeCatalogue({
     const handleOfferSent = async (details: any) => {
         if (!selectedCreator) return;
 
+        // 🔴 追加: 店舗のUUIDが取得できていない場合は送信をブロック
+        if (!shop?.id) {
+            alert("店舗情報が取得できていません。ページを再読み込みしてください。");
+            return;
+        }
+
         try {
             const res = await offerCreator({
                 creatorId: selectedCreator.id,
-                shopId: shop?.id || 'demo-shop', // clientTag (店舗名) ではなく UUID を使用
+                shopId: shop.id, // 🔴 'demo-shop' などのダミー文字を排除し、必ずUUIDを渡す
                 creatorName: selectedCreator.name,
                 creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url || undefined,
                 offerDetails: details,
-                barterDetails: details.barterDetails, // 提供価値を渡す
+                barterDetails: details.barterDetails,
             });
 
             if (res.success) {
@@ -1231,7 +1237,6 @@ export default function VibeCatalogue({
                 }
                 if (res.assetId) {
                     setCurrentAssetId(res.assetId);
-                    // 新しいassetをlocalAssetsに追加して即時UIに反映
                     setLocalAssets(prev => [
                         ...prev,
                         {
@@ -1257,10 +1262,13 @@ export default function VibeCatalogue({
             } else if (res.error === 'PAYWALL_REQUIRED') {
                 setShowPaywall(true);
                 setIsModalOpen(false);
+            } else {
+                // 🌟 追加: 無言で失敗せず、何のエラーか画面に表示させる
+                alert(`オファー送信エラー: ${res.error}`);
             }
         } catch (error) {
             console.error("Offer failed", error);
-            alert("オファーの送信に失敗しました。");
+            alert("予期せぬエラーが発生しました。");
         }
     };
 

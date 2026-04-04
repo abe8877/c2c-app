@@ -21,56 +21,46 @@ export async function offerCreator({
     offerDetails?: any;
     barterDetails?: string;
 }) {
+    // 🔴 1. UUIDの検証: 'demo-shop' などの不正なIDを弾く
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(shopId)) {
+        return { success: false, error: "店舗情報が正しく取得できませんでした。ページを再読み込みしてください。" };
+    }
+
     const supabase = await createServerClient();
     const supabaseAdmin = createAdminClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. 無料オファー残り回数を確認
+    // 2. 無料オファー残り回数を確認 (ダミーフォールバックを削除し厳格化)
     const { data: shop, error: shopError } = await supabaseAdmin
         .from('shops')
         .select('id, name, free_offers_remaining, is_premium')
         .eq('id', shopId)
         .single();
 
-    let shopBenefit = shop;
-
     if (shopError || !shop) {
-        console.warn("Shop not found in DB, using fallback for: ", shopId);
-        // デモ用のフォールバック処理
-        if (shopId === 'demo-shop' || !shopId.includes('-')) {
-            shopBenefit = {
-                id: shopId,
-                name: 'Demo Shop',
-                free_offers_remaining: 3,
-                is_premium: false
-            };
-        } else {
-            throw new Error("店舗情報の取得に失敗しました。");
-        }
+        console.warn("Shop not found in DB for: ", shopId);
+        return { success: false, error: "店舗情報の取得に失敗しました。" };
     }
 
-    const currentShop = shopBenefit!;
-
-    // プレミアムプランでなく、かつ無料枠が0ならエラー
-    if (!currentShop.is_premium && currentShop.free_offers_remaining <= 0) {
-        return { success: false, error: 'PAYWALL_REQUIRED', message: '無料オファーの上限に達しました。' };
+    // プレミアムプランでなく、かつ無料枠が0ならペイウォールへ
+    if (!shop.is_premium && shop.free_offers_remaining <= 0) {
+        return { success: false, error: 'PAYWALL_REQUIRED' };
     }
 
-    // 2. 無料オファー回数をデクリメント（プレミアムでない場合）
-    if (!currentShop.is_premium && shop) {
+    // 3. 無料オファー回数をデクリメント（プレミアムでない場合）
+    if (!shop.is_premium) {
         const { error: updateError } = await supabaseAdmin
             .from('shops')
-            .update({ free_offers_remaining: currentShop.free_offers_remaining - 1 })
+            .update({ free_offers_remaining: shop.free_offers_remaining - 1 })
             .eq('id', shopId);
 
-        if (updateError) {
-            console.error("Shop Update Error:", updateError);
-        }
+        if (updateError) console.error("Shop Update Error:", updateError);
     }
 
-    // 3. assets テーブルにオファー情報を記録 (Admin権限でRLSをバイパス)
+    // 4. assets テーブルにオファー情報を記録 (Admin権限でRLSをバイパス)
     const { data: asset, error: assetError } = await supabaseAdmin
         .from('assets')
         .insert({
@@ -79,24 +69,25 @@ export async function offerCreator({
             status: 'OFFERED',
             offer_details: offerDetails,
             barter_details: barterDetails ?? null,
-            client_tag: currentShop.name, // 必須項目を補完
+            client_tag: shop.name, // 必須項目を補完
         })
         .select()
         .single();
 
     if (assetError) {
-        console.error("Asset Insert Error:", assetError);
-        return { success: false, error: 'DATABASE_ERROR', message: `オファーの保存に失敗しました: ${assetError.message}` };
+        console.error("🔥 [DEBUG] Asset Insert Error:", assetError);
+        // フロント側でアラートを出せるように、errorに直接メッセージを入れる
+        return { success: false, error: `DBエラー: ${assetError.message}` };
     }
 
-    const remaining = currentShop.is_premium ? currentShop.free_offers_remaining : currentShop.free_offers_remaining - 1;
+    const remaining = shop.is_premium ? shop.free_offers_remaining : shop.free_offers_remaining - 1;
 
-    // 4. n8n Webhook / Slack 連携
+    // 5. 🌟 通知システム (n8n Webhook / Slack 連携)
     try {
-        // クリエイター情報を取得してメール送信用に渡す
+        // preferred_language を追加取得
         const { data: creator } = await supabaseAdmin
             .from('creators')
-            .select('email, name')
+            .select('email, name, preferred_language')
             .eq('id', creatorId)
             .single();
 
@@ -106,14 +97,14 @@ export async function offerCreator({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    type: 'OFFER',
-                    creatorEmail: creator.email,
+                    type: 'new_offer',
+                    recipientEmail: creator.email,
                     creatorName: creator.name,
-                    shopName: currentShop.name,
+                    shopName: shop.name,
+                    language: creator.preferred_language || 'en', // これでn8nのSwitchノードが動く
                     plan: offerDetails?.plan || 'barter',
                     amount: offerDetails?.amount || 0,
-                    subject: `[INSIDERS] VIP Offer ${offerDetails?.plan === 'paid' ? `(¥${offerDetails?.amount?.toLocaleString()})` : ''} from ${currentShop.name}`,
-                    assetId: asset?.id
+                    loginUrl: "https://insiders-hub.jp/creator/login"
                 })
             }).catch(err => console.error("n8n Notification Error:", err));
         }
@@ -124,7 +115,7 @@ export async function offerCreator({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: `🚨 [オファー発生] ${currentShop.name}店がクリエイター @${creatorName} にオファーしました！即座にDMで一本釣りしてください！`
+                    text: `🚨 [オファー発生] ${shop.name} がクリエイター @${creatorName} にオファーしました！\nプラン: ${offerDetails?.plan}\n金額: ¥${offerDetails?.amount || 0}`
                 })
             }).catch(err => console.error("Slack Notification Error:", err));
         }
