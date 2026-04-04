@@ -1220,10 +1220,10 @@ export default function VibeCatalogue({
     const handleOfferSent = async (details: any) => {
         if (!selectedCreator) return;
 
-        // 🔴 追加: 店舗のUUIDが取得できていない場合は送信をブロック
-        if (!shop?.id) {
-            alert("店舗の基本情報が未登録です。プロフィール設定から店舗情報を保存してください。");
-            setIsSettingsOpen(true);
+        // 🌟 修正: IDだけでなく、基本情報（店舗名とジャンル）があるかだけをチェックする
+        if (!shop?.id || !shop?.name || !shop?.genre) {
+            alert("店舗の基本情報（店舗名とカテゴリ）が未設定です。プロフィール設定から情報を保存してください。");
+            setIsSettingsOpen(true); // 自動的に設定モーダルを開いてあげるUX
             return;
         }
 

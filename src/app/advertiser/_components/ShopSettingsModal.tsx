@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, ChevronRight, ChevronLeft, MapPin, Camera, Utensils, Globe, Info, Clock, CheckCircle2 } from 'lucide-react';
 import { translateText } from '@/app/actions/translate';
 import { upsertShop } from '@/app/actions/shop';
+import { createClient } from '@/utils/supabase/client';
 
 type Step = 'basic' | 'access' | 'inbound' | 'rules' | 'social';
 
@@ -20,38 +21,66 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
-    // Form State
     const [formData, setFormData] = useState({
-        // 1. Basic Info
         name: '',
-        logo_url: '',
         genre: 'FOOD',
-        area: '',
         description_en: '',
-
-        // 2. Access & Operations
-        hours_en: '',
+        business_hours_en: '',
         closed_days_en: '',
         address_en: '',
         access_info_en: '',
-        google_map_url: '',
-
-        // 3. Inbound & Menu
+        google_maps_url: '',
         preset_menu_en: '',
         dietary_options: [] as string[],
         english_friendly_level: 'Basic',
         reservation_url: '',
-
-        // 4. Shooting Rules
-        preferred_shoot_time: 'Anytime',
-        preset_request: '',
-        requested_elements: [] as string[],
+        preferred_shoot_time: 'Lunch',
         shoot_rules_en: '',
-
-        // 5. Social Links
         instagram_handle: '',
         tiktok_handle: '',
+        requested_elements: [] as string[],
+        preset_request: '',
     });
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        async function fetchShop() {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                setFormData({
+                    name: data.name || '',
+                    genre: data.genre || 'FOOD',
+                    description_en: data.description_en || '',
+                    business_hours_en: data.business_hours_en || '',
+                    closed_days_en: data.closed_days_en || '',
+                    address_en: data.address_en || '',
+                    access_info_en: data.access_info_en || '',
+                    google_maps_url: data.google_maps_url || '',
+                    preset_menu_en: data.preset_menu_en || '',
+                    dietary_options: data.dietary_options || [],
+                    english_friendly_level: data.english_friendly_level || 'Basic',
+                    reservation_url: data.reservation_url || '',
+                    preferred_shoot_time: data.preferred_shoot_time || 'Lunch',
+                    shoot_rules_en: data.shoot_rules_en || '',
+                    instagram_handle: data.instagram_handle || '',
+                    tiktok_handle: data.tiktok_handle || '',
+                    requested_elements: data.requested_elements || [],
+                    preset_request: data.preset_request || '',
+                });
+            }
+        }
+        fetchShop();
+    }, [isOpen]);
 
     const updateField = (field: keyof typeof formData, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -267,7 +296,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-gray-100 pb-6">
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">営業時間（英語）</label>
-                                                <input type="text" value={formData.hours_en} onChange={e => updateField('hours_en', e.target.value)} placeholder="例: Mon-Sun 17:00-23:00" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                                <input type="text" value={formData.business_hours_en} onChange={e => updateField('business_hours_en', e.target.value)} placeholder="例: Mon-Sun 17:00-23:00" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                             </div>
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">定休日（英語）</label>
@@ -282,7 +311,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">Google Map URL</label>
-                                            <input type="text" value={formData.google_map_url} onChange={e => updateField('google_map_url', e.target.value)} placeholder="https://maps.google.com/..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
+                                            <input type="text" value={formData.google_maps_url} onChange={e => updateField('google_maps_url', e.target.value)} placeholder="https://maps.google.com/..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                         </div>
                                     </div>
                                 </motion.div>
