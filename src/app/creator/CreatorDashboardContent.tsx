@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame, Plus } from "lucide-react";
+import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame, Plus, Globe } from "lucide-react";
 import Image from "next/image";
 import CreatorAiFeedback from "./_components/CreatorAiFeedback";
 import { submitAssetDelivery, updateCreatorPortfolio } from "@/app/actions/creator";
@@ -18,7 +18,89 @@ export interface Asset {
     ig_handle?: string;
 }
 
-function AssetItem({ asset }: { asset: Asset }) {
+const dict = {
+    en: {
+        welcome: "Welcome back,",
+        tierCreator: "Creator",
+        assetsCreated: "Assets Created",
+        vibeValue: "Your VIBE is driving permanent value.",
+        nextTier: "Unlock Next Tier",
+        algorithm: "Algorithm Mastery",
+        hotActive: "HOT TRENDING ACTIVE",
+        getHot: "GET \"HOT TRENDING\"",
+        hotAchieved: "Achieved (Boosted in Search)",
+        hotPending: "0/1 Achieved",
+        hotDesc: (keyword: string) => <>Based on your analytics, we recommend adding videos for <strong>"{keyword}"</strong>. This will boost you to the top of related categories.</>,
+        hotMaintain: "Your profile is currently boosted at the top of advertiser search results! Keep it up.",
+        proveConsistency: "PROVE CONSISTENCY",
+        tierSCandidate: "Tier S Candidate",
+        consistencyDesc: (keyword: string) => <>Your videos in the <strong>"{keyword}"</strong> genre are highly rated. Increasing consistent content makes it easier to receive high-reward offers.</>,
+        exclusiveInvites: "Exclusive Invites",
+        viewAll: "View All",
+        acceptInvite: "Accept Invite",
+        assetHistory: "Asset History",
+        deliveredTitle: "🎉 VIBE DELIVERED!",
+        deliveredDesc: <>Thank you for submitting the video! We will review the content and <strong>confirm the reward payment</strong>.<br /><br />INSIDERS. ensures no payment failures and supports you all the way. Move on to your next offer with confidence ✨</>,
+        chatWithShop: "Mission Chat",
+        submitUrl: "Submit Delivery URL",
+        inputUrl: "Enter Video URL (TikTok, IG Reels, etc.)",
+        submitButton: "Submit",
+        hotTag: "HOT",
+        invited: "INVITED",
+        status: {
+            PENDING: "PENDING",
+            APPROVED: "APPROVED",
+            REJECTED: "REJECTED",
+            COMPLETED: "COMPLETED",
+            OFFERED: "INVITED",
+            approved: "APPROVED",
+            rejected: "REJECTED",
+            pending: "PENDING"
+        }
+    },
+    ja: {
+        welcome: "おかえりなさい、",
+        tierCreator: "クリエイター",
+        assetsCreated: "作成済みアセット",
+        vibeValue: "あなたの世界観が永続的な価値を生んでいます。",
+        nextTier: "次世代ティアの解放",
+        algorithm: "アルゴリズム攻略",
+        hotActive: "HOT TRENDING 獲得中",
+        getHot: "HOT TRENDING を獲得する",
+        hotAchieved: "達成済み (検索ブースト中)",
+        hotPending: "0/1 達成",
+        hotDesc: (keyword: string) => <>アナリティクスに基づき、<strong>「{keyword}」系</strong>の動画追加を推奨します。追加すると関連カテゴリで最上位にブーストされます。</>,
+        hotMaintain: "現在、あなたのプロフィールは広告主の検索結果で最上位にブーストされています！この勢いを維持しましょう。",
+        proveConsistency: "一貫性の証明",
+        tierSCandidate: "Tier S 候補",
+        consistencyDesc: (keyword: string) => <><strong>「{keyword}」ジャンル</strong>での動画が高く評価されています。一貫性のある動画を増やすことで、より高単価な案件オファーが来やすくなります。</>,
+        exclusiveInvites: "限定招待",
+        viewAll: "すべて見る",
+        acceptInvite: "招待を承諾",
+        assetHistory: "アセット履歴",
+        deliveredTitle: "🎉 VIBE DELIVERED!",
+        deliveredDesc: <>動画の提出ありがとうございます！運営にて内容を確認し、<strong>報酬の支払いを確定</strong>させます。<br /><br />INSIDERS.が未払いを防ぎ、確実にサポートしますので、安心して次の案件をお探しください✨</>,
+        chatWithShop: "案件進行用チャット",
+        submitUrl: "納品URLを提出",
+        inputUrl: "動画URLを入力 (TikTok, IG Reels等)",
+        submitButton: "提出する",
+        hotTag: "HOT",
+        invited: "招待中",
+        status: {
+            PENDING: "審査中",
+            APPROVED: "承認済み",
+            REJECTED: "差し戻し",
+            COMPLETED: "完了",
+            OFFERED: "招待中",
+            approved: "承認済み",
+            rejected: "差し戻し",
+            pending: "審査中"
+        }
+    }
+};
+
+function AssetItem({ asset, lang }: { asset: Asset, lang: 'en' | 'ja' }) {
+    const t = dict[lang];
     const [localStatus, setLocalStatus] = useState(asset.status);
     const [showDeliveryForm, setShowDeliveryForm] = useState(false);
     const [deliveryUrl, setDeliveryUrl] = useState("");
@@ -58,7 +140,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                             localStatus === 'OFFERED' ? 'bg-amber-500/20 text-amber-500' :
                                 'bg-zinc-500/10 text-zinc-400'
                     }`}>
-                    {localStatus === 'OFFERED' ? 'INVITED' : localStatus}
+                    {(t.status as any)[localStatus] || localStatus}
                 </span>
             </div>
 
@@ -80,13 +162,13 @@ function AssetItem({ asset }: { asset: Asset }) {
                             onClick={() => setIsChatOpen(true)}
                             className="flex-1 py-2 bg-zinc-800 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-zinc-700 transition"
                         >
-                            <MessageCircle className="w-3.5 h-3.5" /> 案件進行用チャット
+                            <MessageCircle className="w-3.5 h-3.5" /> {t.chatWithShop}
                         </button>
                         <button
                             onClick={() => setShowDeliveryForm(!showDeliveryForm)}
                             className="flex-1 py-2 bg-teal-600/20 text-teal-500 rounded-lg text-xs font-bold flex items-center justify-center gap-2 hover:bg-teal-600/30 transition border border-teal-500/30"
                         >
-                            <LinkIcon className="w-3.5 h-3.5" /> 納品URLを提出
+                            <LinkIcon className="w-3.5 h-3.5" /> {t.submitUrl}
                         </button>
                     </div>
 
@@ -100,7 +182,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                                 onSubmit={handleSubmit}
                             >
                                 <div className="mt-2 bg-zinc-950 p-3 rounded-xl border border-zinc-800">
-                                    <p className="text-xs text-zinc-400 mb-2 font-bold">動画URLを入力 (TikTok, IG Reels等)</p>
+                                    <p className="text-xs text-zinc-400 mb-2 font-bold">{t.inputUrl}</p>
                                     <input
                                         type="url"
                                         value={deliveryUrl}
@@ -115,7 +197,7 @@ function AssetItem({ asset }: { asset: Asset }) {
                                         className="w-full py-2 bg-white text-black rounded-lg text-xs font-bold disabled:opacity-50 hover:bg-zinc-200 transition flex items-center justify-center gap-2"
                                     >
                                         {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                                        提出する
+                                        {t.submitButton}
                                     </button>
                                 </div>
                             </motion.form>
@@ -139,10 +221,9 @@ function AssetItem({ asset }: { asset: Asset }) {
                         >
                             <CheckCircle2 className="w-6 h-6 text-teal-400" />
                         </motion.div>
-                        <h4 className="text-sm font-black text-teal-300 mb-2 tracking-wide">🎉 VIBE DELIVERED!</h4>
+                        <h4 className="text-sm font-black text-teal-300 mb-2 tracking-wide">{t.deliveredTitle}</h4>
                         <p className="text-[10px] text-zinc-300 leading-relaxed font-medium">
-                            動画の提出ありがとうございます！運営にて内容を確認し、<span className="text-teal-400 font-bold">報酬の支払いを確定</span>させます。<br /><br />
-                            INSIDERS.が未払いを防ぎ、確実にサポートしますので、安心して次の案件をお探しください✨
+                            {t.deliveredDesc}
                         </p>
                     </motion.div>
                 )}
@@ -182,13 +263,17 @@ interface CreatorDashboardContentProps {
     creatorData: CreatorData;
     exclusiveInvites: ExclusiveInvite[];
     assets: Asset[];
+    initialLang?: 'en' | 'ja';
 }
 
 export default function CreatorDashboardContent({
     creatorData,
     exclusiveInvites,
-    assets
+    assets,
+    initialLang = 'en'
 }: CreatorDashboardContentProps) {
+    const [lang, setLang] = useState<'en' | 'ja'>(initialLang);
+    const t = dict[lang];
     const [newVideoUrl, setNewVideoUrl] = useState("");
     const [isUpdatingPortfolio, setIsUpdatingPortfolio] = useState(false);
     const [showVideoInput, setShowVideoInput] = useState(false);
@@ -222,23 +307,34 @@ export default function CreatorDashboardContent({
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <p className="text-zinc-400 text-sm mb-1">Welcome back,</p>
+                        <p className="text-zinc-400 text-sm mb-1">{t.welcome}</p>
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                             {creatorData.name}
                             {creatorData.isHot && (
                                 <span className="bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest flex items-center gap-0.5">
-                                    <Flame className="w-2.5 h-2.5" /> HOT
+                                    <Flame className="w-2.5 h-2.5" /> {t.hotTag}
                                 </span>
                             )}
                         </h1>
                     </motion.div>
+                    
+                    <div className="flex items-center gap-4">
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setLang(lang === 'en' ? 'ja' : 'en')}
+                            className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors bg-white/5"
+                        >
+                            <Globe className="w-5 h-5" />
+                        </motion.button>
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="relative"
-                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="relative"
+                        >
                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/50 relative z-10">
                             <Image
                                 src={creatorData.avatarUrl}
@@ -248,7 +344,8 @@ export default function CreatorDashboardContent({
                             />
                         </div>
                         <div className="absolute inset-0 bg-amber-500 blur-xl opacity-30 z-0"></div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </header>
 
                 {/* 2. Tier Card (The "Black Card" Experience) */}
@@ -264,13 +361,13 @@ export default function CreatorDashboardContent({
                         <div className="flex items-center space-x-3 mb-4">
                             <Crown className="w-6 h-6 text-amber-500" />
                             <h2 className="text-lg font-semibold text-amber-500 tracking-widest uppercase">
-                                {creatorData.tier} Creator
+                                {creatorData.tier} {t.tierCreator}
                             </h2>
                         </div>
 
                         <div className="mb-6">
-                            <p className="text-3xl font-light mb-1">{creatorData.assetsGenerated} <span className="text-sm text-zinc-500 font-normal">Assets Created</span></p>
-                            <p className="text-xs text-zinc-400">Your VIBE is driving permanent value.</p>
+                            <p className="text-3xl font-light mb-1">{creatorData.assetsGenerated} <span className="text-sm text-zinc-500 font-normal">{t.assetsCreated}</span></p>
+                            <p className="text-xs text-zinc-400">{t.vibeValue}</p>
                         </div>
 
                         <div className="space-y-2">
@@ -300,9 +397,9 @@ export default function CreatorDashboardContent({
                     <div className="bg-[#121212] border border-white/5 rounded-2xl p-5 shadow-xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-bold text-white tracking-widest uppercase flex items-center gap-2">
-                                <Target className="w-4 h-4 text-emerald-500" /> Unlock Next Tier
+                                <Target className="w-4 h-4 text-emerald-500" /> {t.nextTier}
                             </h3>
-                            <span className="text-[9px] text-slate-500 font-medium">アルゴリズム攻略</span>
+                            <span className="text-[9px] text-slate-500 font-medium">{t.algorithm}</span>
                         </div>
 
                         <div className="space-y-4">
@@ -311,17 +408,17 @@ export default function CreatorDashboardContent({
                                 {creatorData.isHot && <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 blur-3xl rounded-full" />}
                                 <div className="flex justify-between items-start mb-2 relative z-10">
                                     <span className="text-[10px] font-bold text-orange-500 flex items-center gap-1">
-                                        🔥 {creatorData.isHot ? 'HOT TRENDING ACTIVE' : 'GET "HOT TRENDING"'}
+                                        🔥 {creatorData.isHot ? t.hotActive : t.getHot}
                                     </span>
                                     <span className={`text-[10px] ${creatorData.isHot ? 'text-orange-400 font-bold' : 'text-zinc-500'}`}>
-                                        {creatorData.isHot ? '達成済み (検索ブースト中)' : '0/1 達成'}
+                                        {creatorData.isHot ? t.hotAchieved : t.hotPending}
                                     </span>
                                 </div>
 
                                 {!creatorData.isHot && (
                                     <>
                                         <p className="text-[10px] text-zinc-400 leading-relaxed relative z-10 mb-3">
-                                            貴店のアナリティクスに基づき、<span className="text-white font-bold">「{targetKeyword}」系の動画</span>の追加を推奨します。追加すると関連カテゴリで最上位にブーストされます。
+                                            {t.hotDesc(targetKeyword)}
                                         </p>
 
                                         {/* 🔴 復元された動画追加UI */}
@@ -339,14 +436,14 @@ export default function CreatorDashboardContent({
                                                 className="bg-orange-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold disabled:opacity-50 flex items-center gap-1 hover:bg-orange-500 transition"
                                             >
                                                 {isUpdatingPortfolio ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-                                                追加
+                                                {lang === 'en' ? 'Add' : '追加'}
                                             </button>
                                         </div>
                                     </>
                                 )}
                                 {creatorData.isHot && (
                                     <p className="text-[10px] text-orange-200/70 leading-relaxed relative z-10 mt-1">
-                                        現在、あなたのプロフィールは広告主の検索結果で最上位にブーストされています！この勢いを維持しましょう。
+                                        {t.hotMaintain}
                                     </p>
                                 )}
                             </div>
@@ -355,12 +452,12 @@ export default function CreatorDashboardContent({
                             <div className="bg-black border border-white/10 rounded-xl p-3 relative z-10 mt-4">
                                 <div className="flex justify-between items-start mb-1">
                                     <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
-                                        👑 PROVE CONSISTENCY
+                                        👑 {t.proveConsistency}
                                     </span>
-                                    <span className="text-[10px] text-emerald-500">Tier S 候補</span>
+                                    <span className="text-[10px] text-emerald-500">{t.tierSCandidate}</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-400 leading-relaxed">
-                                    あなたの<span className="text-white font-bold">「{targetKeyword}」ジャンル</span>での動画が高く評価されています。一貫性のある動画を増やすことで、より高単価な案件オファーが来やすくなります。
+                                    {t.consistencyDesc(targetKeyword)}
                                 </p>
                             </div>
                         </div>
@@ -375,9 +472,9 @@ export default function CreatorDashboardContent({
                     className="mb-8"
                 >
                     <div className="px-6 flex justify-between items-end mb-4">
-                        <h3 className="text-xl font-semibold">Exclusive Invites</h3>
+                        <h3 className="text-xl font-semibold">{t.exclusiveInvites}</h3>
                         <button className="text-xs text-zinc-400 flex items-center hover:text-white transition-colors">
-                            View All <ArrowRight className="w-3 h-3 ml-1" />
+                            {t.viewAll} <ArrowRight className="w-3 h-3 ml-1" />
                         </button>
                     </div>
 
@@ -413,7 +510,7 @@ export default function CreatorDashboardContent({
 
                                     <button className="w-full py-2.5 bg-white text-black text-sm font-semibold rounded-lg flex justify-center items-center space-x-2 active:scale-95 transition-transform">
                                         <PlayCircle className="w-4 h-4" />
-                                        <span>Accept Invite</span>
+                                        <span>{t.acceptInvite}</span>
                                     </button>
                                 </div>
                             </motion.div>
@@ -429,12 +526,12 @@ export default function CreatorDashboardContent({
                     className="px-6 pb-12"
                 >
                     <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                        Asset History
+                        {t.assetHistory}
                     </h3>
 
                     <div className="space-y-4">
                         {assets.map((asset) => (
-                            <AssetItem key={asset.id} asset={asset} />
+                            <AssetItem key={asset.id} asset={asset} lang={lang} />
                         ))}
                     </div>
                 </motion.section>

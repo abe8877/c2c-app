@@ -13,7 +13,7 @@ export default async function CreatorDashboard() {
     // 🔴 修正: 'id' ではなく 'auth_id' でクリエイターを検索する
     const { data: creator } = await supabase
         .from('creators')
-        .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot, status')
+        .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot, status, preferred_language')
         .eq('auth_id', user.id)
         .single();
 
@@ -22,8 +22,28 @@ export default async function CreatorDashboard() {
         redirect("/creator/login");
     }
 
+    const lang = (creator.preferred_language as 'en' | 'ja') || 'en';
+
     // 🌟 3. ダッシュボード: 審査中ガード (Gatekeeper) の実装
     if (creator.status === 'under_review' || creator.status === 'pending') {
+        const gatekeeperDict = {
+            en: {
+                status: "Your Status",
+                underReview: "Under Review",
+                thanks: "Thank you for applying to INSIDERS.!",
+                desc: "Our curation team is currently reviewing your portfolio and information. You will be notified via email once the review is complete. Please wait a moment.",
+                logout: "Logout and Exit"
+            },
+            ja: {
+                status: "申請ステータス",
+                underReview: "審査中",
+                thanks: "INSIDERS.への登録申請ありがとうございます！",
+                desc: "現在、運営チームがあなたのポートフォリオと情報を審査しています。審査が完了しましたらメールにて通知をお送りましますので、今しばらくお待ちください。",
+                logout: "ログアウトして戻る"
+            }
+        };
+        const t = gatekeeperDict[lang];
+
         return (
             <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-8 selection:bg-zinc-800">
                 <div className="max-w-md w-full text-center space-y-12">
@@ -39,29 +59,22 @@ export default async function CreatorDashboard() {
 
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <p className="text-[10px] tracking-[0.4em] font-black text-zinc-500 uppercase">System Status</p>
+                            <p className="text-[10px] tracking-[0.4em] font-black text-zinc-500 uppercase">{t.status}</p>
                             <h1 className="text-3xl font-playfair italic font-light tracking-tight text-white flex items-center justify-center gap-3">
-                                審査中 <span className="text-zinc-600 font-sans not-italic text-sm tracking-widest">(Under Review)</span>
+                                {t.underReview}
                             </h1>
                         </div>
 
                         <div className="p-6 bg-zinc-950 border border-white/5 rounded-3xl space-y-4">
                             <p className="text-xs text-zinc-400 font-light tracking-wide leading-relaxed">
-                                ご応募ありがとうございます。<br />
-                                現在キュレーションチームがあなたのポートフォリオと<span className="text-white font-medium border-b border-zinc-700">VIBE</span>を審査しています。<br />
-                                結果が出るまで、今しばらくお待ちください。
+                                {t.thanks}<br />
+                                {t.desc}
                             </p>
-
-                            <div className="pt-4 border-t border-white/5 flex flex-col gap-4">
-                                <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-600 font-medium tracking-widest uppercase">
-                                    Curator: <span className="text-zinc-400">Reviewing Portfolio</span>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="pt-8">
                             <a href="/creator/login" className="text-[10px] tracking-[0.2em] font-medium uppercase text-zinc-500 hover:text-white transition-colors border-b border-zinc-800 pb-1">
-                                Logout and Exit
+                                {t.logout}
                             </a>
                         </div>
                     </div>
@@ -126,6 +139,7 @@ export default async function CreatorDashboard() {
             creatorData={creatorData}
             exclusiveInvites={exclusiveInvites}
             assets={assets}
+            initialLang={lang}
         />
     );
 }

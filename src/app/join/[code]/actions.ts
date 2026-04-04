@@ -107,6 +107,8 @@ export const submitCreatorApplication = async (formData: FormData) => {
 
         // 6. creatorsテーブルをUPDATEまたはINSERT
 
+        const preferredLanguage = payload.get('preferred_language') as string || 'en';
+
         // 🌟 TikTok URLからハンドルネーム（@以降）を自動抽出。抽出できなければ一時IDを付与
         const handleMatch = portfolioUrl ? portfolioUrl.match(/@([a-zA-Z0-9_.]+)/) : null;
         const tiktokHandle = handleMatch ? handleMatch[1] : `creator_${Math.floor(Date.now() / 1000)}`;
@@ -130,7 +132,8 @@ export const submitCreatorApplication = async (formData: FormData) => {
                     status: 'under_review',
                     is_onboarded: true,
                     invite_code: generatedCode,
-                    tier: 'B' // 一般応募はTier Bから
+                    tier: 'B', // 一般応募はTier Bから
+                    preferred_language: preferredLanguage
                 })
                 .select('id')
                 .single();
@@ -158,6 +161,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
                     status: 'onboarded',
                     is_onboarded: true,
                     updated_at: new Date().toISOString(),
+                    preferred_language: preferredLanguage
                 })
                 .eq('invite_code', inviteCode);
 

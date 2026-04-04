@@ -186,6 +186,7 @@ export function OnboardingForm({
             serverFormData.append('nationality', formData.nationality);
             serverFormData.append('contact_app', formData.contact_app);
             serverFormData.append('contact_id', formData.contact_id);
+            serverFormData.append('preferred_language', lang);
             serverFormData.append('vibe_tags', JSON.stringify(formData.vibe_tags));
 
             if (avatarFile) {
