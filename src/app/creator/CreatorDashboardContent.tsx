@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame } from "lucide-react";
+import { Crown, ArrowRight, Star, PlayCircle, MessageCircle, Link as LinkIcon, Loader2, CheckCircle2, Target, Flame, Plus } from "lucide-react";
 import Image from "next/image";
 import CreatorAiFeedback from "./_components/CreatorAiFeedback";
-import { submitAssetDelivery } from "@/app/actions/creator";
+import { submitAssetDelivery, updateCreatorPortfolio } from "@/app/actions/creator";
 import ChatModal from "../advertiser/_components/ChatModal";
 
 export interface Asset {
@@ -197,7 +197,6 @@ export default function CreatorDashboardContent({
         if (!newVideoUrl) return;
         setIsUpdatingPortfolio(true);
         try {
-            const { updateCreatorPortfolio } = await import("@/app/actions/creator");
             await updateCreatorPortfolio(creatorData.id, newVideoUrl);
             setNewVideoUrl("");
             setShowVideoInput(false);
@@ -210,7 +209,6 @@ export default function CreatorDashboardContent({
         }
     };
 
-    // ミッション用にHitKeywordsから一つ選ぶ
     const targetKeyword = creatorData.hitKeywords?.[0] || "FOOD";
 
     return (
@@ -249,7 +247,6 @@ export default function CreatorDashboardContent({
                                 className="object-cover"
                             />
                         </div>
-                        {/* Glowing effect behind avatar */}
                         <div className="absolute inset-0 bg-amber-500 blur-xl opacity-30 z-0"></div>
                     </motion.div>
                 </header>
@@ -262,7 +259,6 @@ export default function CreatorDashboardContent({
                     className="px-6 mb-8"
                 >
                     <div className="bg-gradient-to-br from-zinc-900 to-black border border-zinc-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                        {/* Decorative background element */}
                         <div className="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
 
                         <div className="flex items-center space-x-3 mb-4">
@@ -277,7 +273,6 @@ export default function CreatorDashboardContent({
                             <p className="text-xs text-zinc-400">Your VIBE is driving permanent value.</p>
                         </div>
 
-                        {/* Progress to Next Tier */}
                         <div className="space-y-2">
                             <div className="flex justify-between text-xs text-zinc-400">
                                 <span>Progress to SS-Tier</span>
@@ -295,7 +290,7 @@ export default function CreatorDashboardContent({
                     </div>
                 </motion.section>
 
-                {/* ユーザーダッシュボード内の「攻略ヒント」セクション */}
+                {/* アルゴリズム攻略セクション */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -314,7 +309,7 @@ export default function CreatorDashboardContent({
                             {/* ミッション 1: HOTバッジの獲得 */}
                             <div className={`border rounded-xl p-3 relative overflow-hidden group ${creatorData.isHot ? 'bg-orange-500/10 border-orange-500/30' : 'bg-black border-orange-500/20'}`}>
                                 {creatorData.isHot && <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 blur-3xl rounded-full" />}
-                                <div className="flex justify-between items-start mb-1 relative z-10">
+                                <div className="flex justify-between items-start mb-2 relative z-10">
                                     <span className="text-[10px] font-bold text-orange-500 flex items-center gap-1">
                                         🔥 {creatorData.isHot ? 'HOT TRENDING ACTIVE' : 'GET "HOT TRENDING"'}
                                     </span>
@@ -325,10 +320,28 @@ export default function CreatorDashboardContent({
 
                                 {!creatorData.isHot && (
                                     <>
-                                        <p className="text-[10px] text-zinc-400 leading-relaxed relative z-10">
+                                        <p className="text-[10px] text-zinc-400 leading-relaxed relative z-10 mb-3">
                                             貴店のアナリティクスに基づき、<span className="text-white font-bold">「{targetKeyword}」系の動画</span>の追加を推奨します。追加すると関連カテゴリで最上位にブーストされます。
                                         </p>
-                                        {/* ... (既存の動画リンク追加フォーム) ... */}
+
+                                        {/* 🔴 復元された動画追加UI */}
+                                        <div className="relative z-10 flex gap-2">
+                                            <input
+                                                type="url"
+                                                value={newVideoUrl}
+                                                onChange={(e) => setNewVideoUrl(e.target.value)}
+                                                placeholder="TikTok/IG Reels URL"
+                                                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-[10px] text-white focus:outline-none focus:border-orange-500/50"
+                                            />
+                                            <button
+                                                onClick={handleAddPortfolioVideo}
+                                                disabled={!newVideoUrl || isUpdatingPortfolio}
+                                                className="bg-orange-600 text-white px-3 py-2 rounded-lg text-[10px] font-bold disabled:opacity-50 flex items-center gap-1 hover:bg-orange-500 transition"
+                                            >
+                                                {isUpdatingPortfolio ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                                                追加
+                                            </button>
+                                        </div>
                                     </>
                                 )}
                                 {creatorData.isHot && (
@@ -347,7 +360,6 @@ export default function CreatorDashboardContent({
                                     <span className="text-[10px] text-emerald-500">Tier S 候補</span>
                                 </div>
                                 <p className="text-[10px] text-zinc-400 leading-relaxed">
-                                    {/* ハードコードの "FOOD" を targetKeyword に変更 */}
                                     あなたの<span className="text-white font-bold">「{targetKeyword}」ジャンル</span>での動画が高く評価されています。一貫性のある動画を増やすことで、より高単価な案件オファーが来やすくなります。
                                 </p>
                             </div>
@@ -369,7 +381,6 @@ export default function CreatorDashboardContent({
                         </button>
                     </div>
 
-                    {/* Horizontal scroll container hiding scrollbar */}
                     <div className="flex overflow-x-auto pb-4 px-6 space-x-4 snap-x snap-mandatory scrollbar-hide">
                         {exclusiveInvites.map((invite, index) => (
                             <motion.div
@@ -428,7 +439,6 @@ export default function CreatorDashboardContent({
                     </div>
                 </motion.section>
 
-                {/* Global Style to hide scrollbar */}
                 <style dangerouslySetInnerHTML={{
                     __html: `
             .scrollbar-hide::-webkit-scrollbar { display: none; }

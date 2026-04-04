@@ -10,18 +10,18 @@ export default async function CreatorDashboard() {
         redirect("/creator/login");
     }
 
-    // クリエイタープロフィールの取得
+    // 🔴 修正: 'id' ではなく 'auth_id' でクリエイターを検索する
     const { data: creator } = await supabase
         .from('creators')
         .select('id, name, tiktok_handle, tier, avatar_url, thumbnail_url, vibe_tags, is_hot, status')
-        .eq('id', user.id)
+        .eq('auth_id', user.id)
         .single();
 
     if (!creator) {
-        // プロフィールがない場合はログイン画面へリダイレクト（挙動確認用）
+        // プロフィールがない場合はログイン画面へリダイレクト
         redirect("/creator/login");
     }
-    
+
     // 🌟 3. ダッシュボード: 審査中ガード (Gatekeeper) の実装
     if (creator.status === 'under_review' || creator.status === 'pending') {
         return (
@@ -44,14 +44,14 @@ export default async function CreatorDashboard() {
                                 審査中 <span className="text-zinc-600 font-sans not-italic text-sm tracking-widest">(Under Review)</span>
                             </h1>
                         </div>
-                        
+
                         <div className="p-6 bg-zinc-950 border border-white/5 rounded-3xl space-y-4">
                             <p className="text-xs text-zinc-400 font-light tracking-wide leading-relaxed">
                                 ご応募ありがとうございます。<br />
                                 現在キュレーションチームがあなたのポートフォリオと<span className="text-white font-medium border-b border-zinc-700">VIBE</span>を審査しています。<br />
                                 結果が出るまで、今しばらくお待ちください。
                             </p>
-                            
+
                             <div className="pt-4 border-t border-white/5 flex flex-col gap-4">
                                 <div className="flex items-center justify-center gap-2 text-[10px] text-zinc-600 font-medium tracking-widest uppercase">
                                     Curator: <span className="text-zinc-400">Reviewing Portfolio</span>
@@ -76,14 +76,13 @@ export default async function CreatorDashboard() {
         name: creator.name || creator.tiktok_handle || "New Creator",
         tier: creator.tier ? `Tier ${creator.tier}` : "Tier B",
         avatarUrl: creator.avatar_url || creator.thumbnail_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
-        assetsGenerated: 0, // あとで集計
+        assetsGenerated: 0,
         nextMilestone: 15,
-        hitKeywords: creator.vibe_tags || [], // HitKeywordsの代わりに一旦vibe_tagsを使用
+        hitKeywords: creator.vibe_tags || [],
         isHot: creator.is_hot || false,
     };
 
     // 2. 招待（マッチングする店舗）の取得
-    // 本来はVibeマッチングロジックを通しますが、デモ用に最新の店舗をいくつか取得
     const { data: shops } = await supabase
         .from('shops')
         .select('id, name, genre, shop_vibe_tags')
@@ -104,7 +103,7 @@ export default async function CreatorDashboard() {
             id, status, created_at, offer_details,
             shop: shops ( name, shop_vibe_tags )
         `)
-        .eq('creator_id', user.id)
+        .eq('creator_id', creator.id) // 🔴 ここも auth.users.id ではなく creator.id に修正
         .order('created_at', { ascending: false });
 
     const assets = (assetsFetched || []).map(a => {
