@@ -68,7 +68,7 @@ export const submitCreatorApplication = async (formData: FormData) => {
             .insert({
                 user_id: userId, // ⚠️ DBのカラム名が 'auth_id' の場合はここを直す必要があるかもしれません（エラーを見れば分かります）
                 role: 'creator',
-                status: 'under_review'
+                status: 'active'
             });
 
         // 🔥 デバッグログ: user_rolesのINSERTエラーを出力

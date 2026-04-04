@@ -1,9 +1,9 @@
 // src/app/join/[code]/_components/OnboardingForm.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Upload, ChevronRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { AlertCircle, Upload, ChevronRight, CheckCircle2, Sparkles, Globe } from 'lucide-react';
 import { submitCreatorApplication } from '../actions';
 import TermsOfCuration from './TermsOfCuration';
 
@@ -12,12 +12,119 @@ const VIBE_OPTIONS = [
     'Retro', 'Nature', 'Cyberpunk', 'Traditional', 'Vlog'
 ];
 
-// 🌟 修正1：propsに offer と isApplyMode を追加
-export function OnboardingForm({ creator, offer, isApplyMode = false }: { creator: any, offer?: any, isApplyMode?: boolean }) {
+type Lang = 'en' | 'ja';
+
+const dict = {
+    en: {
+        reviewTitle: "Application Review",
+        reviewDesc: "INSIDERS. adopts a strict curation process. After submission, our team will review your portfolio and contact you with results.",
+        pendingOfferCount: "1 Pending Offer",
+        offerDetails: "Offer Details",
+        accAndAccept: "Unlock & Accept",
+        offerAcceptInstruction: "To accept this offer and access your dashboard, please complete the form below to join INSIDERS.",
+        provisionalTier: "Provisional Tier",
+        evaluatedVibe: "Evaluated Aesthetic",
+        underReview: "Under Review",
+        inviteNote: "INSIDERS. Curation Team highly evaluates your unique perspective and has issued this private invitation. Complete the registration to unlock your pending offers.",
+        applyNote: "After application, the curation team will strictly review your social media accounts. You will be notified via registered contact if approved.",
+        displayPreview: "Current Display Preview",
+        previewNote: "This is how you appear to advertisers",
+        yourProfile: "Your Profile",
+        profileDesc: "Advertisers will use this information to understand your strengths and consider making you an offer.",
+        portfolioUrl: "Portfolio URL",
+        vibeShot: "Perspective / Vibe Shot",
+        uploadShot: "Upload Best Shot",
+        changeShot: "Change Best Shot",
+        keywords: "Curation Keywords (Max 3)",
+        region: "Primary Audience Region",
+        contactInfo: "Contact Information",
+        contactDesc: "Coordination is handled through direct intelligence channels.",
+        confidentialNote: "※These information are used only for payments and support. They are strictly protected and never shared with advertisers.",
+        realName: "Real Name",
+        notifId: "Notification ID (Instagram / LINE etc.)",
+        accCreation: "Account Creation",
+        accDesc: "Access your exclusive dashboard and tracking tools.",
+        email: "Email Address (Login ID)",
+        password: "Set Password",
+        minChars: "Min. 6 characters",
+        processing: "Processing...",
+        missingFields: "Please fill in all required fields.",
+        shortPassword: "Password must be at least 6 characters.",
+        somethingWrong: "Something went wrong.",
+        confidential: "Confidential",
+        applicantStatus: "Applicant Status",
+        curationStatus: "Official Curation Status",
+        systemNotice: "System Notice",
+        invitationNotFound: "Invitation Not Found",
+        returnToApp: "Return to Application"
+    },
+    ja: {
+        reviewTitle: "審査について",
+        reviewDesc: "INSIDERS.は厳格な審査制を採用しています。フォーム送信後、キュレーションチームがあなたのポートフォリオを審査し、結果をご連絡いたします。",
+        pendingOfferCount: "1件の保留中オファー",
+        offerDetails: "オファー詳細",
+        accAndAccept: "特典を解放して承諾",
+        offerAcceptInstruction: "このオファーを受諾し、専用ダッシュボードにアクセスするには、以下のフォームから本登録を完了してください。",
+        provisionalTier: "暫定ティア",
+        evaluatedVibe: "審査済み世界観 (VIBE)",
+        underReview: "審査中",
+        inviteNote: "キュレーションチームはあなたの卓越した世界観を高く評価し、このプライベート招待状を発行しました。登録を完了して特典を解放してください。",
+        applyNote: "申請後、キュレーションチームがSNSアカウントを厳査します。承認された場合、登録された連絡先へ通知が届きます。",
+        displayPreview: "表示プレビュー",
+        previewNote: "※広告主にはこのように表示されます",
+        yourProfile: "プロフィール設定",
+        profileDesc: "広告主はこれらの情報を見て、あなたの強みを理解し、オファーを検討します。",
+        portfolioUrl: "ポートフォリオURL (SNS)",
+        vibeShot: "世界観を表す1枚 (Best Shot)",
+        uploadShot: "画像をアップロード",
+        changeShot: "画像を差し替える",
+        keywords: "キュレーションキーワード (最大3つ)",
+        region: "メインのリーチ層 (地域)",
+        contactInfo: "連絡先情報",
+        contactDesc: "案件の進行や連絡は、ダイレクトラインを通じて行われます。",
+        confidentialNote: "※これらは報酬支払いやサポートのみに使用されます。運営が厳重に管理し、広告主に公開されることはありません。",
+        realName: "氏名（本名）",
+        notifId: "連絡用ID (Instagram / LINE等)",
+        accCreation: "アカウント作成",
+        accDesc: "専用ダッシュボードにアクセスするためのログイン情報を設定してください。",
+        email: "メールアドレス (ログインID)",
+        password: "パスワード設定",
+        minChars: "6文字以上",
+        processing: "処理中...",
+        missingFields: "必須項目をすべて入力してください。",
+        shortPassword: "パスワードは6文字以上で設定してください。",
+        somethingWrong: "エラーが発生しました。もう一度お試しください。",
+        confidential: "非公開情報",
+        applicantStatus: "申請ステータス",
+        curationStatus: "公式キュレーションステータス",
+        systemNotice: "システム通知",
+        invitationNotFound: "招待状が見つかりません",
+        returnToApp: "応募ページに戻る"
+    }
+};
+
+export function OnboardingForm({ 
+    creator, 
+    offer, 
+    isApplyMode = false, 
+    initialLang = 'ja' 
+}: { 
+    creator: any, 
+    offer?: any, 
+    isApplyMode?: boolean,
+    initialLang?: Lang
+}) {
     const router = useRouter();
+    const [lang, setLang] = useState<Lang>(initialLang);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const t = dict[lang];
+
+    // 親コンポーネントからの言語変更を反映
+    useEffect(() => {
+        setLang(initialLang);
+    }, [initialLang]);
 
     const [formData, setFormData] = useState({
         portfolio_video_url: creator.portfolio_video_url || creator.scouted_video_url || '',
@@ -46,7 +153,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
         if (!event.target.files || event.target.files.length === 0) return;
         const file = event.target.files[0];
         if (file.size > 5 * 1024 * 1024) {
-            setError('Image must be less than 5MB.');
+            setError(lang === 'en' ? 'Image must be less than 5MB.' : '画像サイズは5MB以下にしてください。');
             return;
         }
         const previewUrl = URL.createObjectURL(file);
@@ -58,11 +165,11 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
     const handleSubmit = async () => {
         setError('');
         if (!formData.real_name || !formData.contact_id || !formData.email || !formData.password) {
-            setError('Please fill in all required fields.');
+            setError(t.missingFields);
             return;
         }
         if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters.');
+            setError(t.shortPassword);
             return;
         }
 
@@ -87,24 +194,17 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
 
             const result = await submitCreatorApplication(serverFormData);
 
-            // Server Action がエラーオブジェクトを返した場合
             if (result && !result.success) {
-                setError(result.error || 'Something went wrong.');
+                setError(result.error || t.somethingWrong);
                 setLoading(false);
                 return;
             }
-
-            // 成功した場合（リダイレクト等の処理へ）
-            // 注意: redirect() はエラーを投げるので、基本的には catch ブロックに行くか、
-            // そのまま遷移します。
-
         } catch (err: any) {
-            // Next.jsのredirectはエラーを投げて処理されるため、そのまま再スローする
             if (err.digest?.startsWith('NEXT_REDIRECT') || err.message?.includes('NEXT_REDIRECT')) {
                 throw err;
             }
             console.error(err);
-            setError(err.message || 'Something went wrong.');
+            setError(err.message || t.somethingWrong);
             setLoading(false);
         }
     };
@@ -120,15 +220,14 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                             <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
                                 <Sparkles size={20} />
                             </div>
-                            <h4 className="text-lg font-bold text-white tracking-tight uppercase">Application Review (審査について)</h4>
+                            <h4 className="text-lg font-bold text-white tracking-tight uppercase">{t.reviewTitle}</h4>
                         </div>
                         <p className="text-sm text-zinc-400 font-light leading-relaxed">
-                            INSIDERS.は厳格な審査制を採用しています。フォーム送信後、キュレーションチームがあなたのポートフォリオを審査し、結果をご連絡いたします。
+                            {t.reviewDesc}
                         </p>
                     </div>
                 )}
 
-                {/* 🌟 修正2：Pending Offer Card を動的化 (Invite Mode only) */}
                 {!isApplyMode && creator.id !== 'new-applicant' && offer && (
                     <div className="w-full bg-gradient-to-br from-amber-500/20 via-[#1a1a1a] to-[#0a0a0a] border border-amber-500/30 rounded-3xl p-6 shadow-[0_0_40px_-10px_rgba(245,158,11,0.2)] relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 blur-3xl rounded-full pointer-events-none" />
@@ -139,28 +238,25 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                             </div>
                             <div>
                                 <div className="text-[10px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded inline-block mb-1.5">
-                                    1 Pending Offer
+                                    {t.pendingOfferCount}
                                 </div>
-                                {/* 動的化：店舗名 */}
-                                <div className="text-lg font-bold text-white tracking-wide leading-tight">{offer.shop_name || "Special Offer for You"}</div>
+                                <div className="text-lg font-bold text-white tracking-wide leading-tight">{offer.shop_name || (lang === 'en' ? 'VIP Client' : '先行招待クライアント')}</div>
                             </div>
                         </div>
 
                         <div className="bg-black/60 rounded-2xl p-4 border border-white/5 relative z-10 backdrop-blur-sm">
-                            <div className="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Offer Details</div>
-                            {/* 動的化：必須提供価値 と 金額 */}
+                            <div className="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">{t.offerDetails}</div>
                             <div className="text-sm font-bold text-amber-400 flex items-center gap-2 leading-relaxed">
                                 <Sparkles className="w-4 h-4 shrink-0" />
-                                <span>{offer.barter_details} <br className="md:hidden" />＋ 報酬 (¥{offer.offer_price?.toLocaleString()})</span>
+                                <span>{offer.barter_details} <br className="md:hidden" />＋ {lang === 'en' ? 'Rewards' : '報酬'} (¥{offer.offer_price?.toLocaleString()})</span>
                             </div>
                             <p className="text-[10px] text-slate-500 mt-3 font-light leading-relaxed">
-                                このオファーを受諾し、専用ダッシュボードにアクセスするには、以下のフォームを完了してINSIDERS.へ参加してください。
+                                {t.offerAcceptInstruction}
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* 新UI：Official Curation Status (マニュアル準拠) - (Invite Mode only) */}
                 {!isApplyMode && (
                     <div className="w-full bg-[#0a0a0a] rounded-3xl border border-white/10 p-6 md:p-8 flex flex-col relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-3xl rounded-full pointer-events-none" />
@@ -168,10 +264,10 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                         <div className="flex justify-between items-center pb-5 border-b border-white/5 mb-6">
                             <div>
                                 <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-1">
-                                    {creator.id === 'new-applicant' ? 'Registration Application' : 'Confidential Evaluation'}
+                                    {creator.id === 'new-applicant' ? t.applicantStatus : t.curationStatus}
                                 </p>
                                 <p className="text-sm font-bold text-white uppercase tracking-wider">
-                                    {creator.id === 'new-applicant' ? 'Applicant Status' : 'Official Curation Status'}
+                                    {creator.id === 'new-applicant' ? t.applicantStatus : t.curationStatus}
                                 </p>
                             </div>
                             <div className="w-8 h-8 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-500">
@@ -186,11 +282,11 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                     <p className="text-xl font-playfair italic text-white leading-tight">@{formData.real_name || (creator.tiktok_handle || 'Creator')}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">Provisional Tier</p>
+                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase">{t.provisionalTier}</p>
                                     <p className="text-xs font-black text-amber-400 tracking-widest mt-1 uppercase">
-                                        {creator.id === 'new-applicant' ? 'TBD (Reviewing)' : (
+                                        {creator.id === 'new-applicant' ? (lang === 'en' ? 'TBD' : '審査中') : (
                                             creator.tier === 'S' ? 'Tier S (Elite)' :
-                                                creator.tier === 'A' ? 'Tier A (High Potential)' :
+                                                creator.tier === 'A' ? 'Tier A (High)' :
                                                     creator.tier === 'B' ? 'Tier B (Certified)' :
                                                         `Tier ${creator.tier || 'Pending'}`
                                         )}
@@ -200,7 +296,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
 
                             {creator.id !== 'new-applicant' && (
                                 <div className="space-y-2 border-t border-white/5 pt-4">
-                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-2">Evaluated Aesthetic (審査済みVIBE)</p>
+                                    <p className="text-[10px] tracking-[0.2em] font-medium text-zinc-500 uppercase mb-2">{t.evaluatedVibe}</p>
                                     <div className="flex flex-wrap gap-2">
                                         {creator.vibe_tags?.length > 0 ? (
                                             creator.vibe_tags.map((tag: string) => (
@@ -209,7 +305,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                                 </span>
                                             ))
                                         ) : (
-                                            <span className="text-[10px] text-zinc-600 italic">審査中 (Under Review)</span>
+                                            <span className="text-[10px] text-zinc-600 italic">{t.underReview}</span>
                                         )}
                                     </div>
                                 </div>
@@ -217,19 +313,15 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
 
                             <div className={creator.id === 'new-applicant' ? "" : "bg-white/5 rounded-xl p-4 border border-white/5 mt-2"}>
                                 <p className="text-[11px] text-zinc-300 leading-relaxed font-light">
-                                    {creator.id === 'new-applicant'
-                                        ? "申請後、INSIDERS.キュレーションチームがあなたのSNSアカウントを厳査します。承認された場合、登録された連絡先へ通知が届きます。"
-                                        : <>INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「{creator.vibe_tags?.[0] || 'Exclusive'}」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />下部のフォームを完了して本登録を済ませることで、保留中のオファーを開放できます。</>
-                                    }
+                                    {creator.id === 'new-applicant' ? t.applyNote : (lang === 'en' ? t.inviteNote : <>INSIDERS.キュレーションチームは、あなたの卓越した<span className="text-white font-bold">「{creator.vibe_tags?.[0] || 'Exclusive'}」</span>な世界観を高く評価し、このプライベート招待状を発行しました。<br className="hidden md:block" />以下のフォームを完了して本登録を済ませることで、特典を解放できます。</>)}
                                 </p>
                             </div>
 
                             {/* Current Display Preview */}
                             <div className="pt-6 border-t border-white/5">
-                                <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-4">Current Display Preview</p>
+                                <p className="text-[10px] tracking-[0.2em] font-medium text-amber-500 uppercase mb-4">{t.displayPreview}</p>
                                 <div className="flex justify-center">
                                     <div className="w-[180px] aspect-[9/16] rounded-2xl overflow-hidden relative shadow-2xl border border-white/10 group cursor-default">
-                                        {/* Thumbnail Preview (Best Shot) */}
                                         <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
                                             {formData.avatar_url ? (
                                                 <img src={formData.avatar_url} className="w-full h-full object-cover grayscale brightness-75 transition-all duration-700" alt="Preview" />
@@ -239,7 +331,6 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                         </div>
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10" />
 
-                                        {/* Badges */}
                                         <div className="absolute top-2 left-2 z-20 flex flex-wrap gap-1">
                                             {creator.vibe_tags?.[0] && (
                                                 <span className="bg-white/20 backdrop-blur-md text-[6px] text-white px-1.5 py-0.5 rounded font-bold border border-white/10 uppercase">
@@ -249,7 +340,6 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                             <span className="bg-indigo-500/20 backdrop-blur-md text-[6px] text-indigo-400 px-1.5 py-0.5 rounded font-bold border border-indigo-400/30 uppercase">AI RECOMMENDED</span>
                                         </div>
 
-                                        {/* Bottom Content */}
                                         <div className="absolute bottom-3 left-3 z-20 text-left">
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <p className="text-[10px] font-black text-white tracking-tight italic">@{formData.real_name || (creator.tiktok_handle || 'Creator')}</p>
@@ -265,7 +355,6 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                             </div>
                                         </div>
 
-                                        {/* Focus Asset URL Hint */}
                                         {formData.portfolio_video_url && (
                                             <div className="absolute inset-0 flex items-center justify-center z-30 opacity-0 bg-black/60 transition-opacity pointer-events-none group-hover:opacity-100">
                                                 <p className="text-[6px] text-white font-bold tracking-tighter text-center px-4">
@@ -276,7 +365,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                         )}
                                     </div>
                                 </div>
-                                <p className="text-[9px] text-zinc-500 text-center mt-3 font-medium">※広告主にはこのように表示されます</p>
+                                <p className="text-[9px] text-zinc-500 text-center mt-3 font-medium">{t.previewNote}</p>
                             </div>
                         </div>
                     </div>
@@ -284,18 +373,15 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
 
             </div>
 
-            {/* ========================================================
-                RIGHT COLUMN: Form Entry 
-            ======================================================== */}
             <div className="flex-1 w-full bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl">
 
                 <div className="mb-12">
-                    <h3 className="text-2xl font-light font-playfair italic text-white mb-2">Focus Asset</h3>
-                    <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">Advertisers will perceive your perspective through this choice.</p>
+                    <h3 className="text-2xl font-light font-playfair italic text-white mb-2">{t.yourProfile}</h3>
+                    <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">{t.profileDesc}</p>
 
                     <div className="space-y-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Portfolio URL</label>
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.portfolioUrl}</label>
                             <input
                                 type="text"
                                 value={formData.portfolio_video_url}
@@ -306,7 +392,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                         </div>
 
                         <div className="space-y-4">
-                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Perspective / Vibe Shot</label>
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.vibeShot}</label>
                             <div className="flex items-center gap-6">
                                 <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/10 bg-zinc-900 shrink-0 shadow-inner">
                                     {formData.avatar_url ? (
@@ -320,7 +406,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                 <label className="cursor-pointer group">
                                     <div className="bg-zinc-900 border border-white/5 hover:border-white/20 text-white px-6 py-3 rounded-xl text-xs font-medium tracking-wide flex items-center gap-2 transition-all">
                                         <Upload size={14} className="text-zinc-500 group-hover:text-white transition-colors" />
-                                        {avatarFile ? 'Change Best Shot' : 'Upload Best Shot'}
+                                        {avatarFile ? t.changeShot : t.uploadShot}
                                     </div>
                                     <input type="file" accept="image/jpeg, image/png, image/webp" onChange={handleImageSelect} className="hidden" />
                                 </label>
@@ -328,7 +414,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                         </div>
 
                         <div className="space-y-4">
-                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Curation Keywords (Max 3)</label>
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.keywords}</label>
                             <div className="flex flex-wrap gap-2">
                                 {VIBE_OPTIONS.map(tag => (
                                     <button
@@ -341,79 +427,80 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                                 ))}
                             </div>
                         </div>
+
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
+                                {t.region}
+                            </label>
+                            <div className="relative">
+                                <select
+                                    value={formData.nationality}
+                                    onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                                    className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
+                                >
+                                    <option value="Japan">Japan (Domestic)</option>
+                                    <option value="Asia">Asia (excl. Japan)</option>
+                                    <option value="Middle East">Middle East</option>
+                                    <option value="Europe">Europe</option>
+                                    <option value="North America">North America</option>
+                                    <option value="Latin America">Latin America</option>
+                                    <option value="Africa">Africa</option>
+                                    <option value="Oceania">Oceania</option>
+                                    <option value="Global / Mixed">Global / Mixed</option>
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                    <ChevronRight size={14} className="rotate-90" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div className="mb-12 pt-8 border-t border-white/5">
-                    <h3 className="text-2xl font-light font-playfair italic text-white mb-2">Connection</h3>
+                    <h3 className="text-2xl font-light font-playfair italic text-white mb-2">{t.contactInfo}</h3>
                     <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">
-                        Coordination is handled through direct intelligence channels.<br />
+                        {t.contactDesc}<br />
                         <span className="text-amber-500/80 font-medium text-[10px] mt-1 inline-block">
-                            ※これらの情報は報酬のお支払い・トラブル時のサポートにのみ使用されます。<br />運営によって厳重に保護され、広告主に公開されることは一切ありません。
+                            {t.confidentialNote}
                         </span>
                     </p>
 
                     <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Real Name</label>
+                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.realName}</label>
                                 <input
                                     type="text"
                                     value={formData.real_name}
                                     onChange={(e) => setFormData({ ...formData, real_name: e.target.value })}
                                     className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
-                                    placeholder="Confidential"
+                                    placeholder={t.confidential}
                                 />
-                            </div>
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">
-                                    Primary Audience Region
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        value={formData.nationality}
-                                        onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                                        className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none appearance-none text-sm cursor-pointer"
-                                    >
-                                        <option value="Japan">Japan (Domestic)</option>
-                                        <option value="Asia">Asia (excl. Japan)</option>
-                                        <option value="Middle East">Middle East</option>
-                                        <option value="Europe">Europe</option>
-                                        <option value="North America">North America</option>
-                                        <option value="Latin America">Latin America</option>
-                                        <option value="Africa">Africa</option>
-                                        <option value="Oceania">Oceania</option>
-                                        <option value="Global / Mixed">Global / Mixed</option>
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
-                                        <ChevronRight size={14} className="rotate-90" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Notification ID (Instagram / LINE etc.)</label>
+                            <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.notifId}</label>
                             <input
                                 type="text"
                                 value={formData.contact_id}
                                 onChange={(e) => setFormData({ ...formData, contact_id: e.target.value })}
                                 className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
-                                placeholder={`Contact ID for emergency notification`}
+                                placeholder={lang === 'en' ? 'Contact ID for emergency notification' : '緊急時の連絡用ID'}
                             />
                         </div>
 
                         <div className="mt-8 pt-8 border-t border-zinc-900/50">
-                            <h3 className="text-2xl font-light font-playfair italic text-white mb-2">Account Creation</h3>
-                            <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">Access your exclusive dashboard and tracking tools.</p>
+                            <h3 className="text-2xl font-light font-playfair italic text-white mb-2">{t.accCreation}</h3>
+                            <p className="text-xs text-zinc-500 tracking-wide font-light mb-8">{t.accDesc}</p>
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Email Address (Login ID)</label>
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.email}</label>
                                     <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder="your@email.com" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">Set Password</label>
-                                    <input type="password" minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder="Min. 6 characters" />
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.password}</label>
+                                    <input type="password" minLength={6} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" placeholder={t.minChars} />
                                 </div>
                             </div>
                         </div>
@@ -429,7 +516,7 @@ export function OnboardingForm({ creator, offer, isApplyMode = false }: { creato
                 {/* Submit & Terms Component */}
                 {loading ? (
                     <div className="w-full bg-white/10 text-white/50 font-semibold text-sm tracking-[0.2em] py-5 rounded-2xl flex items-center justify-center uppercase">
-                        Processing...
+                        {t.processing}
                     </div>
                 ) : (
                     <TermsOfCuration onAccept={handleSubmit} />
