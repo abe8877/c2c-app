@@ -18,13 +18,18 @@ export async function sendMessage({
     senderType: 'shop' | 'creator';
 }) {
     const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // 1. AI Translation (Using the fastest model gemini-1.5-flash)
+    if (!user) throw new Error("Unauthorized");
+
+    const senderId = user.id;
+
+    // 1. AI Translation
     let translatedContent = "";
     try {
         let systemPrompt = "";
         if (senderType === 'shop') {
-            systemPrompt = "Translate the following Japanese message to professional, friendly English suitable for business communication with a creator. Output ONLY the translated text.";
+            systemPrompt = "Translate the following Japanese message to professional, friendly English suitable for business communication with a creator. Output ONLY the translated text without any quotes or explanations.";
         } else {
             systemPrompt = "次のクリエイターからの英語のメッセージを、自然で丁寧な日本語のビジネス表現に翻訳してください。翻訳されたテキストのみを出力してください。";
         }
@@ -42,56 +47,54 @@ export async function sendMessage({
     }
 
     // 2. Save to Database
-    const senderId = senderType === 'shop' ? 'demo-shop' : 'demo-creator-id'; // Auth実装後はここを更新
+    const supabaseAdmin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('messages')
         .insert({
             asset_id: assetId,
             sender_id: senderId,
             sender_type: senderType,
-            content_original: content,
-            content_translated: translatedContent
+            message: content, 
+            message_en: senderType === 'shop' ? translatedContent : content,
+            message_ja: senderType === 'shop' ? content : translatedContent,
         })
         .select()
         .single();
 
     if (error) {
-        console.error("Database Insert Error:", error);
+        console.error("🔥 Database Insert Error:", error);
         throw new Error("Failed to send message: " + error.message);
     }
 
     // 3. Trigger n8n Webhook Notification
     try {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-
-        // 送信先（相手）の情報を取得
         const { data: asset } = await supabaseAdmin
             .from('assets')
             .select(`
                 shop_id,
                 creator_id,
-                shops ( name, email ),
+                shops ( name, login_email ),
                 creators ( name, email )
             `)
             .eq('id', assetId)
             .single();
 
         if (asset) {
-            const recipient = senderType === 'shop' ? (asset.creators as any) : (asset.shops as any);
+            const recipientEmail = senderType === 'shop' ? (asset.creators as any)?.email : (asset.shops as any)?.login_email;
             const senderName = senderType === 'shop' ? (asset.shops as any)?.name : (asset.creators as any)?.name;
             const n8nChatWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
 
-            if (n8nChatWebhookUrl && recipient?.email) {
+            if (n8nChatWebhookUrl && recipientEmail) {
                 fetch(n8nChatWebhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: 'CHAT',
-                        recipientEmail: recipient.email,
+                        recipientEmail: recipientEmail,
                         senderName: senderName || 'Partner',
                         content: content,
                         subject: `[INSIDERS] New message from ${senderName || 'your partner'}`,
@@ -121,41 +124,44 @@ export async function getAssistantResponse({
 }) {
     const supabase = await createServerClient();
 
-    // 1. Fetch shop presets
     const { data: shop, error: shopError } = await supabase
         .from('shops')
-        .select('name, preset_address, preset_menu, preset_request')
+        .select('name, address_en, access_info_en, preset_menu_en, shoot_rules_en, requirements')
         .eq('id', shopId)
         .single();
 
     if (shopError || !shop) {
-        console.error("Shop Fetch Error:", shopError);
-        // Fallback or handle error
+        console.error("🔥 Shop Fetch Error:", shopError);
+        return { success: false, error: "店舗情報の取得に失敗しました。" };
     }
 
     let prompt = "";
-    let systemPrompt = "You are a professional AI Concierge for INSIDERS., a platform matching advertisers with creators. Your task is to generate a professional, polite, and welcoming message in English from the shop to a creator. Output ONLY the English message text.";
+    let systemPrompt = "You are a professional AI Concierge. Generate a friendly, professional message in English from the shop to the creator. Output ONLY the message text without any quotes or preamble. Use natural emojis.";
 
     switch (type) {
         case 'map':
-            prompt = `Context: The shop (${shop?.name || 'our shop'}) wants to share their location with the creator. 
-                     Address: ${shop?.preset_address || 'TBD'}. 
-                     Generate a friendly message including this address.`;
+            const address = [shop.address_en, shop.access_info_en].filter(Boolean).join(' / ');
+            prompt = `The shop (${shop.name}) is sharing their location.
+Shop Address Info: ${address || 'Please contact us for directions.'}
+Generate a message guiding the creator to the shop.`;
             break;
         case 'menu':
-            prompt = `Context: The shop (${shop?.name || 'our shop'}) wants to share their menu/available products for filming. 
-                     Menu Info: ${shop?.preset_menu || 'TBD'}. 
-                     Generate a professional message explaining what the creator can film/eat.`;
+            prompt = `The shop (${shop.name}) is sharing the menu they will provide.
+Menu: ${shop.preset_menu_en || 'Our signature dishes.'}
+Generate a welcoming message explaining what the creator will experience.`;
             break;
         case 'camera':
-            prompt = `Context: The shop (${shop?.name || 'our shop'}) has specific filming requests or requirements. 
-                     Requests: ${shop?.preset_request || 'TBD'}. 
-                     Generate a polite message outlining these filming guidelines.`;
+            const rules = [shop.shoot_rules_en, ...(shop.requirements || [])].filter(Boolean).join(', ');
+            prompt = `The shop (${shop.name}) has specific filming guidelines.
+Rules: ${rules || 'Please capture our vibe naturally.'}
+Generate a polite message explaining these filming guidelines.`;
             break;
         case 'schedule':
-            prompt = `Context: The shop (${shop?.name || 'our shop'}) is suggesting several candidate dates for a meeting or filming.
-                     Dates: ${dates?.join(', ') || 'flexible'}.
-                     Generate a welcoming message inviting the creator to pick one of these dates.`;
+            const datesStr = dates && dates.length > 0 ? dates.join('\n- ') : 'flexible dates';
+            prompt = `The shop (${shop.name}) is suggesting candidate dates for the visit.
+Candidate Dates:
+- ${datesStr}
+IMPORTANT: You MUST list the exact dates provided above in your message. Ask the creator to pick one.`;
             break;
     }
 
@@ -167,8 +173,8 @@ export async function getAssistantResponse({
         });
 
         return { success: true, text: text.trim() };
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Generation Error:", error);
-        return { success: false, error: "Failed to generate response" };
+        return { success: false, error: "AIによるテキスト生成に失敗しました: " + error.message };
     }
 }

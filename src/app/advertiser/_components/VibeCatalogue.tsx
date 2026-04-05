@@ -544,7 +544,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16 }: any) {
                     {tags.length === 0 && <p className="text-stone-300 italic">タグがありません</p>}
                 </div>
                 <div className="mt-12 pt-10 border-t border-stone-100 text-center space-y-8">
-                    <p className="text-sm font-bold text-stone-400">貴店と高相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名</span></p>
+                    <p className="text-sm font-bold text-stone-400">貴店と高相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{tags[0] || '全ジャンル'}）</span></p>
                     <button onClick={onConfirm} className="px-14 py-5 bg-black text-white rounded-full font-black text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
                         マッチング候補を見る <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -1633,7 +1633,7 @@ export default function VibeCatalogue({
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名</span></p>
+                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名（{initialGenre || '全カテゴリ'}）</span></p>
                                         </div>
                                         <button
                                             onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}
@@ -1658,8 +1658,10 @@ export default function VibeCatalogue({
                                                     onClick={() => setFilterGenre(tab.key)}
                                                     className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-300 ${filterGenre === tab.key
                                                         ? 'bg-black text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-110 ring-2 ring-black ring-offset-2 z-10'
-                                                        : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600'
-                                                        } ${tab.key === initialGenre ? 'border-yellow-400/50 border-2' : ''}`}
+                                                        : tab.key === initialGenre
+                                                            ? 'bg-yellow-400 text-black border-2 border-yellow-500 shadow-[0_10px_20px_rgba(250,204,21,0.3)] animate-pulse'
+                                                            : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600'
+                                                        }`}
                                                 >
                                                     {tab.label}
                                                     {tab.key === initialGenre && (

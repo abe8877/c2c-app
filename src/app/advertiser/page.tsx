@@ -134,7 +134,7 @@ export default async function AdvertiserPage() {
                 *,
                 creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url )
             `)
-            .eq('client_tag', clientTag);
+            .eq('shop_id', session.user.id);
 
         if (fetchedAssets) {
             assets = fetchedAssets;

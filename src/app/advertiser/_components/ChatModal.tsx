@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Sparkles, Clock, MapPin, RefreshCw, Camera, Loader2 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { sendMessage, getAssistantResponse } from "@/app/actions/chat";
-import { format, addDays } from "date-fns";
-import { ja } from "date-fns/locale";
+import { 
+    X, Send, Sparkles, Clock, MapPin, 
+    RefreshCw, Camera, AlertCircle, Loader2, User 
+} from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { sendMessage, getAssistantResponse } from '@/app/actions/chat';
 
-export interface Message {
+interface Message {
     id: string;
+    sender_id: string;
     sender_type: 'shop' | 'creator';
-    content_original: string;
-    content_translated: string | null;
+    message: string;
     created_at: string;
 }
 
@@ -24,121 +25,139 @@ interface ChatModalProps {
     currentUserType: 'shop' | 'creator';
 }
 
-export default function ChatModal({ isOpen, onClose, assetId, partnerName, currentUserType }: ChatModalProps) {
+export default function ChatModal({
+    isOpen,
+    onClose,
+    assetId,
+    partnerName,
+    currentUserType
+}: ChatModalProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputText, setInputText] = useState("");
-    const [isSending, setIsSending] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [selectedDates, setSelectedDates] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isAiGenerating, setIsAiGenerating] = useState(false);
+    const [partnerAvatar, setPartnerAvatar] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
 
     const scrollToBottom = () => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // 1. Initial Fetch
     useEffect(() => {
         if (!isOpen || !assetId) return;
 
-        // Fetch initial messages
-        const fetchMessages = async () => {
-            const { data, error } = await supabase
+        const fetchData = async () => {
+            setIsLoading(true);
+            
+            // Partner Avatarの取得
+            const { data: asset } = await supabase
+                .from('assets')
+                .select(`
+                    id,
+                    shop_id,
+                    creator_id,
+                    shops ( logo_url ),
+                    creators ( avatar_url )
+                `)
+                .eq('id', assetId)
+                .single();
+
+            if (asset) {
+                const avatar = currentUserType === 'shop' 
+                    ? (asset.creators as any)?.avatar_url 
+                    : (asset.shops as any)?.logo_url;
+                setPartnerAvatar(avatar);
+            }
+
+            // メッセージの取得
+            const { data: chatData, error } = await supabase
                 .from('messages')
                 .select('*')
                 .eq('asset_id', assetId)
                 .order('created_at', { ascending: true });
 
-            if (data && !error) {
-                setMessages(data);
-                setTimeout(scrollToBottom, 100);
+            if (chatData) {
+                setMessages(chatData);
             }
+            setIsLoading(false);
+            setTimeout(scrollToBottom, 100);
         };
 
-        fetchMessages();
+        fetchData();
 
-        // Subscribe to real-time updates
-        const channel = supabase.channel(`chat_${assetId}`)
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'messages', filter: `asset_id=eq.${assetId}` },
-                (payload) => {
-                    setMessages(prev => [...prev, payload.new as Message]);
-                    setTimeout(scrollToBottom, 100);
-                }
-            )
+        // Realtime Subscription
+        const channel = supabase
+            .channel(`asset-chat-${assetId}`)
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'messages',
+                filter: `asset_id=eq.${assetId}`
+            }, (payload) => {
+                setMessages(prev => [...prev, payload.new as Message]);
+                setTimeout(scrollToBottom, 100);
+            })
             .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [isOpen, assetId, supabase]);
+    }, [isOpen, assetId, currentUserType]);
 
-    const handleSend = async () => {
-        if (!inputText.trim() || isSending) return;
-        setIsSending(true);
+    const handleSend = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        if (!inputText.trim() || isAiGenerating) return;
+
+        const originalText = inputText;
+        setInputText(""); // Clear input
+
         try {
             await sendMessage({
                 assetId,
-                content: inputText,
+                content: originalText,
                 senderType: currentUserType
             });
-            setInputText("");
+            // Subscription will handle adding message to local state
         } catch (error) {
-            console.error("Failed to send message", error);
-            alert("送信に失敗しました");
-        } finally {
-            setIsSending(false);
+            console.error("Failed to send message:", error);
+            alert("メッセージの送信に失敗しました。");
+            setInputText(originalText); // Restore input
         }
     };
 
-    const applyTemplate = async (type: 'map' | 'menu' | 'camera' | 'schedule', dates?: string[]) => {
-        if (currentUserType !== 'shop' || isGenerating) return;
+    const handleAiConcierge = async (type: 'map' | 'menu' | 'camera' | 'schedule') => {
+        if (isAiGenerating) return;
+        setIsAiGenerating(true);
 
-        setIsGenerating(true);
         try {
-            const res = await getAssistantResponse({
+            // Get shopId from asset (In a real app, this should be handled more robustly)
+            const { data: asset } = await supabase
+                .from('assets')
+                .select('shop_id')
+                .eq('id', assetId)
+                .single();
+
+            if (!asset?.shop_id) throw new Error("Shop ID not found");
+
+            const result = await getAssistantResponse({
                 type,
-                shopId: 'demo-shop', // Mock ID
-                dates
+                shopId: asset.shop_id
             });
 
-            if (res.success && res.text) {
-                setInputText(res.text);
+            if (result.success && result.text) {
+                setInputText(result.text); // Set generated text to input
             } else {
-                // Fallback to static text if AI fails
-                switch (type) {
-                    case 'schedule':
-                        setInputText("Regarding the schedule: Could you please provide your available dates and times?");
-                        break;
-                    case 'map':
-                        setInputText("Here is the location information. Please let us know if you have trouble finding it.");
-                        break;
-                }
+                alert(result.error || "AI応答の生成に失敗しました。");
             }
         } catch (error) {
-            console.error("AI Generation Error", error);
+            console.error("AI Assistant Error:", error);
+            alert("AI応答の生成中にエラーが発生しました。");
         } finally {
-            setIsGenerating(false);
-            setShowDatePicker(false);
+            setIsAiGenerating(false);
         }
     };
-
-    const toggleDate = (date: string) => {
-        setSelectedDates(prev =>
-            prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]
-        );
-    };
-
-    const next7Days = Array.from({ length: 7 }, (_, i) => {
-        const d = addDays(new Date(), i);
-        return {
-            dateStr: format(d, 'yyyy-MM-dd'),
-            display: format(d, 'MM/dd (eee)', { locale: ja })
-        };
-    });
 
     if (!isOpen) return null;
 
@@ -148,159 +167,149 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex justify-end bg-black/40 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/60 z-[300] backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4"
+                onClick={onClose}
             >
-                {/* Background overlay click to close */}
-                <div className="absolute inset-0" onClick={onClose} />
-
                 <motion.div
-                    initial={{ x: '100%' }}
-                    animate={{ x: 0 }}
-                    exit={{ x: '100%' }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                    className="w-full max-w-md bg-stone-50 h-full flex flex-col relative shadow-2xl border-l border-stone-200 pt-16 md:pt-0"
+                    initial={{ y: "100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "100%", opacity: 0 }}
+                    transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full max-w-lg bg-white rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[90vh]"
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 bg-white border-b border-stone-200 shadow-sm z-10">
-                        <div>
-                            <h3 className="font-black text-lg text-stone-900 leading-tight">{partnerName}</h3>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">AIアシスタントが作動中</span>
+                    <div className="bg-[#1A1A1A] px-6 py-4 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-zinc-900 relative flex items-center justify-center">
+                                {partnerAvatar ? (
+                                    <img src={partnerAvatar} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                    <User className="w-5 h-5 text-zinc-500" />
+                                )}
+                            </div>
+                            <div>
+                                <h2 className="text-white font-bold text-base leading-tight">{partnerName}</h2>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Active (AI Translated)</span>
+                                </div>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-2 text-stone-400 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-full transition">
-                            <X size={20} />
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <X className="w-6 h-6 text-zinc-400" />
                         </button>
                     </div>
 
                     {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
-                        {messages.length === 0 && (
-                            <div className="text-center text-stone-400 text-sm mt-10 font-medium">
-                                まだメッセージはありません。<br />挨拶を送ってみましょう！
+                    <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-zinc-50 flex flex-col min-h-0">
+                        {isLoading ? (
+                            <div className="flex-1 flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-zinc-300 animate-spin" />
                             </div>
-                        )}
-
-                        {messages.map(msg => {
-                            const isMe = msg.sender_type === currentUserType;
-                            return (
-                                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                    <div className={`max-w-[85%] rounded-2xl p-3.5 shadow-sm ${isMe ? 'bg-stone-900 text-white rounded-tr-sm' : 'bg-white text-stone-900 border border-stone-200 rounded-tl-sm'
+                        ) : messages.length === 0 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
+                                <AlertCircle className="w-12 h-12 mb-4" />
+                                <p className="text-sm font-bold">まだメッセージはありません</p>
+                                <p className="text-[10px] mt-1">早速 AI アシスタントを使ってオファーの内容を確認しましょう ✨</p>
+                            </div>
+                        ) : (
+                            messages.map((msg) => {
+                                const isMine = msg.sender_type === currentUserType;
+                                return (
+                                    <motion.div
+                                        key={msg.id}
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        className={`flex w-full ${isMine ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${
+                                            isMine 
+                                                ? 'bg-black text-white rounded-tr-none' 
+                                                : 'bg-white text-zinc-800 border border-zinc-200 rounded-tl-none'
                                         }`}>
-                                        <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{msg.content_original}</p>
-
-                                        {msg.content_translated && (
-                                            <div className={`mt-3 pt-3 border-t ${isMe ? 'border-white/20' : 'border-stone-100'}`}>
-                                                <div className="flex items-center gap-1 mb-1">
-                                                    <Sparkles className={`w-3 h-3 ${isMe ? 'text-yellow-400' : 'text-blue-500'}`} />
-                                                    <span className={`text-[9px] font-black tracking-widest uppercase ${isMe ? 'text-stone-400' : 'text-stone-500'}`}>
-                                                        NOTS TRANSLATED
-                                                    </span>
-                                                </div>
-                                                <p className={`text-xs font-bold ${isMe ? 'text-stone-300' : 'text-stone-700'} whitespace-pre-wrap leading-relaxed`}>
-                                                    {msg.content_translated}
-                                                </p>
+                                            <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                                            <div className={`mt-1.5 pt-1.5 border-t text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 ${
+                                                isMine ? 'border-white/10 text-white/40' : 'border-zinc-100 text-zinc-400'
+                                            }`}>
+                                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
-                                        )}
-                                    </div>
-                                    <span className="text-[10px] text-stone-400 mt-1.5 font-bold px-1">
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input Area */}
-                    <div className="bg-white border-t border-stone-200 p-4 shrink-0">
-                        {/* Templates */}
-                        {currentUserType === 'shop' && (
-                            <div className="grid grid-cols-4 gap-2 mb-3 relative">
-                                {/* Date Picker Popover */}
-                                <AnimatePresence>
-                                    {showDatePicker && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute bottom-full left-0 mb-2 w-[240px] bg-white rounded-2xl shadow-2xl border border-stone-200 p-4 z-50 overflow-hidden"
-                                        >
-                                            <div className="flex items-center justify-between mb-3 border-b border-stone-100 pb-2">
-                                                <span className="text-xs font-black text-stone-900 uppercase tracking-widest">Select Dates</span>
-                                                <button onClick={() => setShowDatePicker(false)} className="text-stone-400 hover:text-stone-900 transition"><X size={14} /></button>
-                                            </div>
-                                            <div className="grid grid-cols-1 gap-1 max-h-[220px] overflow-y-auto pr-1">
-                                                {next7Days.map(d => (
-                                                    <div key={d.dateStr} className="flex items-center gap-3 p-1.5 hover:bg-stone-50 rounded-lg transition">
-                                                        <input
-                                                            type="checkbox"
-                                                            id={d.dateStr}
-                                                            checked={selectedDates.includes(d.display)}
-                                                            onChange={() => toggleDate(d.display)}
-                                                            className="w-4 h-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900"
-                                                        />
-                                                        <label htmlFor={d.dateStr} className="text-xs font-bold text-stone-700 cursor-pointer flex-1">
-                                                            {d.display}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={() => applyTemplate('schedule', selectedDates)}
-                                                disabled={selectedDates.length === 0 || isGenerating}
-                                                className="w-full mt-4 py-2.5 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2 hover:bg-stone-800 transition shadow-lg active:scale-95"
-                                            >
-                                                {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} className="text-yellow-400" />}
-                                                スケジュール打診文を生成
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                <button onClick={() => setShowDatePicker(!showDatePicker)} className="flex flex-col items-center gap-1.5 p-2 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 transition">
-                                    <Clock size={16} className="text-stone-600" />
-                                    <span className="text-[9px] font-black text-stone-600">日程候補</span>
-                                </button>
-                                <button onClick={() => applyTemplate('map')} className="flex flex-col items-center gap-1.5 p-2 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 transition">
-                                    <MapPin size={16} className="text-stone-600" />
-                                    <span className="text-[9px] font-black text-stone-600">地図情報</span>
-                                </button>
-                                <button onClick={() => applyTemplate('menu')} className="flex flex-col items-center gap-1.5 p-2 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 transition">
-                                    <RefreshCw size={16} className="text-stone-600" />
-                                    <span className="text-[9px] font-black text-stone-600">メニュー</span>
-                                </button>
-                                <button onClick={() => applyTemplate('camera')} className="flex flex-col items-center gap-1.5 p-2 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 transition">
-                                    <Camera size={16} className="text-stone-600" />
-                                    <span className="text-[9px] font-black text-stone-600">撮影要望</span>
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="flex gap-2">
-                            <textarea
-                                value={inputText}
-                                onChange={e => setInputText(e.target.value)}
-                                placeholder={currentUserType === 'shop'
-                                    ? "メッセージを入力（自動でプロ仕様の英語に翻訳されます）"
-                                    : "Type a message..."}
-                                className="flex-1 resize-none h-24 max-h-48 bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-stone-900 transition-all placeholder:text-stone-400"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSend();
-                                    }
-                                }}
-                            />
+                    {/* Footer / Input */}
+                    <div className="bg-white border-t p-4 pb-8 space-y-4 shrink-0">
+                        {/* AI Concierge Buttons (Shop Only or Desktop) */}
+                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar">
                             <button
-                                onClick={handleSend}
-                                disabled={!inputText.trim() || isSending}
-                                className="h-24 w-12 shrink-0 bg-stone-900 text-white rounded-xl flex items-center justify-center hover:bg-stone-800 disabled:opacity-50 transition active:scale-95"
+                                onClick={() => handleAiConcierge('schedule')}
+                                disabled={isAiGenerating}
+                                className="flex-none px-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-stone-100 transition-all disabled:opacity-50"
                             >
-                                {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
+                                <Clock className="w-3.5 h-3.5 text-zinc-500" /> 日程候補
+                            </button>
+                            <button
+                                onClick={() => handleAiConcierge('map')}
+                                disabled={isAiGenerating}
+                                className="flex-none px-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-stone-100 transition-all disabled:opacity-50"
+                            >
+                                <MapPin className="w-3.5 h-3.5 text-zinc-500" /> 地図情報
+                            </button>
+                            <button
+                                onClick={() => handleAiConcierge('menu')}
+                                disabled={isAiGenerating}
+                                className="flex-none px-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-stone-100 transition-all disabled:opacity-50"
+                            >
+                                <RefreshCw className="w-3.5 h-3.5 text-zinc-500" /> メニュー案
+                            </button>
+                            <button
+                                onClick={() => handleAiConcierge('camera')}
+                                disabled={isAiGenerating}
+                                className="flex-none px-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-stone-100 transition-all disabled:opacity-50"
+                            >
+                                <Camera className="w-3.5 h-3.5 text-zinc-500" /> 撮影要望
                             </button>
                         </div>
+
+                        {/* Input Box */}
+                        <form onSubmit={handleSend} className="relative flex items-center gap-2">
+                            <div className="relative flex-1">
+                                <textarea
+                                    value={inputText}
+                                    onChange={(e) => setInputText(e.target.value)}
+                                    placeholder={isAiGenerating ? "AI 応答を生成中..." : "メッセージを入力..."}
+                                    rows={1}
+                                    className="w-full bg-zinc-100 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-black outline-none resize-none min-h-[44px] max-h-32 transition-all"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSend();
+                                        }
+                                    }}
+                                />
+                                {isAiGenerating && (
+                                    <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center rounded-2xl">
+                                        <Loader2 className="w-5 h-5 text-black animate-spin" />
+                                    </div>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={!inputText.trim() || isAiGenerating}
+                                className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform disabled:opacity-30 disabled:scale-100 hover:bg-zinc-800 active:scale-95 shrink-0"
+                            >
+                                {isAiGenerating ? (
+                                    <Sparkles className="w-5 h-5 animate-pulse" />
+                                ) : (
+                                    <Send className="w-5 h-5" />
+                                )}
+                            </button>
+                        </form>
                     </div>
                 </motion.div>
             </motion.div>

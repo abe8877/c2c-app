@@ -141,6 +141,7 @@ export default async function CreatorDashboard() {
             // 修正: genre または offerDetails内の selectedTags を渡す
             shopRequirements: details?.selectedTags || (shopData?.genre ? [shopData.genre] : []),
             creatorTags: creator.vibe_tags || [],
+            offerDetails: details
         };
     });
 

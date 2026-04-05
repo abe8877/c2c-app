@@ -16,6 +16,12 @@ export interface Asset {
     shopRequirements: string[];
     creatorTags: string[];
     ig_handle?: string;
+    offerDetails?: {
+        plan: 'barter' | 'paid';
+        amount: number;
+        selectedTags?: string[];
+        barterDetails?: string;
+    };
 }
 
 const dict = {
@@ -58,7 +64,12 @@ const dict = {
             OFFERED: "INVITED",
             approved: "APPROVED",
             rejected: "REJECTED",
-            pending: "PENDING"
+            pending: "PENDING",
+            rejectOffer: "Decline",
+            acceptOffer: "Accept Offer",
+            offerDetailsTitle: "Plan Details",
+            offerValue: "Offer Value",
+            offerAmount: "Reward"
         }
     },
     ja: {
@@ -100,7 +111,12 @@ const dict = {
             OFFERED: "招待中",
             approved: "承認済み",
             rejected: "差し戻し",
-            pending: "審査中"
+            pending: "審査中",
+            rejectOffer: "辞退する",
+            acceptOffer: "オファーを承諾する",
+            offerDetailsTitle: "プラン詳細",
+            offerValue: "提供内容",
+            offerAmount: "報酬"
         }
     }
 };
@@ -160,8 +176,64 @@ function AssetItem({ asset, lang }: { asset: Asset, lang: 'en' | 'ja' }) {
                     creatorTags={asset.creatorTags}
                 />
             )}
+            
+            {localStatus === 'OFFERED' && asset.offerDetails && (
+                <div className="mt-4 p-5 bg-amber-500/5 border border-amber-500/20 rounded-2xl space-y-4 text-left">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest">{t.status.OFFERED} {t.status.offerDetailsTitle}</span>
+                        {asset.offerDetails.plan === 'paid' && (
+                            <span className="bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 rounded-full">
+                                💰 {t.status.offerAmount} ¥{asset.offerDetails.amount.toLocaleString()}
+                            </span>
+                        )}
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div className="space-y-1">
+                            <p className="text-[9px] font-black text-amber-500/50 uppercase tracking-widest">{t.status.offerValue}</p>
+                            <p className="text-xs font-semibold leading-relaxed text-zinc-200">
+                                {asset.offerDetails.barterDetails || "商品のサービス提供"}
+                            </p>
+                        </div>
+                        
+                        {asset.offerDetails.selectedTags && asset.offerDetails.selectedTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                                {asset.offerDetails.selectedTags.map(tag => (
+                                    <span key={tag} className="text-[9px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded border border-zinc-700 font-bold uppercase tracking-widest">
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-            {(localStatus === 'approved' || localStatus === 'APPROVED' || localStatus === 'OFFERED') && (
+                    <div className="flex gap-2 pt-2">
+                        <button
+                            onClick={() => {
+                                if (confirm('このオファーを承認しますか？')) {
+                                    setLocalStatus('APPROVED');
+                                    alert('オファーを承諾しました！チャットで来店日程を調整しましょう。');
+                                }
+                            }}
+                            className="flex-1 py-3 bg-amber-500 text-black rounded-xl text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 transition flex items-center justify-center gap-2"
+                        >
+                            <CheckCircle2 className="w-4 h-4" /> {t.status.acceptOffer}
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (confirm('このオファーをお断りしますか？')) {
+                                    setLocalStatus('rejected');
+                                }
+                            }}
+                            className="px-4 py-3 bg-zinc-800 text-red-400 border border-red-500/20 rounded-xl text-xs font-black active:scale-95 transition"
+                        >
+                            {t.status.rejectOffer}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {(localStatus === 'approved' || localStatus === 'APPROVED' || (localStatus === 'OFFERED' && !asset.offerDetails)) && (
                 <div className="mt-4 pt-4 border-t border-zinc-800/50 flex flex-col gap-2">
                     <div className="flex gap-2">
                         <button
