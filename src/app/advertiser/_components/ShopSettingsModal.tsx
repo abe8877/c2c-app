@@ -75,7 +75,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     shoot_rules_en: data.shoot_rules_en || '',
                     instagram_handle: data.instagram_handle || '',
                     tiktok_handle: data.tiktok_handle || '',
-                    requested_elements: data.requested_elements || [],
+                    requested_elements: data.requirements || [],
                     preset_request: data.preset_request || '',
                     updated_at: data.updated_at || new Date().toISOString(),
                 });
