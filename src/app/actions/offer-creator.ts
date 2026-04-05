@@ -115,7 +115,7 @@ export async function offerCreator({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: `🚨 [オファー発生] ${shop.name} がクリエイター @${creatorName} にオファーしました！\nプラン: ${offerDetails?.plan}\n金額: ¥${offerDetails?.amount || 0}`
+                    text: `🚨 *【新規オファー発生！】広告主が動きました！*\n🏢 *店舗/広告主:* ${shop.name}\n🎯 *ターゲット:* @${creatorName}\n💰 *プラン:* ${offerDetails?.plan} (¥${offerDetails?.amount || 0})\n👇 *運営アクション : 以下のDMをインスタで送信！*\n-----------------------------------\nHello! You received a special VIP offer from an advertiser in Japan 🇯🇵\nPlease login to check the offer details and claim your reward!\n🔗 https://insiders-hub.jp/creator/login`
                 })
             }).catch(err => console.error("Slack Notification Error:", err));
         }

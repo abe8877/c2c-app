@@ -683,12 +683,6 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                 if (!creator.is_public) {
                                                                     if (window.confirm("このクリエイターを公開設定にしますか？\n（基準未達の場合はフィルタリングにより広告主UIには表示されない可能性があります）")) {
                                                                         handleUpdate(creator.id, 'is_public', true);
-                                                                        // Webhook trigger if thumbnail is missing
-                                                                        if (!creator.thumbnail_url) {
-                                                                            import('@/app/actions/creator').then(({ triggerN8nWebhook }) => {
-                                                                                triggerN8nWebhook(creator.id, creator.tiktokUrl);
-                                                                            });
-                                                                        }
                                                                     }
                                                                 } else {
                                                                     handleUpdate(creator.id, 'is_public', false);

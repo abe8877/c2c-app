@@ -518,7 +518,7 @@ function AnalyzingScreen() {
 }
 
 // --- サブコンポーネント: VIBE確認画面 ---
-function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16 }: any) {
+function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGenre, initialGenre }: any) {
     return (
         <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
             <div className="text-center mb-12">
@@ -544,7 +544,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16 }: any) {
                     {tags.length === 0 && <p className="text-stone-300 italic">タグがありません</p>}
                 </div>
                 <div className="mt-12 pt-10 border-t border-stone-100 text-center space-y-8">
-                    <p className="text-sm font-bold text-stone-400">貴店と高相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{tags[0] || '全ジャンル'}）</span></p>
+                    <p className="text-sm font-bold text-stone-400">貴店と高相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
                     <button onClick={onConfirm} className="px-14 py-5 bg-black text-white rounded-full font-black text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
                         マッチング候補を見る <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -1105,6 +1105,7 @@ export default function VibeCatalogue({
     const [selectedVideo, setSelectedVideo] = useState<{ urls: string[]; name: string } | null>(null);
     const [showDetails, setShowDetails] = useState<string | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [celebrationAssetId, setCelebrationAssetId] = useState<string | null>(null);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
@@ -1612,6 +1613,8 @@ export default function VibeCatalogue({
                                     onConfirm={() => {
                                         setStep('result');
                                     }}
+                                    selectedGenre={selectedGenre}
+                                    initialGenre={initialGenre}
                                 />
                             )}
 
@@ -1621,7 +1624,6 @@ export default function VibeCatalogue({
                                         <div className="space-y-1 text-left">
                                             <div className="flex items-center gap-3 mb-1">
                                                 <h2 className="text-3xl font-black tracking-tighter">Creator Catalog</h2>
-                                                <span className="bg-yellow-400 text-black text-[10px] px-2 py-0.5 rounded-full align-middle font-bold uppercase tracking-wider">AI選定</span>
                                                 {initialGenre && (
                                                     <span className="bg-black text-white text-[10px] px-3 py-0.5 rounded-full align-middle font-bold flex items-center gap-1.5 shadow-lg border border-white/20 animate-in fade-in slide-in-from-left-4 duration-1000">
                                                         <Sparkles className="w-3 h-3 text-yellow-400" /> Optimized for {initialGenre}
@@ -1935,7 +1937,7 @@ export default function VibeCatalogue({
                                                                         <Clock className="w-3 h-3 text-blue-500" />
                                                                         <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Auto-Approve</span>
                                                                     </div>
-                                                                    <span className="text-[10px] font-bold text-stone-400">48h remaining</span>
+                                                                    <span className="text-[10px] font-bold text-stone-400">72h remaining</span>
                                                                 </div>
                                                                 <div className="w-full bg-stone-100 h-1 rounded-full overflow-hidden">
                                                                     <motion.div
@@ -1953,11 +1955,23 @@ export default function VibeCatalogue({
                                                                     const { approveAsset } = await import('@/app/actions/creator');
                                                                     await approveAsset(asset.id);
                                                                     setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'APPROVED' } : a));
+                                                                    setCelebrationAssetId(asset.id);
+                                                                    setTimeout(() => setCelebrationAssetId(null), 5000);
                                                                 }}
-                                                                className="w-full py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg"
+                                                                className="w-full py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg group relative overflow-hidden"
                                                             >
-                                                                <CheckCircle className="w-3.5 h-3.5 text-teal-400" /> Approve Content
+                                                                <CheckCircle className="w-3.5 h-3.5 text-teal-400 group-hover:scale-125 transition-transform" /> 納品を承認する
                                                             </button>
+                                                            <AnimatePresence>
+                                                                {celebrationAssetId === asset.id && (
+                                                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                                                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mb-3">
+                                                                            <Sparkles className="w-6 h-6 text-white" />
+                                                                        </motion.div>
+                                                                        <p className="text-white font-black text-xs uppercase italic tracking-tighter">Approved! 🎉</p>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
                                                         </div>
                                                     )}
                                                     {(asset.status === 'APPROVED' || asset.status === 'FINALIZED') && (

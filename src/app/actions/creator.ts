@@ -68,12 +68,11 @@ export async function updateCreatorPortfolio(creatorId: string, videoUrl: string
 }
 
 export async function triggerN8nWebhook(creatorId: string, portfolioUrl: string) {
-    const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-        console.warn("N8N_WEBHOOK_URL is not set.");
-        return { success: false, message: "Webhook URL not configured" };
-    }
+    // ユーザー指定のWebhook URL: https://nots.app.n8n.cloud/webhook/generate-thumbnail
+    const webhookUrl = "https://nots.app.n8n.cloud/webhook/generate-thumbnail";
     
+    console.log("Triggering n8n webhook for thumbnail generation...", { creatorId, portfolioUrl });
+
     // Fire and forget, no await
     fetch(webhookUrl, {
         method: 'POST',
