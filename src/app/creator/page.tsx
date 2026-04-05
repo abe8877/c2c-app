@@ -109,25 +109,38 @@ export default async function CreatorDashboard() {
         thumbnail: "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?auto=format&fit=crop&w=500&q=80",
     }));
 
-    // 3. アセット履歴の取得
-    const { data: assetsFetched } = await supabase
+    // 3. 🌟 修正版: アセット履歴の取得
+    const { data: assetsFetched, error: assetsError } = await supabase
         .from('assets')
         .select(`
             id, status, created_at, offer_details,
-            shop: shops ( name, shop_vibe_tags )
+            shop: shops ( name, genre ) 
         `)
-        .eq('creator_id', creator.id) // 🔴 ここも auth.users.id ではなく creator.id に修正
+        .eq('creator_id', creator.id)
         .order('created_at', { ascending: false });
+
+    // 万が一取得エラーが起きた場合にサーバーのターミナルへ出力する
+    if (assetsError) {
+        console.error("🔥 [DEBUG] Assets Fetch Error:", assetsError);
+    }
 
     const assets = (assetsFetched || []).map(a => {
         const shopData = Array.isArray(a.shop) ? a.shop[0] : a.shop;
+
+        // JSONBからofferDetailsを安全にパース
+        let details = a.offer_details;
+        if (typeof details === 'string') {
+            try { details = JSON.parse(details); } catch (e) { }
+        }
+
         return {
             id: a.id,
             shopName: shopData?.name || "Unknown Shop",
             status: a.status as any,
             date: a.created_at ? new Date(a.created_at).toLocaleDateString() : "-",
-            shopRequirements: a.offer_details?.selectedTags || shopData?.shop_vibe_tags || [],
-            creatorTags: creator.vibe_tags || []
+            // 修正: genre または offerDetails内の selectedTags を渡す
+            shopRequirements: details?.selectedTags || (shopData?.genre ? [shopData.genre] : []),
+            creatorTags: creator.vibe_tags || [],
         };
     });
 

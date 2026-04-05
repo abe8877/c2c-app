@@ -166,7 +166,7 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
                             <h3 className="font-black text-lg text-stone-900 leading-tight">{partnerName}</h3>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">AI Concierge Active</span>
+                                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">AIアシスタントが作動中</span>
                             </div>
                         </div>
                         <button onClick={onClose} className="p-2 text-stone-400 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-full transition">
@@ -282,8 +282,8 @@ export default function ChatModal({ isOpen, onClose, assetId, partnerName, curre
                             <textarea
                                 value={inputText}
                                 onChange={e => setInputText(e.target.value)}
-                                placeholder={currentUserType === 'shop' 
-                                    ? "メッセージを入力（自動でプロ仕様の英語に翻訳されます）" 
+                                placeholder={currentUserType === 'shop'
+                                    ? "メッセージを入力（自動でプロ仕様の英語に翻訳されます）"
                                     : "Type a message..."}
                                 className="flex-1 resize-none h-24 max-h-48 bg-stone-50 border border-stone-300 rounded-xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-stone-900 transition-all placeholder:text-stone-400"
                                 onKeyDown={(e) => {
