@@ -38,7 +38,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         shoot_rules_en: '',
         instagram_handle: '',
         tiktok_handle: '',
-        requested_elements: [] as string[],
+        requirements: [] as string[],
         preset_request: '',
         updated_at: new Date().toISOString()
     });
@@ -75,7 +75,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     shoot_rules_en: data.shoot_rules_en || '',
                     instagram_handle: data.instagram_handle || '',
                     tiktok_handle: data.tiktok_handle || '',
-                    requested_elements: data.requirements || [],
+                    requirements: data.requirements || [],
                     preset_request: data.preset_request || '',
                     updated_at: data.updated_at || new Date().toISOString(),
                 });
@@ -88,12 +88,12 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const toggleRequestedElement = (tag: string) => {
+    const toggleRequirement = (tag: string) => {
         setFormData(prev => ({
             ...prev,
-            requested_elements: prev.requested_elements.includes(tag)
-                ? prev.requested_elements.filter(t => t !== tag)
-                : [...prev.requested_elements, tag]
+            requirements: prev.requirements.includes(tag)
+                ? prev.requirements.filter(t => t !== tag)
+                : [...prev.requirements, tag]
         }));
     };
 
@@ -368,8 +368,8 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                                                 {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
                                                     <button
                                                         key={tag}
-                                                        onClick={() => toggleRequestedElement(tag)}
-                                                        className={`px-4 py-2 rounded-full text-sm font-bold border transition-all duration-200 ${formData.requested_elements.includes(tag) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                                                        onClick={() => toggleRequirement(tag)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-bold border transition-all duration-200 ${formData.requirements.includes(tag) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                                                     >
                                                         {tag}
                                                     </button>
