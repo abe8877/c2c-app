@@ -40,6 +40,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
         tiktok_handle: '',
         requested_elements: [] as string[],
         preset_request: '',
+        updated_at: new Date().toISOString()
     });
 
     useEffect(() => {
@@ -76,6 +77,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
                     tiktok_handle: data.tiktok_handle || '',
                     requested_elements: data.requested_elements || [],
                     preset_request: data.preset_request || '',
+                    updated_at: data.updated_at || new Date().toISOString(),
                 });
             }
         }

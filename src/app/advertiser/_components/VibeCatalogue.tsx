@@ -863,7 +863,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     🎁 クリエイターへの提供内容（英語）<span className="text-red-500 text-xs">*</span>
                                 </label>
                                 <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                                    店頭で体験・提供する内容を具体的に記載してください。
+                                    店頭で提供するサービスや体験の内容を具体的に記載してください。
                                     <span className="font-bold text-amber-600">人気メニューや独自の体験を提案するとクリエイターの承諾率が高まります。</span>
                                 </p>
                                 <div className="relative">
