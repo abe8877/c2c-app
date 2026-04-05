@@ -1068,27 +1068,29 @@ export default function VibeCatalogue({
     const [isFetchingInfo, setIsFetchingInfo] = useState(true);
     const [shop, setShop] = useState<any>(null);
     const [hasNewNotifications, setHasNewNotifications] = useState(true);
+    const [hasNewMessages, setHasNewMessages] = useState(true);
+
+    const fetchShopInfo = async () => {
+        const supabase = createClient();
+        // ログイン中のユーザーを取得
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setIsFetchingInfo(false); return; }
+
+        const { data, error } = await supabase
+            .from('shops')
+            .select('id, name, genre, is_premium, logo_url, free_offers_remaining')
+            .eq('id', user.id)
+            .single();
+
+        if (data && !error) {
+            setShop(data);
+            setFreeOffers(data.free_offers_remaining ?? 3);
+            setIsPremium(data.is_premium ?? false);
+        }
+        setIsFetchingInfo(false);
+    };
 
     useEffect(() => {
-        const fetchShopInfo = async () => {
-            const supabase = createClient();
-            // ログイン中のユーザーを取得
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { setIsFetchingInfo(false); return; }
-
-            const { data, error } = await supabase
-                .from('shops')
-                .select('id, name, is_premium, logo_url, free_offers_remaining')
-                .eq('id', user.id)
-                .single();
-
-            if (data && !error) {
-                setShop(data);
-                setFreeOffers(data.free_offers_remaining ?? 3);
-                setIsPremium(data.is_premium ?? false);
-            }
-            setIsFetchingInfo(false);
-        };
         fetchShopInfo();
     }, []);
 
@@ -1222,7 +1224,7 @@ export default function VibeCatalogue({
 
         // 🌟 修正: IDだけでなく、基本情報（店舗名とジャンル）があるかだけをチェックする
         if (!shop?.id || !shop?.name || !shop?.genre) {
-            alert("店舗の基本情報（店舗名とカテゴリ）が未設定です。プロフィール設定から情報を保存してください。");
+            alert("プロフィールの基本情報（必須項目）が未設定です。");
             setIsSettingsOpen(true); // 自動的に設定モーダルを開いてあげるUX
             return;
         }
@@ -1328,7 +1330,20 @@ export default function VibeCatalogue({
                 <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer" onClick={() => setActiveTab("search")}>
                     INSIDERS.
                 </div>
-                <div className="flex items-center gap-3 relative">
+
+                {/* --- Popup Backdrops: Click outside to close --- */}
+                {(isNotificationOpen || isChatListOpen || isProfileOpen) && (
+                    <div
+                        className="fixed inset-0 z-40 bg-transparent"
+                        onClick={() => {
+                            setIsNotificationOpen(false);
+                            setIsChatListOpen(false);
+                            setIsProfileOpen(false);
+                        }}
+                    />
+                )}
+
+                <div className="flex items-center gap-3 relative z-50">
                     <button
                         onClick={() => {
                             setIsNotificationOpen(!isNotificationOpen);
@@ -1367,11 +1382,18 @@ export default function VibeCatalogue({
                     )}
 
                     <button
-                        onClick={() => { setIsChatListOpen(!isChatListOpen); setIsNotificationOpen(false); setIsProfileOpen(false); }}
+                        onClick={() => {
+                            setIsChatListOpen(!isChatListOpen);
+                            setIsNotificationOpen(false);
+                            setIsProfileOpen(false);
+                            setHasNewMessages(false);
+                        }}
                         className="relative p-2.5 text-stone-400 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
                     >
                         <MessageCircle className="w-5 h-5" />
-                        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
+                        {hasNewMessages && (
+                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
+                        )}
                     </button>
                     {isChatListOpen && (
                         <div className="absolute top-14 right-8 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
@@ -2100,6 +2122,7 @@ export default function VibeCatalogue({
             <ShopSettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
+                onSuccess={fetchShopInfo}
             />
         </div >
     );

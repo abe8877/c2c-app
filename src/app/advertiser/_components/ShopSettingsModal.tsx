@@ -17,7 +17,7 @@ const STEPS: { id: Step; label: string; icon: React.ReactNode }[] = [
     { id: 'social', label: 'ソーシャルリンク', icon: <Globe className="w-4 h-4" /> },
 ];
 
-export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOpen: boolean; onClose: () => void; onSuccess?: () => void }) {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
@@ -144,6 +144,7 @@ export default function ShopSettingsModal({ isOpen, onClose }: { isOpen: boolean
             const res = await upsertShop(formData);
             if (res.success) {
                 alert("設定を保存しました！");
+                if (onSuccess) onSuccess();
                 onClose();
             } else {
                 alert("エラー: " + res.error);
