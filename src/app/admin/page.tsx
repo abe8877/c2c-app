@@ -169,7 +169,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                         imgColor: getColorByIndex(index),
                         status: 'approved',
                         review_status: reviewStatus,
-                        is_public: item.is_onboarded || false,
+                        is_public: item.is_public || false,
                         is_system_hidden: isSystemHidden,
                         is_ai_recommended: !!item.is_ai_recommended,
                         thumbnail_url: item.thumbnail_url || item.avatar_url || null
@@ -217,7 +217,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             let updatePayload: any = {};
             if (field === 'tier') updatePayload = { tier: value };
             if (field === 'vibeCluster') updatePayload = { vibe_tags: [value] };
-            if (field === 'is_public') updatePayload = { is_onboarded: value };
+            if (field === 'is_public') updatePayload = { is_public: value };
             if (field === 'genre') updatePayload = { genre: value };
 
             // DB更新実行
@@ -295,12 +295,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         const matchTier = filterTier === 'ALL' || c.tier === filterTier;
         const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
         const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
-        const matchStatus = filterStatus === 'ALL' || 
-            (filterStatus === 'public' ? (c.is_public && c.review_status === 'approved') : 
-             filterStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
-             filterStatus === 'system_hidden' ? c.is_system_hidden : 
-             filterStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
-             c.review_status === filterStatus);
+        const matchStatus = filterStatus === 'ALL' ||
+            (filterStatus === 'public' ? (c.is_public && c.review_status === 'approved') :
+                filterStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
+                    filterStatus === 'system_hidden' ? c.is_system_hidden :
+                        filterStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
+                            c.review_status === filterStatus);
         const matchSearch = !searchQuery ||
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.tiktokUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -637,7 +637,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 {/* Category (Editable) */}
                                                 <td className="px-4 py-4">
                                                     <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                                        {['FOOD', 'BEAUTY', 'TRAVEL', 'EXPERIENCE', 'LIFESTYLE', 'SHOPPING'].map(g => {
+                                                        {['FOOD', 'BEAUTY', 'TRAVEL', 'EXPERIENCE', 'LIFESTYLE'].map(g => {
                                                             const isActive = creator.genre.includes(g);
                                                             return (
                                                                 <button

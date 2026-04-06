@@ -1335,7 +1335,7 @@ export default function VibeCatalogue({
                 {/* --- Popup Backdrops: Click outside to close --- */}
                 {(isNotificationOpen || isChatListOpen || isProfileOpen) && (
                     <div
-                        className="fixed inset-0 z-40 bg-transparent"
+                        className="fixed inset-0 z-40 bg-transparent cursor-default"
                         onClick={() => {
                             setIsNotificationOpen(false);
                             setIsChatListOpen(false);
@@ -1425,8 +1425,12 @@ export default function VibeCatalogue({
                                             }}
                                             className="w-full p-4 flex items-center gap-3 hover:bg-stone-50 border-b border-stone-50 transition text-left"
                                         >
-                                            <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0 border border-stone-200">
-                                                <img src={a.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80'} className="w-full h-full object-cover" />
+                                            <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center shrink-0 border border-stone-200 overflow-hidden">
+                                                {a.creator?.avatar_url ? (
+                                                    <img src={a.creator.avatar_url} className="w-full h-full object-cover" alt="" />
+                                                ) : (
+                                                    <User className="w-6 h-6 text-stone-300" />
+                                                )}
                                             </div>
                                             <div className="flex-1 overflow-hidden">
                                                 <div className="text-xs font-bold text-stone-900 truncate">{a.creator?.name || a.creator?.tiktok_handle}</div>
@@ -1635,7 +1639,8 @@ export default function VibeCatalogue({
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名（{initialGenre || '全カテゴリ'}）</span></p>
+                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名（{filterGenre !== 'ALL' ? filterGenre : (initialGenre || '全カテゴリ')}）</span></p>
+                                            <p className="text-[11px] text-stone-400 mt-1">その他のカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい</p>
                                         </div>
                                         <button
                                             onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}
@@ -1791,8 +1796,14 @@ export default function VibeCatalogue({
 
                                         return (
                                             <div key={asset.id} className={`bg-white rounded-[32px] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all ring-1 ring-stone-50 flex flex-col`}>
-                                                <div className="aspect-video bg-stone-100 relative overflow-hidden">
-                                                    <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                                <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
+                                                    {src && !src.includes('unsplash.com/photo-1529626455594-4ff0802cfb7e') ? (
+                                                        <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                            <User className="w-12 h-12 text-stone-300" />
+                                                        </div>
+                                                    )}
                                                     {isDeclined ? (
                                                         <div className="absolute top-4 right-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
                                                             <AlertTriangle className="w-3 h-3" /> 辞退
@@ -1912,7 +1923,9 @@ export default function VibeCatalogue({
                                                     {asset.video_url ? (
                                                         <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
                                                     ) : (
-                                                        <img src={`https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=600`} className="w-full h-full object-cover" alt="" />
+                                                        <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                            <User className="w-10 h-10 text-stone-300" />
+                                                        </div>
                                                     )}
                                                     {asset.status === 'COMPLETED' ? (
                                                         <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">

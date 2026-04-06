@@ -277,7 +277,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">カテゴリ *（近いものを選択下さい）</label>
                                                 <select value={formData.genre} onChange={e => updateField('genre', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
-                                                    <option>FOOD</option><option>TRAVEL</option><option>EXPERIENCE</option><option>BEAUTY</option><option>SHOPPING</option>
+                                                    <option>FOOD</option><option>TRAVEL</option><option>EXPERIENCE</option><option>BEAUTY</option><option>LIFESTYLE SHOP</option>
                                                 </select>
                                             </div>
                                         </div>
