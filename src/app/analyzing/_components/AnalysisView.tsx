@@ -76,7 +76,7 @@ export function AnalysisView({ matchCount, genre, tags: initialTags }: { matchCo
                         </h1>
 
                         <p className="text-gray-500 text-center mb-12 max-w-lg font-medium">
-                            解析の結果、貴店の魅力は以下のように定義されました。
+                            分析の結果、貴店の魅力は以下のように定義されました。
                         </p>
 
                         {/* Detected Tags Card */}

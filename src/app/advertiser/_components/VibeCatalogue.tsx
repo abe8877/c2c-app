@@ -524,7 +524,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
             <div className="text-center mb-12">
                 <div className="inline-flex p-4 bg-green-100 rounded-full text-green-700 mb-6 shadow-sm"><CheckCircle size={40} strokeWidth={3} /></div>
                 <h2 className="text-4xl font-black tracking-tighter mb-3 uppercase">Analysis Complete</h2>
-                <p className="text-stone-500 font-medium text-sm">解析の結果、貴店の魅力は以下のように定義されました。</p>
+                <p className="text-stone-500 font-medium text-sm">分析の結果、貴店の魅力は以下のように定義されました。</p>
             </div>
             <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-stone-100 mb-8 ring-1 ring-stone-200/50">
                 <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-8 text-center">Detected Vibe Tags</h3>

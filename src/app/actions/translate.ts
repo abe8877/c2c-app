@@ -8,7 +8,7 @@ export async function translateText(text: string) {
 
     try {
         const { text: translatedText } = await generateText({
-            model: google('gemini-1.5-flash'),
+            model: google('gemini-2.5-flash'),
             system: "You are a professional translator for inbound tourism in Japan. Translate the given Japanese text to natural, appealing English as if it were written for foreign tourists visiting an establishment on a platform like Yelp or TripAdvisor. Do not enclose the output in quotes. Output only the translated English text.",
             prompt: text
         });

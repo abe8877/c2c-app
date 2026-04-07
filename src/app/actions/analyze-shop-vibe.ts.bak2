@@ -26,9 +26,9 @@ export const analyzeShopVibe = async (url: string) => {
             siteMetadata = `URL: ${url}`; // 取得失敗時もURLだけでGeminiに推測させる
         }
 
-        // 2. Gemini 1.5 に「VIBEプロデューサー」としてタグを生成させる
+        // 2. Gemini 2.5 に「VIBEプロデューサー」としてタグを生成させる
         const { object } = await generateObject({
-            model: google('gemini-1.5-flash'),
+            model: google('gemini-2.5-flash'),
             schema: z.object({
                 shopName: z.string().describe('推測される店舗名'),
                 vibeTags: z.array(z.string()).describe('#和モダン, #自然光 のようなハッシュタグ形式のVIBE要素を5つ')

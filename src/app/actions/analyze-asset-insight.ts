@@ -33,9 +33,9 @@ export async function analyzeAssetInsight(payload: AnalyzePayload) {
 
         let object;
         try {
-            console.log('Starting Asset Insight AI Analysis using model: gemini-1.5-flash');
+            console.log('Starting Asset Insight AI Analysis using model: gemini-2.5-flash');
             const { object: generatedObject } = await generateObject({
-                model: google('gemini-1.5-flash'),
+                model: google('gemini-2.5-flash'),
                 schema: z.object({
                     creatorAiHint: z.string().describe('クリエイター向けの撮影・編集改善アドバイス（100文字以内）'),
                     shopUpsellPlan: z.enum(['NONE', 'AI_AUTO_TUNE', 'PREMIUM_BOOST']).describe('店舗に提案すべき有料機能'),
