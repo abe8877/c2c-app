@@ -880,7 +880,15 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
                                                 ${isTranslating === 'barter' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
                                         >
-                                            {isTranslating === 'barter' ? '翻訳中...' : '日本語で入力してAI翻訳'}
+                                            {isTranslating === 'barter' ? (
+                                                <>
+                                                    <RefreshCw size={10} className="animate-spin" /> 翻訳中...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles size={10} className="text-yellow-500" /> 日本語で入力してAI翻訳
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -911,7 +919,15 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
                                                 ${isTranslating === 'message' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
                                         >
-                                            {isTranslating === 'message' ? '翻訳中...' : '日本語で入力してAI翻訳'}
+                                            {isTranslating === 'message' ? (
+                                                <>
+                                                    <RefreshCw size={10} className="animate-spin" /> 翻訳中...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles size={10} className="text-yellow-500" /> 日本語で入力してAI翻訳
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -1663,18 +1679,26 @@ export default function VibeCatalogue({
                                                 <button
                                                     key={tab.key}
                                                     onClick={() => setFilterGenre(tab.key)}
-                                                    className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-300 ${filterGenre === tab.key
-                                                        ? 'bg-black text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-110 ring-2 ring-black ring-offset-2 z-10'
+                                                    className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-500 ${filterGenre === tab.key
+                                                        ? tab.key === initialGenre
+                                                            ? 'bg-gradient-to-br from-yellow-400 via-amber-300 to-yellow-500 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)] scale-110 ring-4 ring-yellow-400/30 z-10 border-none'
+                                                            : 'bg-black text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-110 ring-2 ring-black ring-offset-2 z-10'
                                                         : tab.key === initialGenre
-                                                            ? 'bg-yellow-400 text-black border-2 border-yellow-500 shadow-[0_10px_20px_rgba(250,204,21,0.3)] animate-pulse'
+                                                            ? 'bg-yellow-50 text-amber-600 border-2 border-yellow-200 shadow-sm opacity-80 hover:opacity-100'
                                                             : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600'
                                                         }`}
                                                 >
-                                                    {tab.label}
+                                                    <span className="relative z-10 flex items-center gap-2">
+                                                        {tab.key === initialGenre && <Sparkles className={`w-3.5 h-3.5 ${filterGenre === tab.key ? 'animate-pulse' : ''}`} />}
+                                                        {tab.label}
+                                                    </span>
                                                     {tab.key === initialGenre && (
-                                                        <span className="absolute -top-2 -right-1 bg-yellow-400 text-black text-[8px] px-1.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 animate-bounce">
-                                                            <Sparkles className="w-2 h-2" /> MATCHED
-                                                        </span>
+                                                        <>
+                                                            <div className="absolute inset-0 rounded-full bg-yellow-400/10 animate-ping pointer-events-none" />
+                                                            <span className="absolute -top-2 -right-1 bg-yellow-400 text-black text-[8px] px-1.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 font-bold border border-white">
+                                                                MATCHED
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </button>
                                             ))}
