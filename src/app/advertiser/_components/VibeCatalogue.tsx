@@ -544,7 +544,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
                     {tags.length === 0 && <p className="text-stone-300 italic">タグがありません</p>}
                 </div>
                 <div className="mt-12 pt-10 border-t border-stone-100 text-center space-y-8">
-                    <p className="text-sm font-bold text-stone-400">貴店と高相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
+                    <p className="text-sm font-bold text-stone-400">貴店と好相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
                     <button onClick={onConfirm} className="px-14 py-5 bg-black text-white rounded-full font-black text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
                         マッチング候補を見る <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -814,7 +814,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                                     />
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    {[10000, 15000, 30000].map((val) => (
+                                                    {[5000, 15000, 30000].map((val) => (
                                                         <button
                                                             key={val}
                                                             onClick={() => setAmount(val)}
@@ -1639,8 +1639,8 @@ export default function VibeCatalogue({
                                                     </span>
                                                 )}
                                             </div>
-                                            <p className="text-stone-400 text-sm font-medium">貴店と高相性のクリエイター <span className="font-bold text-gray-900">{filteredCreators.length}名（{filterGenre !== 'ALL' ? filterGenre : (initialGenre || '全カテゴリ')}）</span></p>
-                                            <p className="text-[11px] text-stone-400 mt-1">その他のカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい</p>
+                                            <p className="text-gray-900 text-sm font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{filteredCreators.length}名（{filterGenre !== 'ALL' ? filterGenre : (initialGenre || '全カテゴリ')}）</span></p>
+                                            <p className="text-[11px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい</p>
                                         </div>
                                         <button
                                             onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}

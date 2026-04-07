@@ -65,7 +65,7 @@ export default function LoginPage() {
                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Partner Login</span>
                 </div>
                 <h1 className="text-4xl font-black tracking-tight mb-3 text-slate-900">
-                    INSIDERS<span className="text-teal-500">.</span>
+                    INSIDERS.
                 </h1>
                 <p className="text-slate-500 text-sm font-medium">
                     広告主様・パートナー店舗様 ログインページ
