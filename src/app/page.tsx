@@ -993,7 +993,7 @@ export default function InsidersLP() {
                                             {[
                                                 { item: "費用", standard: "30~50万円のパッケージ", insiders: "月額4万円でオファーし放題", highlight: true },
                                                 { item: "フォロワー単価", standard: "2~3円", insiders: "規定のフォロワー単価なし", highlight: true },
-                                                { item: "クリエイター選定", standard: "旅行中や在日の外国人中心「属性基準」", insiders: "訪日客のSNSにおける「効果基準」" },
+                                                { item: "クリエイター選定", standard: "旅行中や在日外国人中心「属性基準」", insiders: "訪日客のSNSにおける「効果基準」" },
                                             ].map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-black text-slate-900">{row.item}</td>
@@ -1105,8 +1105,8 @@ export default function InsidersLP() {
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGooaleマップに掲載可能。" },
                                         { title: "Googleマップへ同期", desc: "熱狂を生んだショート動画を、そのままお店の「デジタル看板」に。" },
+                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGooaleマップに掲載可能。" },
                                         { title: "比較されない直予約ルート", desc: "星の数で比較されるのではなく、特定の動画を見たファンが指名来店。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
@@ -1205,7 +1205,7 @@ export default function InsidersLP() {
                                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
                                         )}
                                         <div className="text-[7px] text-slate-500 font-bold leading-tight uppercase tracking-tighter">
-                                            {assetStep >= 3 ? '自動同期完了：Googleマップに反映されました' : assetStep === 1 ? '動画をアップロード中...' : 'AI Agent が著作権確認と同期を自動実行中...'}
+                                            {assetStep >= 3 ? '同期完了：Googleマップに反映されました' : assetStep === 1 ? '動画をアップロード中...' : '著作権と動画ステータスを確認中...'}
                                         </div>
                                     </div>
                                 </div>
@@ -1241,7 +1241,7 @@ export default function InsidersLP() {
                                     bg: 'bg-indigo-600',
                                     color: 'text-indigo-600',
                                     title: '1. 認知拡大',
-                                    desc: 'クリエイター動画で、まだあなたを知らない潜在層のスマホへリーチ。',
+                                    desc: 'クリエイター動画経由で、まだ貴店を知らない潜在層へリーチ',
                                     badge: 'Reach'
                                 },
                                 {
@@ -1249,7 +1249,7 @@ export default function InsidersLP() {
                                     bg: 'bg-violet-600',
                                     color: 'text-violet-600',
                                     title: '2. 直接来店',
-                                    desc: '動画を見た訪日客が、OTA上で競合店と比較することなく直接来店。',
+                                    desc: '動画を見た訪日客が、OTA上で競合店と比較することなく直接来店',
                                     badge: 'Action'
                                 },
                                 {
@@ -1257,7 +1257,7 @@ export default function InsidersLP() {
                                     bg: 'bg-emerald-600',
                                     color: 'text-emerald-600',
                                     title: '3. 資産化',
-                                    desc: 'Googleマップに動画が同期し、24時間働くデジタル看板として蓄積。',
+                                    desc: 'Googleマップに動画が同期し、24時間働くデジタル看板として蓄積',
                                     badge: 'Asset'
                                 },
                                 {
@@ -1265,7 +1265,7 @@ export default function InsidersLP() {
                                     bg: 'bg-rose-600',
                                     color: 'text-rose-600',
                                     title: '4. 自動流入',
-                                    desc: '動画経由の集客導線が安定し、口コミが次のインバウンド客を呼ぶ。',
+                                    desc: '動画経由の集客導線が安定し、口コミが次のインバウンド客を呼ぶ',
                                     badge: 'Growth'
                                 },
                             ].map((step, idx) => (
@@ -1379,9 +1379,9 @@ export default function InsidersLP() {
                       8. UPSELL TEASER (BUZZ OVER) - Low Prominence with Hover
                   ========================================= */}
                     <div className="text-center pt-8 border-t border-slate-100 max-w-2xl mx-auto opacity-30 hover:opacity-100 transition-opacity duration-700 group">
-                        <h4 className="text-xl font-black text-slate-900 mb-3 grayscale group-hover:grayscale-0 transition-all">「集客は成功した。でも、対応する時間すら惜しい…？」</h4>
+                        <h4 className="text-xl font-black text-slate-900 mb-3 grayscale group-hover:grayscale-0 transition-all">もっと来店効率を高めたいなら…</h4>
                         <p className="text-sm text-slate-500 mb-4 leading-relaxed font-bold">
-                            INSIDERS.で強烈なバズを生み出した後、「Googleマップの多言語更新が追いつかない」「予約の導線最適化まで手が回らない」という嬉しい悲鳴が上がったら、我々の最強BPOパッケージ『BUZZ OVER』の出番です。<br />
+                            INSIDERS.で集客に成功した後、「Googleマップの多言語更新が追いつかない」「予約の導線最適化まで手が回らない」という嬉しい悲鳴が上がったら、BPOパッケージをご用意しています。<br />
                             ダッシュボードすら見なくていい。AIと我々がすべてを巻き取る、究極の丸投げインフラをご用意しています。
                         </p>
                         <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors text-sm bg-indigo-50 px-4 py-2 rounded-full">

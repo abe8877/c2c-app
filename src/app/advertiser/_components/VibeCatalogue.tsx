@@ -1527,14 +1527,14 @@ export default function VibeCatalogue({
                                         <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-800 border border-teal-100 rounded-full px-4 py-1.5 mb-8 shadow-sm">
                                             <Sparkles className="w-4 h-4 text-teal-500" />
                                             <span className="text-[13px] font-bold tracking-wide">
-                                                1000組以上の精査済みクリエイター群から最適なクリエイターをご提案
+                                                あなたのお店がインバウンドの目的地になる
                                             </span>
                                         </div>
-                                        <h1 className="text-5xl font-black text-gray-900 tracking-tighter">
-                                            インバウンド集客特化クリエイターを探す
+                                        <h1 className="text-4xl font-black text-gray-900 tracking-tighter">
+                                            貴店の魅力分析に基づき、<br />最適なネイティブクリエイターとマッチング。
                                         </h1>
                                         <p className="text-stone-500 font-medium max-w-xl mx-auto">
-                                            “世界から見た日本”を深く理解した勝率の高い1,000組超のクリエイターネットワーク「INSIDERS.」 貴店を紹介するのに最適なネイティブクリエイターが、言語の壁を超えてSNSで認知を獲得する“デジタル看板”の役割を果たします。
+                                            貴店のGoogleマップまたはInstagramのURLをペーストしてください。<br />独自のデータ解析に基づき、1,000組以上のクリエイターデータベースから、<br />最も勝率の高い『ネイティブクリエイター』を即座にご提案します。
                                         </p>
                                     </div>
 
