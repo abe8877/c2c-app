@@ -199,10 +199,12 @@ const CreatorCard = ({
     creator,
     onOffer,
     onPlayVideo,
+    priority = false
 }: {
     creator: Creator;
     onOffer: (c: Creator) => void;
     onPlayVideo: (urls: string[]) => void;
+    priority?: boolean;
 }) => {
     const hasVideos = creator.portfolio_video_urls && creator.portfolio_video_urls.length > 0;
     const hasScore = creator.vibeMatchScore !== undefined && creator.vibeMatchScore > 0;
@@ -230,6 +232,7 @@ const CreatorCard = ({
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                     unoptimized={true}
+                    priority={priority}
                     onError={(e) => {
                         e.currentTarget.style.display = 'none';
                     }}
@@ -1034,6 +1037,51 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     );
 };
 
+
+const TypingPlaceholder = ({ setUrl, value }: { setUrl: (v: string) => void, value: string }) => {
+    const examples = [
+        "https://www.google.com/maps/place/あなたの店舗URL...",
+        "https://www.instagram.com/your_shop_profile...",
+        "https://goo.gl/maps/example_short_url..."
+    ];
+    const [placeholder, setPlaceholder] = useState("");
+    const [exampleIndex, setExampleIndex] = useState(0);
+    const [charIndex, setCharIndex] = useState(0);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    useEffect(() => {
+        const currentExample = examples[exampleIndex];
+        const timer = setTimeout(() => {
+            if (!isDeleting) {
+                setPlaceholder(currentExample.slice(0, charIndex + 1));
+                setCharIndex(prev => prev + 1);
+                if (charIndex === currentExample.length) {
+                    setTimeout(() => setIsDeleting(true), 2000);
+                }
+            } else {
+                setPlaceholder(currentExample.slice(0, charIndex - 1));
+                setCharIndex(prev => prev - 1);
+                if (charIndex === 0) {
+                    setIsDeleting(false);
+                    setExampleIndex(prev => (prev + 1) % examples.length);
+                }
+            }
+        }, isDeleting ? 30 : 80);
+        return () => clearTimeout(timer);
+    }, [charIndex, isDeleting, exampleIndex]);
+
+    return (
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={placeholder}
+            className="flex-1 py-5 outline-none text-base md:text-lg font-bold placeholder:text-slate-300 w-full min-w-0 bg-transparent text-slate-900"
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+        />
+    );
+};
+
 export default function VibeCatalogue({
     initialCreators,
     initialAssets = [],
@@ -1053,6 +1101,38 @@ export default function VibeCatalogue({
 
     const [activeTab, setActiveTab] = useState<"search" | "assets" | "analytics">(initialGenre ? "search" : "search");
     const [step, setStep] = useState<'input' | 'analyzing' | 'vibe_check' | 'result'>(initialGenre ? 'result' : 'input');
+
+    // ピックアップクリエイター（Tier S, カテゴリごとに上位3名）の選定
+    const marqueeCreators = React.useMemo(() => {
+        const genres = ["FOOD", "TRAVEL", "BEAUTY", "EXPERIENCE", "LIFESTYLE"];
+        let selected: Creator[] = [];
+        genres.forEach(g => {
+            const topPerGenre = initialCreators
+                .filter(c => c.tier === 'S' && (c.genre && c.genre.includes(g)))
+                .sort((a, b) => {
+                    const parseFollowers = (val: string) => {
+                        if (!val) return 0;
+                        const s = String(val).toUpperCase();
+                        if (s.endsWith('M')) return parseFloat(s) * 1000000;
+                        if (s.endsWith('K')) return parseFloat(s) * 1000;
+                        return parseFloat(s);
+                    };
+                    return parseFollowers(b.followers) - parseFollowers(a.followers);
+                })
+                .slice(0, 3);
+            selected = [...selected, ...topPerGenre];
+        });
+        
+        // もしTier Sが足りない場合は全体から補填
+        if (selected.length < 10) {
+            const extra = initialCreators
+                .filter(c => !selected.find(s => s.id === c.id))
+                .slice(0, 15 - selected.length);
+            selected = [...selected, ...extra];
+        }
+        return selected;
+    }, [initialCreators]);
+
     const [url, setUrl] = useState('');
     const [selectedGenre, setSelectedGenre] = useState(initialGenre || 'FOOD');
     const [shopVibe, setShopVibe] = useState<string[]>(initialGenre ? ['#和モダン', '#シズル感', '#インバウンド人気'] : []);
@@ -1516,110 +1596,117 @@ export default function VibeCatalogue({
                     >
                         <main className="max-w-4xl mx-auto px-4 pt-8">
                             {step === 'input' && (
-                                <div className="space-y-12 py-12 text-center">
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-center mb-6">
-                                            <div className="flex -space-x-4">
-                                                {topCreators?.map((creator, i) => (
-                                                    <div key={i} className="relative w-12 h-16 rounded-lg border-2 border-white shadow-md overflow-hidden transform transition-transform hover:-translate-y-2 hover:z-20 cursor-pointer bg-slate-100">
-                                                        {/* 動画のサムネイルを縦長（TikTok風）にクロップして表示 */}
-                                                        <img
-                                                            className="w-full h-full object-cover"
-                                                            src={creator.thumbnail_url}
-                                                            alt={creator.name}
-                                                        />
-                                                        <div className="absolute inset-0 bg-slate-900/10" />
-                                                    </div>
-                                                ))}
-                                                {/* +1000のトラストバッジ */}
-                                                <div className="w-12 h-16 rounded-lg border-2 border-white bg-slate-900 text-white text-[11px] font-black flex flex-col items-center justify-center z-10 shadow-md">
-                                                    <span className="text-teal-400 leading-none mb-0.5">1000+</span>
-                                                    <span className="text-[8px] opacity-80 leading-none">Creators</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* トラストバッジ（コピー変更） */}
-                                        <div className="inline-flex items-center gap-2 bg-teal-50 text-teal-800 border border-teal-100 rounded-full px-4 py-1.5 mb-8 shadow-sm">
-                                            <Sparkles className="w-4 h-4 text-teal-500" />
-                                            <span className="text-[13px] font-bold tracking-wide">
+                                <div className="space-y-12 pb-12 text-center animate-in fade-in zoom-in-95 duration-700">
+                                    {/* Hero Section */}
+                                    <div className="space-y-8 mb-4">
+                                        <div className="inline-flex items-center gap-2 bg-indigo-50/50 text-indigo-700 border border-indigo-100 rounded-full px-5 py-2 mb-4 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-1000">
+                                            <Sparkles className="w-4 h-4 text-indigo-500" />
+                                            <span className="text-[14px] font-bold tracking-wide">
                                                 あなたのお店がインバウンドの目的地になる
                                             </span>
                                         </div>
-                                        <h1 className="text-4xl font-black text-gray-900 tracking-tighter">
-                                            貴店の魅力分析に基づき、<br />最適なネイティブクリエイターとマッチング。
+                                        <h1 className="text-4xl md:text-5xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                            あなたのお店の「熱狂」を創り出す、<br className="hidden md:block" />AIマッチングを開始。
                                         </h1>
-                                        <p className="text-stone-500 font-medium max-w-xl mx-auto">
-                                            貴店のGoogleマップまたはInstagramのURLをペーストしてください。<br />独自のデータ解析に基づき、1,000組以上のクリエイターデータベースから、<br />最も勝率の高い『ネイティブクリエイター』を即座にご提案します。
+                                        <p className="text-slate-500 font-bold max-w-2xl mx-auto text-base md:text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
+                                            貴店のGoogleマップ、またはInstagramのURLをペーストしてください。独自のデータ解析に基づき、1,000組以上の本物のクリエイターネットワークから、最も勝率の高い『アンバサダー』をAIが即座に導き出します。
                                         </p>
                                     </div>
 
-                                    <div className="max-w-3xl mx-auto space-y-4 text-left">
-                                        <div className="bg-white p-2.5 rounded-[32px] shadow-2xl border border-stone-100 flex flex-col ring-1 ring-stone-200 overflow-hidden">
-                                            <div className="flex flex-col sm:flex-row items-center gap-1">
-                                                {/* Genre Select */}
-                                                <div className="relative border-b sm:border-b-0 sm:border-r border-stone-100 pr-2 flex items-center shrink-0 w-full sm:w-auto">
-                                                    <select
-                                                        value={selectedGenre}
-                                                        onChange={(e) => setSelectedGenre(e.target.value)}
-                                                        className="appearance-none bg-transparent font-black text-xs pl-6 pr-10 py-4 outline-none cursor-pointer tracking-widest uppercase text-stone-900 w-full"
+                                    {/* Search Input Bar */}
+                                    <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                                        <div className="relative group">
+                                            {/* Glow Effect */}
+                                            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-[42px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+
+                                            <div className="relative bg-white/80 backdrop-blur-xl p-3 md:p-4 rounded-[40px] shadow-2xl border border-white/50 flex flex-col overflow-hidden">
+                                                <div className="flex flex-col md:flex-row items-center gap-2">
+                                                    {/* Genre Select (The Wand's head) */}
+                                                    <div className="relative border-b md:border-b-0 md:border-r border-slate-100 pr-2 flex items-center shrink-0 w-full md:w-auto">
+                                                        <select
+                                                            value={selectedGenre}
+                                                            onChange={(e) => setSelectedGenre(e.target.value)}
+                                                            className="appearance-none bg-transparent font-black text-sm pl-8 pr-12 py-5 outline-none cursor-pointer tracking-widest uppercase text-slate-900 w-full"
+                                                        >
+                                                            <option value="FOOD">🍣 Food</option>
+                                                            <option value="BEAUTY">💅 Beauty</option>
+                                                            <option value="TRAVEL">⛩️ Travel</option>
+                                                            <option value="EXPERIENCE">🧖‍♀️ Experience</option>
+                                                            <option value="LIFESTYLE">✨ Lifestyle</option>
+                                                        </select>
+                                                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-6 pointer-events-none" />
+                                                    </div>
+
+                                                    {/* URL Input (The Wand's body) */}
+                                                    <div className="flex items-center flex-1 w-full px-6 gap-4 min-w-0">
+                                                        <Search className="w-6 h-6 text-slate-300 shrink-0" />
+                                                        <TypingPlaceholder setUrl={setUrl} value={url} />
+                                                    </div>
+
+                                                    {/* Submit Button (The Wand's Sparkle) */}
+                                                    <button
+                                                        onClick={handleUrlSubmit}
+                                                        className="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-10 py-5 rounded-[30px] font-black text-sm uppercase tracking-widest hover:shadow-indigo-200 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 shrink-0 relative overflow-hidden group/btn"
                                                     >
-                                                        <option value="FOOD">🍣 Food</option>
-                                                        <option value="BEAUTY">💅 Beauty</option>
-                                                        <option value="TRAVEL">⛩️ Travel</option>
-                                                        <option value="EXPERIENCE">🧖‍♀️ Experience</option>
-                                                        <option value="LIFESTYLE">✨ Lifestyle</option>
-                                                    </select>
-                                                    <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-4 pointer-events-none" />
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                                                        <span>分析を開始</span>
+                                                        <Sparkles size={18} className="text-yellow-400" />
+                                                    </button>
                                                 </div>
 
-                                                {/* URL Input */}
-                                                <div className="flex items-center flex-1 w-full pl-4 gap-3 min-w-0">
-                                                    <Search className="w-5 h-5 text-stone-300 shrink-0" />
-                                                    <input
-                                                        type="text"
-                                                        value={url}
-                                                        onChange={(e) => setUrl(e.target.value)}
-                                                        placeholder="Googleマップ または InstagramのURL"
-                                                        className="flex-1 py-4 outline-none text-sm font-bold placeholder:text-stone-300 w-full min-w-0 bg-transparent text-stone-900"
-                                                        onKeyDown={(e) => e.key === 'Enter' && handleUrlSubmit()}
-                                                    />
-                                                </div>
-
-                                                {/* Submit Button */}
-                                                <button
-                                                    onClick={handleUrlSubmit}
-                                                    className="w-full sm:w-auto bg-stone-900 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shrink-0"
-                                                >
-                                                    分析を開始 <Sparkles size={14} className="text-yellow-400" />
-                                                </button>
+                                                {/* Inline Error within the bar */}
+                                                <AnimatePresence>
+                                                    {urlError && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: 'auto', opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="px-8 py-4 bg-red-50/50 border-t border-red-100 flex items-center gap-3 mt-2 rounded-2xl"
+                                                        >
+                                                            <AlertCircle size={16} className="text-red-500" />
+                                                            <p className="text-red-600 text-[11px] font-black uppercase tracking-widest">
+                                                                {urlError}
+                                                            </p>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
-
-                                            {/* Inline Error within the bar */}
-                                            <AnimatePresence>
-                                                {urlError && (
-                                                    <motion.div
-                                                        initial={{ height: 0, opacity: 0 }}
-                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                        exit={{ height: 0, opacity: 0 }}
-                                                        className="px-6 py-3 bg-red-50 border-t border-red-100 flex items-center gap-2"
-                                                    >
-                                                        <AlertCircle size={14} className="text-red-500" />
-                                                        <p className="text-red-600 text-[10px] font-black uppercase tracking-widest">
-                                                            {urlError}
-                                                        </p>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
                                         </div>
-
-                                        {/* Helper Text below the bar */}
-                                        <p className="text-[10px] text-stone-400 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 mt-4 px-4 text-center">
-                                            <Info size={12} className="text-stone-300" />
-                                            短尺URL（Googleマップの共有から取得できるURL等）は避け、フルURLを入力してください
+                                        <p className="text-[11px] font-bold text-slate-400 mt-4">
+                                            ※短尺URL（Googleマップの共有から取得できるURL等）は避け、フルURLを入力してください
                                         </p>
+
+                                        {/* Social Proof: Infinite Marquee */}
+                                        <div className="relative pt-8 select-none pointer-events-none">
+                                            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-10" />
+                                            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10" />
+
+                                            <div className="flex overflow-hidden gap-6 mask-fade-edges">
+                                                <div className="flex gap-6 animate-ticker-fast whitespace-nowrap py-4">
+                                                    {[...marqueeCreators, ...marqueeCreators].map((creator, i) => (
+                                                        <div key={`${creator.id}-${i}`} className="inline-block w-32 md:w-40 bg-white/40 backdrop-blur-sm border border-slate-100 rounded-2xl p-3 shadow-sm opacity-60 hover:opacity-100 transition-opacity">
+                                                            <div className="aspect-[3/4] rounded-xl overflow-hidden mb-2 bg-slate-100">
+                                                                <img 
+                                                                    src={creator.thumbnail_url || ""} 
+                                                                    className="w-full h-full object-cover" 
+                                                                    loading="eager"
+                                                                />
+                                                            </div>
+                                                            <div className="text-[10px] font-black text-slate-900 truncate">@{creator.name}</div>
+                                                            <div className="text-[8px] font-bold text-slate-400">{creator.followers} followers</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-[11px] text-slate-400 font-bold mt-6 tracking-widest uppercase">Trusted by 1,000+ top creators worldwide</p>
+                                        </div>
                                     </div>
 
+                                    {/* Helper Text below the bar */}
+                                    <p className="text-[10px] text-stone-400 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 mt-4 px-4 text-center">
+                                        <Info size={12} className="text-stone-300" />
+                                        短尺URL（Googleマップの共有から取得できるURL等）は避け、フルURLを入力してください
+                                    </p>
                                 </div>
                             )}
 
@@ -1710,10 +1797,11 @@ export default function VibeCatalogue({
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
-                                        {filteredCreators.filter(c => !invitedCreatorIds.has(c.id)).map((creator) => (
+                                        {filteredCreators.filter(c => !invitedCreatorIds.has(c.id)).map((creator, index) => (
                                             <CreatorCard
                                                 key={creator.id}
                                                 creator={creator}
+                                                priority={index < 8}
                                                 onOffer={(c) => openInviteModal(c)}
                                                 onPlayVideo={(urls) => setSelectedVideo({ urls, name: creator.name })}
                                             />
@@ -2177,6 +2265,6 @@ export default function VibeCatalogue({
                 onClose={() => setIsSettingsOpen(false)}
                 onSuccess={fetchShopInfo}
             />
-        </div >
+        </div>
     );
 }

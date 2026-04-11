@@ -81,7 +81,8 @@ function AdminDashboard() {
     const [filterTier, setFilterTier] = useState('ALL');
     const [filterCategory, setFilterCategory] = useState('ALL');
     const [filterVibe, setFilterVibe] = useState('ALL');
-    const [filterStatus, setFilterStatus] = useState('ALL');
+    const [filterDisplayStatus, setFilterDisplayStatus] = useState('ALL');
+    const [filterReviewStatus, setFilterReviewStatus] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [user, setUser] = useState<any>(null);
     const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
@@ -140,7 +141,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 const { data, error } = await supabase
                     .from('creators')
                     .select('*')
-                    .order('followers', { ascending: false });
+                    .order('followers', { ascending: false })
+                    .limit(5000); // Increase limit from default 1000
 
                 if (error) throw error;
 
@@ -295,19 +297,21 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         const matchTier = filterTier === 'ALL' || c.tier === filterTier;
         const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
         const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
-        const matchStatus = filterStatus === 'ALL' ||
-            (filterStatus === 'public' ? (c.is_public && c.review_status === 'approved') :
-                filterStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
-                    filterStatus === 'system_hidden' ? c.is_system_hidden :
-                        filterStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
-                            c.review_status === filterStatus);
+        const matchDisplayStatus = filterDisplayStatus === 'ALL' ||
+            (filterDisplayStatus === 'public' ? (c.is_public && c.review_status === 'approved') :
+                filterDisplayStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
+                    filterDisplayStatus === 'system_hidden' ? c.is_system_hidden :
+                        filterDisplayStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
+                            false);
+
+        const matchReviewStatus = filterReviewStatus === 'ALL' || c.review_status === filterReviewStatus;
         const matchSearch = !searchQuery ||
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.tiktokUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (c.ethnicity && c.ethnicity.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (c.genre && c.genre.some((g: string) => g.toLowerCase().includes(searchQuery.toLowerCase())));
 
-        return matchTier && matchCategory && matchVibe && matchStatus && matchSearch;
+        return matchTier && matchCategory && matchVibe && matchDisplayStatus && matchReviewStatus && matchSearch;
     }).sort((a, b) => {
         // 優先順位 1: System Hidden (最優先)
         if (a.is_system_hidden && !b.is_system_hidden) return -1;
@@ -465,11 +469,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                             </select>
 
                             <select
-                                value={filterStatus}
-                                onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+                                value={filterDisplayStatus}
+                                onChange={(e) => { setFilterDisplayStatus(e.target.value); setCurrentPage(1); }}
                                 className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
                             >
-                                <option value="ALL">All Status</option>
+                                <option value="ALL">All Visibility</option>
                                 <option value="public">☑ Public</option>
                                 <option value="hidden">☒ Hidden</option>
                                 <option value="system_hidden">🤖 System Hidden</option>
@@ -477,11 +481,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                             </select>
 
                             <select
-                                value={filterStatus}
-                                onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}
+                                value={filterReviewStatus}
+                                onChange={(e) => { setFilterReviewStatus(e.target.value); setCurrentPage(1); }}
                                 className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
                             >
-                                <option value="ALL">All Review</option>
+                                <option value="ALL">All Review Status</option>
                                 <option value="pending">⏳ Pending</option>
                                 <option value="approved">✓ Approved</option>
                                 <option value="rejected">✕ Rejected</option>
@@ -517,9 +521,9 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden pb-12 min-h-[500px]">
 
                             {loading ? (
-                                <div className="flex flex-col items-center justify-center h-full py-20">
+                                <div className="flex flex-col items-center justify-center h-full py-20 bg-transparent">
                                     <Loader2 size={40} className="animate-spin text-yellow-500 mb-4" />
-                                    <p className="text-slate-500 font-bold">Loading Database...</p>
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Loading Database...</p>
                                 </div>
                             ) : (
                                 <table className="w-full text-left border-collapse">
@@ -950,6 +954,25 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                 className="overflow-hidden bg-indigo-50/30"
                                                             >
                                                                 <div className="p-8 border-t border-indigo-100 shadow-inner">
+                                                                    <div className="grid grid-cols-2 gap-8 mb-8">
+                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm">
+                                                                            <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                                                <Info size={12} /> Offer Details (JSON)
+                                                                            </h5>
+                                                                            <pre className="text-[11px] font-medium bg-slate-50 p-4 rounded-xl overflow-auto max-h-40 border border-slate-100 scrollbar-hide text-slate-700">
+                                                                                {JSON.stringify(offer.offerDetails, null, 2)}
+                                                                            </pre>
+                                                                        </div>
+                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm">
+                                                                            <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                                                <Sparkles size={12} /> Barter Requirements
+                                                                            </h5>
+                                                                            <div className="text-sm font-bold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px] leading-relaxed">
+                                                                                {offer.barterDetails || '提供内容の記載なし'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
                                                                     <div className="flex items-center justify-between mb-6">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="bg-indigo-600 p-1.5 rounded-lg text-white">

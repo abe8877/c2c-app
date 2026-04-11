@@ -195,10 +195,12 @@ export async function getOngoingOffers() {
                     id,
                     created_at,
                     status,
-                    shops (name),
-                    creators (name)
+                    offer_details,
+                    barter_details,
+                    shops (id, name),
+                    creators (id, name, thumbnail_url, followers)
                 `)
-                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES')
+                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES,status.eq.WORKING,status.eq.COMPLETED')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -220,7 +222,11 @@ export async function getOngoingOffers() {
                         id: item.id,
                         advertiser: item.shops?.name || '不明な店舗',
                         creator: item.creators?.name || '不明なクリエイター',
+                        creatorThumb: item.creators?.thumbnail_url,
+                        creatorFollowers: item.creators?.followers,
                         status: item.status,
+                        offerDetails: item.offer_details,
+                        barterDetails: item.barter_details,
                         createdAt: item.created_at,
                         diffHours,
                         alertLevel

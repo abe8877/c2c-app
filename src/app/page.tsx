@@ -414,10 +414,10 @@ function Header() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinks = [
-        { name: 'トップ', href: '#concept' },
-        { name: 'インバウンド集客の今', href: '#viral-wave' },
+        { name: 'INSIDERSとは', href: '#concept' },
+        { name: 'インバウンド集客の今', href: '#problems' },
         { name: 'サービスの特徴', href: '#features' },
-        { name: 'お問い合わせ', href: '#contact' }
+        { name: 'お問い合わせ', href: '#signup' }
     ];
 
     return (
@@ -451,7 +451,7 @@ function Header() {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 bg-white z-[110] lg:hidden flex flex-col p-10 pt-24"
+                        className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-[110] lg:hidden flex flex-col p-10 pt-24"
                     >
                         <nav className="flex flex-col gap-6">
                             {navLinks.map((link, idx) => (
@@ -567,8 +567,9 @@ export default function InsidersLP() {
                                 <span>あなたのお店がインバウンドの目的地になる</span>
                             </div>
 
-                            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.2] lg:leading-[1.1] max-w-[900px]">
-                                訪日客の「行きたい！」<br className="sm:hidden" />を生み出すショート動画PR<br className="sm:hidden" />
+                            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.3] lg:leading-[1.1] max-w-[900px]">
+                                <span className="block mb-2">訪日客の「行きたい！」</span>
+                                <span className="block mb-2">を生み出すショート動画PR</span>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 block mt-2">
                                     『INSIDERS.』
                                 </span>
@@ -577,18 +578,18 @@ export default function InsidersLP() {
                             {/* スマホ版のみ：バッジとアニメーションをラベル/タイトルの下に配置 */}
                             <div className="lg:hidden w-full overflow-visible mb-6">
                                 {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
-                                <div className="grid grid-cols-3 gap-2 px-4 mb-10">
+                                <div className="grid grid-cols-3 gap-3 px-2 mb-10">
                                     {[
                                         { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1,000組+", sub: "特化クリエイター" },
                                         { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "¥0", sub: "二次利用料" },
                                         { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "4万円", sub: "月額定額制" },
                                     ].map((badge, idx) => (
-                                        <div key={idx} className="flex flex-col items-center justify-center p-3 sm:p-4 bg-white/50 backdrop-blur-sm border border-slate-100 rounded-[2rem] shadow-sm aspect-square text-center">
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                {badge.icon}
-                                                <div className="text-[13px] font-black text-slate-900 leading-none">{badge.value}</div>
+                                        <div key={idx} className="flex flex-col items-center justify-center p-2 sm:p-4 bg-transparent border-none rounded-none text-center">
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <div className="shrink-0">{badge.icon}</div>
+                                                <div className="text-[16px] font-black text-slate-900 leading-none tracking-tighter">{badge.value}</div>
                                             </div>
-                                            <span className="text-[7px] font-bold text-slate-400 leading-tight uppercase tracking-widest">{badge.sub}</span>
+                                            <span className="text-[8px] font-bold text-slate-400 leading-tight uppercase tracking-widest">{badge.sub}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -599,18 +600,18 @@ export default function InsidersLP() {
                             </div>
 
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
-                            <div className="hidden lg:flex items-center gap-6 mb-12">
+                            <div className="hidden lg:flex items-center gap-12 mb-12">
                                 {[
                                     { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: "特化クリエイター" },
                                     { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "¥0", sub: "二次利用料" },
                                     { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "4万円", sub: "月額定額制" },
                                 ].map((badge, idx) => (
-                                    <div key={idx} className="flex flex-col items-center justify-center w-36 h-36 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all group p-6">
-                                        <div className="flex items-center gap-2 mb-3 transition-transform group-hover:scale-110">
-                                            {badge.icon}
-                                            <div className="text-[18px] font-black text-slate-900 tracking-tighter">{badge.value}</div>
+                                    <div key={idx} className="flex flex-col items-center lg:items-start transition-all group">
+                                        <div className="flex items-center gap-3 mb-2 transition-transform group-hover:scale-110">
+                                            <div className="shrink-0">{badge.icon}</div>
+                                            <div className="text-[28px] font-black text-slate-900 tracking-tighter leading-none">{badge.value}</div>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-center border-t border-slate-50 pt-2 w-full">{badge.sub}</span>
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{badge.sub}</span>
                                     </div>
                                 ))}
                             </div>
@@ -985,7 +986,7 @@ export default function InsidersLP() {
                                             {[
                                                 { item: "費用", standard: "30~50万円のパッケージ", insiders: "月額4万円でオファーし放題", highlight: true },
                                                 { item: "フォロワー単価", standard: "2~3円", insiders: "規定のフォロワー単価なし", highlight: true },
-                                                { item: "クリエイター選定", standard: <>旅行中や在日外国人中心<br className="sm:hidden" />「属性基準」</>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" />「効果基準」</> },
+                                                { item: "クリエイター選定", standard: <>旅行中や在日外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「属性基準」</span></>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「効果基準」</span></> },
                                             ].map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-black text-slate-900">{row.item}</td>
@@ -1034,14 +1035,14 @@ export default function InsidersLP() {
                                 </ul>
                             </div>
 
-                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[300px] sm:h-[400px] items-center lg:mt-0">
-                                <div className="relative w-full h-full rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden shadow-2xl border-4 sm:border-8 border-white group">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[350px] sm:h-[450px] items-center">
+                                <div className="relative w-full h-full rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white group">
                                     <img src="/images/premium_creators.png" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <div className="flex flex-wrap gap-2">
                                             <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">1,000以上のネイティブクリエイター</span>
-                                            <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/30 text-xs">訪日検討者から高いエンゲージメント</span>
+                                            <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/30">訪日検討者から高いエンゲージメント</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1076,10 +1077,10 @@ export default function InsidersLP() {
                                 </ul>
                             </div>
 
-                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[480px] sm:h-[600px] overflow-visible">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[480px] sm:h-[600px] overflow-visible items-center">
                                 <div className="absolute inset-0 bg-violet-50 rounded-[2.5rem] sm:rounded-[3rem] rotate-1 sm:rotate-3 scale-105 -z-10" />
-                                <div className="w-full max-w-[300px] flex items-center justify-center h-full">
-                                    <div className="scale-[0.7] sm:scale-[0.85] transform-gpu lg:mt-0">
+                                <div className="w-full max-w-[320px] flex items-center justify-center">
+                                    <div className="scale-[0.8] sm:scale-[0.9] transform-gpu">
                                         <HeroDualMockups isMiniFlow={true} />
                                     </div>
                                 </div>
@@ -1214,9 +1215,9 @@ export default function InsidersLP() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.05),transparent_50%)]" />
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h2 className="text-2xl md:text-4xl font-black tracking-tight mb-4 text-slate-900">
-                        「買い切り集客」からの脱却<br />
-                        インバウンド集客ループへ
+                    <h2 className="text-2xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+                        「買い切り集客」からの脱却<br className="sm:hidden" />
+                        インバウンド<span className="text-indigo-600">循環ループ</span>へ
                     </h2>
                     <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
                         ただマップに動画を埋め込むだけではありません。これはあなたのお店を<br className="hidden sm:block" />「24時間外国人を呼び込むデジタル資産」へと進化させるための第一歩です。
@@ -1320,9 +1321,12 @@ export default function InsidersLP() {
 
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 tracking-tight">INSIDERS. スタンダード</h2>
 
-                        <div className="flex items-end justify-center gap-1 mb-10">
-                            <span className="text-5xl sm:text-7xl font-black tracking-tighter text-indigo-600">¥39,800</span>
-                            <span className="text-[10px] sm:text-sm text-slate-400 font-black mb-1 sm:mb-2 tracking-widest pl-2">/ 月<br className="sm:hidden" /> <span className="text-[8px] font-bold">（税抜）</span></span>
+                        <div className="flex items-end justify-center gap-2 mb-10 translate-x-3">
+                            <span className="text-6xl sm:text-8xl font-black tracking-tighter text-indigo-600 leading-none">39,800</span>
+                            <div className="text-left font-black text-slate-400 leading-tight">
+                                <div className="text-sm sm:text-xl tracking-tighter">円</div>
+                                <div className="text-[10px] sm:text-xs tracking-widest opacity-60">/ 月（税抜）</div>
+                            </div>
                         </div>
 
                         <ul className="text-left max-w-sm mx-auto space-y-5 mb-12 text-slate-600 font-bold">
@@ -1426,8 +1430,8 @@ export default function InsidersLP() {
                         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
                             <div className="text-[10px] sm:text-xs text-slate-400 font-bold">© 2026 nots, inc.</div>
                             <div className="flex items-center gap-6">
-                                <a href="#" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
-                                <a href="#" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
+                                <a href="/privacy" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
+                                <a href="/terms" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="#" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">会社概要 <ArrowUpRight className="w-3 h-3" /></a>
                             </div>
                         </div>
