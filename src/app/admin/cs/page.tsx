@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import {
     MessageCircle, Globe, Zap, AlertTriangle, Send,
     CheckCircle, Save, UserCog, Plus, X
@@ -46,7 +46,8 @@ const inboxData: Ticket[] = [
     { id: 3, user: "Liam Wong", type: "Creator (EN)", status: "Unread", subject: "Can I bring my GF?", body: "I'm planning to visit the cafe tomorrow. Can I bring my girlfriend? She can help me record.", time: "2 hours ago" },
 ];
 
-export default function CSCommandCenter() {
+// 修正ポイント①: 元々のページ本体を "Content" コンポーネントとして切り出す
+function CSCommandCenterContent() {
     // State
     const [playbooks, setPlaybooks] = useState<Playbook[]>(initialPlaybooks);
     const [selectedTicket, setSelectedTicket] = useState<Ticket>(inboxData[0]);
@@ -97,10 +98,6 @@ export default function CSCommandCenter() {
 
     return (
         <div className="flex flex-1 overflow-hidden relative">
-
-
-
-
             {/* 1. Inbox Sidebar */}
             <div className="w-80 bg-white border-r flex flex-col shrink-0">
                 <div className="p-4 border-b bg-gray-50">
@@ -131,7 +128,6 @@ export default function CSCommandCenter() {
 
             {/* 2. Workspace Area */}
             <div className="flex-1 flex flex-col min-w-0">
-
                 {/* Header */}
                 <div className="h-16 border-b bg-white flex items-center justify-between px-6 shrink-0">
                     <div>
@@ -164,7 +160,6 @@ export default function CSCommandCenter() {
 
                 {/* Scrollable Content */}
                 <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-6">
-
                     {/* Received Message Bubble */}
                     <div className="bg-white p-6 rounded-xl border shadow-sm max-w-3xl">
                         <div className="flex justify-between items-start mb-4">
@@ -243,7 +238,7 @@ export default function CSCommandCenter() {
                 </div>
             </div>
 
-            {/* 2. Admin Feedback Loop Modal (The "Magic" Part) */}
+            {/* 2. Admin Feedback Loop Modal */}
             {showSaveModal && (
                 <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in">
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
@@ -296,7 +291,15 @@ export default function CSCommandCenter() {
                     </div>
                 </div>
             )}
-
         </div>
+    );
+}
+
+// 修正ポイント②: メインのページコンポーネントを作成し、Suspenseでラップする
+export default function CSCommandCenter() {
+    return (
+        <Suspense fallback={<div className="p-6 text-gray-500 font-bold">Loading CS Center...</div>}>
+            <CSCommandCenterContent />
+        </Suspense>
     );
 }
