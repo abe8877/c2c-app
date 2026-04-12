@@ -6,6 +6,9 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Sparkles, MessageCircle, BarChart3, Settings, Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
+// ==========================================
+// 1. ナビゲーションメニュー部分
+// ==========================================
 function AdminNav({ menuItems, pathname, setIsNavigating }: any) {
     const searchParams = useSearchParams();
     const currentTab = searchParams.get('tab');
@@ -14,7 +17,7 @@ function AdminNav({ menuItems, pathname, setIsNavigating }: any) {
         <nav className="flex-1 px-4 space-y-1.5 pt-4">
             {menuItems.map((item: any) => {
                 const isLogsTab = item.href.includes('tab=logs');
-                const isActive = isLogsTab 
+                const isActive = isLogsTab
                     ? (pathname === '/admin' && currentTab === 'logs')
                     : (pathname === item.href && !currentTab);
 
@@ -44,19 +47,31 @@ function AdminNav({ menuItems, pathname, setIsNavigating }: any) {
     );
 }
 
-export default function AdminLayout({
+// ==========================================
+// 2. URL監視用コンポーネント（エラー回避のために分離）
+// ==========================================
+function RouteWatcher({ setIsNavigating }: { setIsNavigating: (val: boolean) => void }) {
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // パスやパラメータが変わったらローディングを解除する
+    React.useEffect(() => {
+        setIsNavigating(false);
+    }, [pathname, searchParams, setIsNavigating]);
+
+    return null; // UIは何も返さない
+}
+
+// ==========================================
+// 3. メインレイアウトコンポーネント
+// ==========================================
+export default function AdminLayoutClient({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const [isNavigating, setIsNavigating] = React.useState(false);
-
-    // ナビゲーション開始時にローディングを表示
-    React.useEffect(() => {
-        setIsNavigating(false);
-    }, [pathname, searchParams]);
 
     const menuItems = [
         { name: 'CREATORS', icon: Sparkles, href: '/admin' },
@@ -67,6 +82,11 @@ export default function AdminLayout({
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex overflow-hidden">
+            {/* 監視コンポーネントをSuspenseで囲んで配置 */}
+            <Suspense fallback={null}>
+                <RouteWatcher setIsNavigating={setIsNavigating} />
+            </Suspense>
+
             {/* Nav Loading Overlay */}
             {isNavigating && (
                 <div className="fixed inset-0 bg-white/20 backdrop-blur-[1px] z-[9999] flex items-center justify-center pointer-events-none">
@@ -82,6 +102,8 @@ export default function AdminLayout({
                     </div>
                     <span>NOTS <span className="text-yellow-500">ADMIN</span></span>
                 </div>
+
+                {/* メニュー部分もSuspenseで保護 */}
                 <Suspense fallback={<div className="flex-1 p-4"><Loader2 className="animate-spin opacity-20" /></div>}>
                     <AdminNav menuItems={menuItems} pathname={pathname} setIsNavigating={setIsNavigating} />
                 </Suspense>
