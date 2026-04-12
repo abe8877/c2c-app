@@ -85,10 +85,11 @@
         50% { box-shadow: 0 0 20px 5px rgba(16,185,129,0.3); }
     }
 
-  .mask-fade-edges {
+}
+
+.mask-fade-edges {
     mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-  }
 }
 
 /* iOS Safariのバウンススクロールを無効化し、ネイティブアプリのような操作感を実現 */

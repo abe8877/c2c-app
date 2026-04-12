@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // ※プロジェクト環境に合わせてSupabaseクライアントのパスを調整してください
 import { createClient } from "@/utils/supabase/client";
 
@@ -10,31 +10,25 @@ interface ReviewStatusSelectProps {
     creatorId: string;
     initialStatus: string | null;
     isAiRecommended?: boolean;
+    onStatusChange?: (newStatus: ReviewStatus) => void;
 }
 
-export default function ReviewStatusSelect({ creatorId, initialStatus, isAiRecommended }: ReviewStatusSelectProps) {
-    // is_ai_recommended=TRUEの場合、自動でReview=💎 AI Recommendにする
+export default function ReviewStatusSelect({ creatorId, initialStatus, isAiRecommended, onStatusChange }: ReviewStatusSelectProps) {
     const defaultStatus = isAiRecommended ? "ai_recommended" : ((initialStatus as ReviewStatus) || "pending");
     const [status, setStatus] = useState<ReviewStatus>(defaultStatus);
     const [isUpdating, setIsUpdating] = useState(false);
 
-    const supabase = createClient();
+    // 親の状態が変わった時に同期する
+    useEffect(() => {
+        const nextStatus = isAiRecommended ? "ai_recommended" : ((initialStatus as ReviewStatus) || "pending");
+        setStatus(nextStatus);
+    }, [initialStatus, isAiRecommended]);
 
     const handleStatusChange = async (newStatus: ReviewStatus) => {
-        setIsUpdating(true);
-        setStatus(newStatus); // 楽観的UI更新（ユーザーを待たせない）
-
-        const { error } = await supabase
-            .from("creators")
-            .update({ review_status: newStatus })
-            .eq("id", creatorId);
-
-        if (error) {
-            console.error("Status update failed:", error);
-            alert("ステータスの更新に失敗しました。");
+        setStatus(newStatus);
+        if (onStatusChange) {
+            onStatusChange(newStatus);
         }
-
-        setIsUpdating(false);
     };
 
     // ステータスに応じたTailwindカラーリング

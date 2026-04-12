@@ -122,8 +122,8 @@ export async function getLostAssets() {
                     created_at,
                     missing_tags,
                     creator_ai_hint,
-                    shops (name),
-                    creators (name)
+                    shops:shop_id (name),
+                    creators:creator_id (name)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -197,8 +197,8 @@ export async function getOngoingOffers() {
                     status,
                     offer_details,
                     barter_details,
-                    shops (id, name),
-                    creators (id, name, thumbnail_url, followers)
+                    shops:shop_id (id, name),
+                    creators:creator_id (id, name, thumbnail_url, followers)
                 `)
                 .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES,status.eq.WORKING,status.eq.COMPLETED')
                 .order('created_at', { ascending: false });

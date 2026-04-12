@@ -73,9 +73,9 @@ export async function analyzeShopVibe(url: string, genre?: string) {
                 prompt: `店舗情報:\n${siteMetadata}`
             });
             if (object) {
-                vibeTags = object.vibeTags || vibeTags;
+                vibeTags = (object.vibeTags || vibeTags).sort();
                 shopName = object.shopName || shopName;
-                mappedVibeClusters = object.mappedVibeClusters?.slice(0, 3) || mappedVibeClusters;
+                mappedVibeClusters = (object.mappedVibeClusters?.slice(0, 3) || mappedVibeClusters).sort();
             }
         } catch (aiError: any) {
             console.error('AI Analysis Critical Error:', aiError.message);

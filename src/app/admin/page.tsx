@@ -64,7 +64,13 @@ function AdminDashboard() {
 
     // タブ管理
     const [activeTab, setActiveTab] = useState<'creators' | 'logs'>(initialTab);
-    const [logTab, setLogTab] = useState<'success' | 'lost' | 'ongoing'>('success');
+    const [logTab, setLogTab] = useState<'success' | 'lost' | 'ongoing'>('ongoing');
+
+    // URLのパラメータ変更を検知してタブを同期
+    useEffect(() => {
+        const tab = searchParams.get('tab') === 'logs' ? 'logs' : 'creators';
+        setActiveTab(tab);
+    }, [searchParams]);
 
     // 統計データ管理
     const [stats, setStats] = useState<any>(null);
@@ -78,11 +84,11 @@ function AdminDashboard() {
     // ページネーション & フィルタリング
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 50;
-    const [filterTier, setFilterTier] = useState('ALL');
-    const [filterCategory, setFilterCategory] = useState('ALL');
-    const [filterVibe, setFilterVibe] = useState('ALL');
-    const [filterDisplayStatus, setFilterDisplayStatus] = useState('ALL');
-    const [filterReviewStatus, setFilterReviewStatus] = useState('ALL');
+    const [filterTier, setFilterTier] = useState<string>('ALL');
+    const [filterCategory, setFilterCategory] = useState<string>('ALL');
+    const [filterVibe, setFilterVibe] = useState<string>('ALL');
+    const [filterDisplayStatus, setFilterDisplayStatus] = useState<string>('ALL');
+    const [filterReviewStatus, setFilterReviewStatus] = useState<string>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [user, setUser] = useState<any>(null);
     const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
@@ -181,19 +187,19 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
                 // 統計情報 (Server Action)
                 const adminStats = await getAdminStats();
-                setStats(adminStats);
+                if (adminStats.success) setStats(adminStats.data);
 
                 // Success案件 (Server Action)
                 const success = await getSuccessLogs();
-                setSuccessLogs(success);
+                if (success.success) setSuccessLogs(success.data);
 
                 // Lost案件 (Server Action)
                 const lost = await getLostAssets();
-                setLostAssets(lost);
+                if (lost.success) setLostAssets(lost.data);
 
                 // Ongoing案件 (Server Action)
                 const ongoing = await getOngoingOffers();
-                setOngoingOffers(ongoing);
+                if (ongoing.success) setOngoingOffers(ongoing.data);
 
                 setLoading(false);
             } catch (error: any) {
@@ -221,6 +227,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             if (field === 'vibeCluster') updatePayload = { vibe_tags: [value] };
             if (field === 'is_public') updatePayload = { is_public: value };
             if (field === 'genre') updatePayload = { genre: value };
+            if (field === 'review_status') updatePayload = { review_status: value };
 
             // DB更新実行
             const { error } = await supabase
@@ -295,16 +302,20 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
     // フィルタリング処理
     const filteredData = creators.filter(c => {
         const matchTier = filterTier === 'ALL' || c.tier === filterTier;
+
         const matchCategory = filterCategory === 'ALL' || (c.genre && c.genre.includes(filterCategory));
+
         const matchVibe = filterVibe === 'ALL' || (c.vibeCluster && c.vibeCluster.includes(filterVibe));
+
         const matchDisplayStatus = filterDisplayStatus === 'ALL' ||
-            (filterDisplayStatus === 'public' ? (c.is_public && c.review_status === 'approved') :
+            (filterDisplayStatus === 'public' ? c.is_public :
                 filterDisplayStatus === 'hidden' ? (!c.is_public && !c.is_system_hidden) :
                     filterDisplayStatus === 'system_hidden' ? c.is_system_hidden :
                         filterDisplayStatus === 'ai_recommended' ? (c.review_status === 'ai_recommended' || c.is_ai_recommended) :
                             false);
 
         const matchReviewStatus = filterReviewStatus === 'ALL' || c.review_status === filterReviewStatus;
+
         const matchSearch = !searchQuery ||
             c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             c.tiktokUrl.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -371,10 +382,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
             {/* Global Loader (グルグル表示) */}
             {(loading || isActionLoading || isSaving) && (
-                <div className="fixed inset-0 bg-white/40 backdrop-blur-[1px] z-[200] flex items-center justify-center pointer-events-auto cursor-wait select-none">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 flex flex-col items-center gap-4 animate-in zoom-in duration-300">
-                        <Loader2 size={48} className="animate-spin text-slate-900" />
-                        <p className="text-slate-900 font-black text-sm uppercase tracking-widest">Processing...</p>
+                <div className="fixed inset-0 bg-white/20 backdrop-blur-[2px] z-[200] flex items-center justify-center pointer-events-auto cursor-wait select-none transition-all duration-300">
+                    <div className="flex flex-col items-center gap-4">
+                        <Loader2 size={64} className="animate-spin text-slate-900 drop-shadow-lg" />
+                        <p className="text-slate-900 font-black text-xs uppercase tracking-[0.3em] bg-white/50 px-4 py-1.5 rounded-full backdrop-blur-sm shadow-sm border border-white/20">Processing</p>
                     </div>
                 </div>
             )}
@@ -440,57 +451,72 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                             })}
                         </div>
 
-                        {/* Additional Dropdown Filters */}
                         <div className="flex gap-2">
-                            <select
-                                value={filterCategory}
-                                onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
-                            >
-                                <option value="ALL">All Categories</option>
-                                <option value="FOOD">Food</option>
-                                <option value="BEAUTY">Beauty</option>
-                                <option value="TRAVEL">Travel</option>
-                                <option value="EXPERIENCE">Experience</option>
-                                <option value="LIFESTYLE">Lifestyle</option>
-                            </select>
-                            <select
-                                value={filterVibe}
-                                onChange={(e) => { setFilterVibe(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer"
-                            >
-                                <option value="ALL">All Vibes</option>
-                                <option value="Cinematic">Cinematic</option>
-                                <option value="Luxury">Luxury</option>
-                                <option value="Kawaii">Kawaii</option>
-                                <option value="Street">Street</option>
-                                <option value="Vlog">Vlog</option>
-                                <option value="Traditional">Traditional</option>
-                            </select>
+                            {/* All Categories */}
+                            <div className="relative">
+                                <select
+                                    value={filterCategory}
+                                    onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
+                                    className="appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 transition-colors cursor-pointer outline-none shadow-sm min-w-[150px]"
+                                >
+                                    <option value="ALL">All Categories</option>
+                                    <option value="FOOD">Food</option>
+                                    <option value="BEAUTY">Beauty</option>
+                                    <option value="TRAVEL">Travel</option>
+                                    <option value="EXPERIENCE">Experience</option>
+                                    <option value="LIFESTYLE">Lifestyle</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
 
-                            <select
-                                value={filterDisplayStatus}
-                                onChange={(e) => { setFilterDisplayStatus(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
-                            >
-                                <option value="ALL">All Visibility</option>
-                                <option value="public">☑ Public</option>
-                                <option value="hidden">☒ Hidden</option>
-                                <option value="system_hidden">🤖 System Hidden</option>
-                                <option value="ai_recommended">💎 AI Recommend</option>
-                            </select>
+                            {/* All Vibes */}
+                            <div className="relative">
+                                <select
+                                    value={filterVibe}
+                                    onChange={(e) => { setFilterVibe(e.target.value); setCurrentPage(1); }}
+                                    className="appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 transition-colors cursor-pointer outline-none shadow-sm min-w-[120px]"
+                                >
+                                    <option value="ALL">All Vibes</option>
+                                    <option value="Cinematic">#Cinematic</option>
+                                    <option value="Luxury">#Luxury</option>
+                                    <option value="Street">#Street</option>
+                                    <option value="Kawaii">#Kawaii</option>
+                                    <option value="Vlog">#Vlog</option>
+                                    <option value="Traditional">#Traditional</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
 
-                            <select
-                                value={filterReviewStatus}
-                                onChange={(e) => { setFilterReviewStatus(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-600 outline-none hover:bg-slate-50 cursor-pointer shadow-sm"
-                            >
-                                <option value="ALL">All Review Status</option>
-                                <option value="pending">⏳ Pending</option>
-                                <option value="approved">✓ Approved</option>
-                                <option value="rejected">✕ Rejected</option>
-                                <option value="ai_recommended">💎 AI Recommended</option>
-                            </select>
+                            {/* All Status */}
+                            <div className="relative">
+                                <select
+                                    value={filterDisplayStatus}
+                                    onChange={(e) => { setFilterDisplayStatus(e.target.value); setCurrentPage(1); }}
+                                    className="appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 transition-colors cursor-pointer outline-none shadow-sm min-w-[120px]"
+                                >
+                                    <option value="ALL">All Status</option>
+                                    <option value="public">☑ Public</option>
+                                    <option value="hidden">☒ Hidden</option>
+                                    <option value="system_hidden">🤖 System Hidden</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
+
+                            {/* All Review */}
+                            <div className="relative">
+                                <select
+                                    value={filterReviewStatus}
+                                    onChange={(e) => { setFilterReviewStatus(e.target.value); setCurrentPage(1); }}
+                                    className="appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 transition-colors cursor-pointer outline-none shadow-sm min-w-[130px]"
+                                >
+                                    <option value="ALL">All Review</option>
+                                    <option value="pending">⏳ Pending</option>
+                                    <option value="approved">✓ Approved</option>
+                                    <option value="rejected">✕ Rejected</option>
+                                    <option value="ai_recommended">💎 AI Recommended</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
                         </div>
 
                         {/* NEW: Batch Action Button */}
@@ -680,42 +706,30 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
 
                                                 {/* Public Status (Toggle) */}
                                                 <td className="px-6 py-4 text-center whitespace-nowrap">
-                                                    <div className="flex items-center justify-center gap-3">
-                                                        <ToggleSwitch
-                                                            isOn={creator.is_public}
-                                                            onToggle={() => {
-                                                                if (!creator.is_public) {
-                                                                    if (window.confirm("このクリエイターを公開設定にしますか？\n（基準未達の場合はフィルタリングにより広告主UIには表示されない可能性があります）")) {
+                                                    <div className="flex items-center justify-center">
+                                                        <select
+                                                            value={creator.is_public ? 'public' : (creator.is_system_hidden ? 'system_hidden' : 'hidden')}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (val === 'public') {
+                                                                    if (window.confirm("このクリエイターを公開設定にしますか？")) {
                                                                         handleUpdate(creator.id, 'is_public', true);
                                                                     }
                                                                 } else {
                                                                     handleUpdate(creator.id, 'is_public', false);
                                                                 }
                                                             }}
-                                                        />
-                                                        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full border flex items-center gap-1.5 min-w-[100px] justify-center transition-all ${creator.is_public
-                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                                                            : creator.is_system_hidden
-                                                                ? "bg-amber-50 text-amber-600 border-amber-200 shadow-sm ring-1 ring-amber-400/20"
-                                                                : "bg-stone-50 text-stone-400 border-stone-200"
-                                                            }`}>
-                                                            {creator.is_public ? (
-                                                                <>
-                                                                    <CheckCircle2 size={12} className="text-emerald-500" />
-                                                                    <span>Public</span>
-                                                                </>
-                                                            ) : creator.is_system_hidden ? (
-                                                                <>
-                                                                    <span className="animate-pulse">🤖</span>
-                                                                    <span>System Hidden</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Clock size={12} className="text-stone-300" />
-                                                                    <span>Hidden</span>
-                                                                </>
-                                                            )}
-                                                        </span>
+                                                            className={`text-[10px] font-black px-3 py-1.5 rounded-full border shadow-sm outline-none cursor-pointer transition-all ${creator.is_public
+                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                                : creator.is_system_hidden
+                                                                    ? "bg-amber-50 text-amber-600 border-amber-200 ring-1 ring-amber-400/20"
+                                                                    : "bg-stone-50 text-stone-400 border-stone-200"
+                                                                }`}
+                                                        >
+                                                            <option value="public">☑ Public</option>
+                                                            <option value="hidden">☒ Hidden</option>
+                                                            <option value="system_hidden">🤖 System Hidden</option>
+                                                        </select>
                                                     </div>
                                                 </td>
 
@@ -725,6 +739,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                         creatorId={creator.id}
                                                         initialStatus={creator.review_status}
                                                         isAiRecommended={creator.is_ai_recommended}
+                                                        onStatusChange={(newStatus: "pending" | "approved" | "rejected" | "ai_recommended") => handleUpdate(creator.id, 'review_status', newStatus)}
                                                     />
                                                 </td>
                                             </tr>
@@ -797,23 +812,24 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                         {/* Tab Switcher */}
                         <div className="flex bg-slate-200 p-1 rounded-xl h-fit">
                             <button
-                                onClick={() => setLogTab('success')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'success' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                Success
-                            </button>
-                            <button
-                                onClick={() => setLogTab('lost')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'lost' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                Unmatched
-                            </button>
-                            <button
                                 onClick={() => setLogTab('ongoing')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'ongoing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 進行中
                             </button>
+                            <button
+                                onClick={() => setLogTab('success')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'success' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                マッチ
+                            </button>
+                            <button
+                                onClick={() => setLogTab('lost')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'lost' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                アンマッチ
+                            </button>
+
                         </div>
                     </div>
 

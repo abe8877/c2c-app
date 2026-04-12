@@ -154,11 +154,11 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                         {(step === 0 || step === 1) && (
                             <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full px-6 text-center">
                                 <div className="text-[9px] text-emerald-600 font-black mb-3 border border-emerald-200 bg-emerald-50 px-4 py-1.5 rounded-full flex items-center gap-1.5">
-                                    <Sparkles className="w-3 h-3" /> 1,200 Verified Creators
+                                    <Sparkles className="w-3 h-3" /> 1,000+ Trusted Creators
                                 </div>
                                 <h3 className="text-xl font-black mb-8 text-slate-900 leading-tight italic tracking-tighter">Find your best<br />Inbound Creators</h3>
                                 <div className="w-full bg-white border border-slate-200 rounded-2xl flex items-center p-1.5 shadow-sm h-12">
-                                    <div className="text-[10px] font-black px-3 border-r border-slate-100 flex items-center gap-1.5">🍱</div>
+                                    <div className="text-[10px] font-black px-3 border-r border-slate-100 flex items-center gap-1.5">🍣</div>
                                     <div className="text-[9px] text-slate-400 px-3 flex-1 text-left flex items-center gap-2 overflow-hidden">
                                         <Search className="w-3.5 h-3.5 text-slate-300" />
                                         <span className="truncate">{step === 0 ? "Google Map Link..." : "https://maps.app.goo.gl/..."}</span>
@@ -180,7 +180,7 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                                 <div className="w-20 h-20 rounded-full border-[5px] border-indigo-600 border-t-transparent animate-spin mb-8 relative">
                                     <Sparkles className="w-6 h-6 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                                 </div>
-                                <div className="text-base font-black mb-3 text-slate-900 tracking-tighter uppercase">AI AGENT ANALYZING...</div>
+                                <div className="text-base font-black mb-3 text-slate-900 tracking-tighter uppercase">分析中...</div>
                                 <div className="text-[10px] text-slate-400 font-bold leading-relaxed text-center">お店の魅力を言語化し、<br />最適なクリエイターを選定中です</div>
                             </motion.div>
                         )}
@@ -414,70 +414,97 @@ function Header() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinks = [
-        { name: 'INSIDERSとは', href: '#concept' },
-        { name: 'インバウンド集客の今', href: '#problems' },
-        { name: 'サービスの特徴', href: '#features' },
-        { name: 'お問い合わせ', href: '#signup' }
+        { name: 'INSIDERS.とは', href: '#top' },
+        { name: 'インバウンド集客の課題', href: '#concept' },
+        { name: 'サービスの特徴', href: '#solution' },
+        { name: 'プラン案内', href: '#signup' }
     ];
 
     return (
-        <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-md z-[110] border-b border-slate-100">
-            <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                <div className="text-xl font-black tracking-tighter text-slate-900">INSIDERS.</div>
+        <>
+            <header className="fixed top-0 inset-x-0 bg-white/80 backdrop-blur-md z-[110] border-b border-slate-100">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <div className="text-xl font-black tracking-tighter text-slate-900">INSIDERS.</div>
 
-                {/* Desktop Nav */}
-                <nav className="hidden lg:flex items-center gap-8">
-                    {navLinks.map((link) => (
-                        <a key={link.name} href={link.href} className="text-[11px] font-black text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">
-                            {link.name}
-                        </a>
-                    ))}
-                </nav>
+                    {/* Desktop Nav */}
+                    <nav className="hidden lg:flex items-center gap-8">
+                        {navLinks.map((link) => (
+                            <a key={link.name} href={link.href} className="text-[11px] font-black text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest">
+                                {link.name}
+                            </a>
+                        ))}
+                        <button
+                            onClick={() => window.location.href = '/advertiser/gateway'}
+                            className="bg-black text-white px-6 py-2.5 rounded-xl font-black text-[11px] shadow-lg hover:shadow-xl active:scale-95 transition-all uppercase tracking-widest"
+                        >
+                            無料で試してみる
+                        </button>
+                    </nav>
 
-                {/* Mobile Hamburger Button */}
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="lg:hidden p-2 text-slate-900 hover:bg-slate-50 rounded-xl transition-colors relative z-[120]"
-                >
-                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-            </div>
+                    {/* Mobile Hamburger Button */}
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="lg:hidden p-2 text-slate-900 hover:bg-slate-50 rounded-xl transition-colors relative z-[310]"
+                    >
+                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
+                </div>
+            </header>
 
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, x: '100%' }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: '100%', opacity: 0 }}
-                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="fixed inset-0 bg-white/95 backdrop-blur-2xl z-[110] lg:hidden flex flex-col p-10 pt-24"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[300] lg:hidden flex items-start justify-center p-6 pt-24 overflow-y-auto"
                     >
-                        <nav className="flex flex-col gap-6">
-                            {navLinks.map((link, idx) => (
-                                <motion.a
-                                    key={link.name}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    href={link.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className="text-3xl font-black text-slate-900 flex items-center justify-between group py-2"
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: -20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: -20 }}
+                            className="bg-white rounded-[3rem] w-full max-w-sm p-8 shadow-2xl border border-white/20 relative overflow-hidden"
+                        >
+                            <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl" />
+                            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-violet-500/10 rounded-full blur-3xl" />
+
+                            <nav className="flex flex-col gap-6 relative z-10">
+                                {navLinks.map((link, idx) => (
+                                    <motion.a
+                                        key={link.name}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.1 }}
+                                        href={link.href}
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-xl font-black text-slate-900 flex items-center justify-between group py-2"
+                                    >
+                                        <span>{link.name}</span>
+                                        <ArrowRight className="w-5 h-5 text-indigo-600 opacity-60 group-active:translate-x-1 transition-transform" />
+                                    </motion.a>
+                                ))}
+                            </nav>
+                            <div className="mt-12 relative z-10">
+                                <button
+                                    onClick={() => window.location.href = '/advertiser/gateway'}
+                                    className="w-full py-5 bg-black text-white rounded-[1.5rem] font-black text-lg shadow-xl shadow-indigo-100 active:scale-[0.98] transition-all"
                                 >
-                                    <span>{link.name}</span>
-                                    <ArrowRight className="w-6 h-6 text-indigo-600 opacity-60" />
-                                </motion.a>
-                            ))}
-                        </nav>
-                        <div className="mt-auto">
-                            <button onClick={() => setIsOpen(false)} className="w-full py-5 bg-black text-white rounded-2xl font-black text-lg shadow-xl shrink-0">
-                                お問い合わせ
+                                    無料で試してみる
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="absolute top-2 right-6 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+                            >
+                                <X className="w-6 h-6" />
                             </button>
-                        </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </header>
+        </>
     );
 }
 
@@ -491,6 +518,8 @@ export default function InsidersLP() {
     const [assetStep, setAssetStep] = useState(0);
     const [showStickyCTA, setShowStickyCTA] = useState(false);
     const heroCTARef = useRef<HTMLButtonElement>(null);
+    const pricingRef = useRef<HTMLDivElement>(null);
+    const [isPricingVisible, setIsPricingVisible] = useState(false);
 
     useEffect(() => {
         const chatInterval = setInterval(() => {
@@ -514,17 +543,29 @@ export default function InsidersLP() {
             observer.observe(heroCTARef.current);
         }
 
+        const pricingObserver = new IntersectionObserver(
+            ([entry]) => {
+                setIsPricingVisible(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        if (pricingRef.current) {
+            pricingObserver.observe(pricingRef.current);
+        }
+
         return () => {
             clearInterval(chatInterval);
             clearInterval(assetInterval);
             observer.disconnect();
+            pricingObserver.disconnect();
         };
     }, []);
 
     // --- Handlers ---
-    const scrollToDiagnosis = (e: React.MouseEvent) => {
+    const scrollToPricing = (e: React.MouseEvent) => {
         e.preventDefault();
-        document.getElementById('problems')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('signup')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const jsonLd = {
@@ -567,7 +608,7 @@ export default function InsidersLP() {
                                 <span>あなたのお店がインバウンドの目的地になる</span>
                             </div>
 
-                            <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.3] lg:leading-[1.1] max-w-[900px]">
+                            <h1 className="text-3xl sm:text-5xl lg:text-4xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.0] lg:leading-[1.1] max-w-[900px]">
                                 <span className="block mb-2">訪日客の「行きたい！」</span>
                                 <span className="block mb-2">を生み出すショート動画PR</span>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 block mt-2">
@@ -578,18 +619,18 @@ export default function InsidersLP() {
                             {/* スマホ版のみ：バッジとアニメーションをラベル/タイトルの下に配置 */}
                             <div className="lg:hidden w-full overflow-visible mb-6">
                                 {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
-                                <div className="grid grid-cols-3 gap-3 px-2 mb-10">
+                                <div className="grid grid-cols-3 gap-3 px-2 mb-10 mt-10">
                                     {[
-                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1,000組+", sub: "特化クリエイター" },
-                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "¥0", sub: "二次利用料" },
-                                        { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "4万円", sub: "月額定額制" },
+                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター群</> },
+                                        { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
+                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
                                     ].map((badge, idx) => (
                                         <div key={idx} className="flex flex-col items-center justify-center p-2 sm:p-4 bg-transparent border-none rounded-none text-center">
-                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                            <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2 justify-center w-full">
                                                 <div className="shrink-0">{badge.icon}</div>
-                                                <div className="text-[16px] font-black text-slate-900 leading-none tracking-tighter">{badge.value}</div>
+                                                <div className="text-[16px] sm:text-2xl font-black text-slate-900 leading-none tracking-tighter">{badge.value}</div>
                                             </div>
-                                            <span className="text-[8px] font-bold text-slate-400 leading-tight uppercase tracking-widest">{badge.sub}</span>
+                                            <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 leading-tight uppercase tracking-widest">{badge.sub}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -602,22 +643,22 @@ export default function InsidersLP() {
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
                             <div className="hidden lg:flex items-center gap-12 mb-12">
                                 {[
-                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: "特化クリエイター" },
-                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "¥0", sub: "二次利用料" },
-                                    { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "4万円", sub: "月額定額制" },
+                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター群</> },
+                                    { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
+                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
                                 ].map((badge, idx) => (
-                                    <div key={idx} className="flex flex-col items-center lg:items-start transition-all group">
+                                    <div key={idx} className="flex flex-col items-center lg:items-center transition-all group text-center">
                                         <div className="flex items-center gap-3 mb-2 transition-transform group-hover:scale-110">
                                             <div className="shrink-0">{badge.icon}</div>
                                             <div className="text-[28px] font-black text-slate-900 tracking-tighter leading-none">{badge.value}</div>
                                         </div>
-                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{badge.sub}</span>
+                                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-tight">{badge.sub}</span>
                                     </div>
                                 ))}
                             </div>
 
                             <div className="flex flex-col items-center lg:items-start gap-4">
-                                <button ref={heroCTARef} onClick={scrollToDiagnosis} className="hidden sm:flex w-full sm:w-auto px-12 py-6 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
+                                <button ref={heroCTARef} onClick={scrollToPricing} className="hidden sm:flex w-full sm:w-auto px-12 py-6 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-lg shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-2 group relative overflow-hidden">
                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none" />
                                     今すぐ無料でオファーを開始する
                                     <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -642,13 +683,12 @@ export default function InsidersLP() {
                 2. CONCEPT & PAINS SECTION
                 FV直下に新設、コンセプトと課題提起を統合
             ========================================= */}
-            <section id="concept" className="py-24 bg-white relative overflow-hidden">
+            <section id="concept" className="py-24 bg-white relative overflow-hidden scroll-mt-24">
                 <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
                     <div className="flex flex-col lg:flex-row gap-16 items-center mb-32">
                         <div className="flex-1 text-center lg:text-left">
                             <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-10 leading-[1.2]">
-                                検索・比較時代の終わり。<br />SNSは旅行行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”に。
-                                </span>
+                                SNSは旅行行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”に。</span>
                             </h2>
                             <div className="text-slate-500 text-base md:text-lg leading-relaxed space-y-6 font-medium">
                                 <p>
@@ -882,41 +922,43 @@ export default function InsidersLP() {
                         </div>
                     </div>
 
-                    <div id="problems" className="pt-20 border-t border-slate-100">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.3] lg:leading-[1.2] max-w-4xl mx-auto">
+                    <div id="problems" className="pt-10 sm:pt-20 border-t border-slate-100 scroll-mt-24">
+                        <div className="text-center mb-10 sm:mb-16">
+                            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.3] lg:leading-[1.2] max-w-4xl mx-auto mb-2 sm:mb-4">
                                 インバウンド集客は<br className="sm:hidden" />
                                 <span className="text-indigo-600">もっと“ズルくていい”</span>
                             </h2>
                         </div>
 
-                        <div className="grid md:grid-cols-3 gap-8">
+                        <div className="grid md:grid-cols-3 gap-5 sm:gap-8">
                             {[
                                 {
                                     icon: <Target className="w-8 h-8" />,
                                     color: 'amber',
-                                    title: '外国人にだけリーチすればいい',
+                                    title: <>外国人にだけリーチすればいい</>,
                                     desc: '日本人を完全に無視することが重要です。訪日意欲の高い外国人だけを狙い打ちできるインフルエンサーが実はたくさん存在します。'
                                 },
                                 {
                                     icon: <Zap className="w-8 h-8" />,
                                     color: 'rose',
-                                    title: '競合との消耗戦は避けていい',
+                                    title: <>競合との消耗戦は避けていい</>,
                                     desc: '現代の訪日客の来店ルートはOTAだけではありません。手数料や上位表示争いで消耗しない、SNSからの直予約ルートを構築しましょう。'
                                 },
                                 {
                                     icon: <Globe className="w-8 h-8" />,
                                     color: 'indigo',
-                                    title: '英語ができなくてもいい',
+                                    title: <>英語ができなくてもいい</>,
                                     desc: '慣れない英語でのDM対応で現場を疲弊させる必要はありません。面倒ごとはシステムに任せ、目の前のお客様に専念できます。'
                                 }
                             ].map((pain, idx) => (
-                                <div key={idx} className="bg-slate-50 p-8 sm:p-10 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
-                                    <div className="flex flex-col items-center gap-6 mb-8">
+                                <div key={idx} className="bg-slate-50 p-7 sm:p-9 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
+                                    <div className="flex flex-col items-center gap-4 mb-6">
                                         <div className={`w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-md group-hover:scale-110 group-hover:shadow-indigo-100 transition-all text-${pain.color}-500 shrink-0`}>
                                             {pain.icon}
                                         </div>
-                                        <h3 className="text-xl font-black text-slate-900 leading-tight">{pain.title}</h3>
+                                        <h3 className="text-lg lg:text-[17px] font-black text-slate-900 leading-tight min-h-[2.5rem] flex items-center justify-center">
+                                            {pain.title}
+                                        </h3>
                                     </div>
                                     <p className="text-slate-500 text-sm leading-relaxed font-bold">
                                         {pain.desc}
@@ -928,7 +970,7 @@ export default function InsidersLP() {
                         {/* Bridge Copy */}
                         <div className="mt-20 text-center max-w-3xl mx-auto">
                             <p className="text-2xl md:text-2xl font-black text-slate-900 leading-tight">
-                                インバウンド集客を<br className="sm:hidden" />もっと当たり前に。
+                                インバウンド集客を<br className="sm:hidden" />もっとお手軽に。
                             </p>
                             <div className="mt-10 flex justify-center">
                                 <div className="flex flex-col items-center gap-2 animate-bounce">
@@ -944,10 +986,10 @@ export default function InsidersLP() {
             {/* =========================================
           5. CORE VALUES & UI MOCKUPS (The Proof & Core Narrative)
       ========================================= */}
-            < section id="solution" className="py-16 sm:py-24 bg-white border-t border-slate-100 overflow-hidden" >
+            <section id="solution" className="py-16 sm:py-24 bg-white border-t border-slate-100 overflow-hidden scroll-mt-24">
                 <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
-                        <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.2]">
+                        <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.2]">
                             <span className="text-indigo-600">INSIDERS.が支える</span><br />
                             インバウンド×ショート動画PRのススメ
                         </h2>
@@ -961,8 +1003,8 @@ export default function InsidersLP() {
                                     <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
                                         <Sparkles className="w-5 h-5 font-black" /> Point 01. 高いコストパフォーマンス
                                     </div>
-                                    <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-6">
-                                        インバウンドクリエイターにPR依頼し放題！<br />どれだけオファーしても月額定額制
+                                    <h3 className="text-xl sm:text-4xl font-black text-slate-900 mb-6">
+                                        インバウンドクリエイターに月額定額でPR依頼し放題！
                                     </h3>
                                 </div>
 
@@ -986,7 +1028,7 @@ export default function InsidersLP() {
                                             {[
                                                 { item: "費用", standard: "30~50万円のパッケージ", insiders: "月額4万円でオファーし放題", highlight: true },
                                                 { item: "フォロワー単価", standard: "2~3円", insiders: "規定のフォロワー単価なし", highlight: true },
-                                                { item: "クリエイター選定", standard: <>旅行中や在日外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「属性基準」</span></>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「効果基準」</span></> },
+                                                { item: "クリエイター選定", standard: <>旅行中や在日外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「属性基準」</span></>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「効果基準」</span></> },
                                             ].map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-black text-slate-900">{row.item}</td>
@@ -1008,19 +1050,19 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Point 02: THE CREATORS */}
-                        <div className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-14 max-w-6xl mx-auto px-2 sm:px-0">
+                        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                    <Database className="w-5 h-5 font-black" /> Point 02. インバウンド特化のクリエイター網
+                                    <Database className="w-5 h-5 font-black" /> Point 02. インバウンド特化クリエイター網
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     1,000名以上の厳選された<br />クリエイターデータベース
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "独自の分析技術によるクリエイター選定", desc: "日本の「インサイド情報」を深く理解し、SNSでも信頼されているネイティブクリエイターだけを厳選。" },
-                                        { title: "最適なクリエイターの推薦機能", desc: "GoogleMapやSNSのURLを入れるだけで、貴店と相性の良いインバウンドクリエイターを推薦します。" },
-                                        { title: "クリエイターリストの常時アップデート", desc: "世界中に点在するクリエイターを監視し、水準以上のクリエイターがいればすぐにリストに追加します。" }
+                                        { title: "独自の分析技術によるクリエイター選定", desc: "訪日を検討している外国人のSNSアルゴリズムを分析し、信頼度の高いクリエイターを厳選。" },
+                                        { title: "最適なクリエイターの推薦機能", desc: "GoogleマップやSNSのURLを入れるだけで、貴店と好相性のインバウンドクリエイターを推薦。" },
+                                        { title: "データベースの常時アップデート", desc: "世界中に点在するクリエイターを見つけ出し、オファー可能なクリエイターを随時追加します。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -1050,7 +1092,7 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Point 03: THE VIRAL WAVE */}
-                        <div id="viral-wave" className="flex flex-col lg:flex-row-reverse items-center justify-center gap-10 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0">
+                        <div id="viral-wave" className="flex flex-col lg:flex-row-reverse items-center justify-center gap-4 sm:gap-6 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 scroll-mt-24">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
                                     <MessageSquare className="w-5 h-5 font-black" /> Point 03.  AI依頼アシスト機能
@@ -1060,9 +1102,9 @@ export default function InsidersLP() {
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "AI自動翻訳チャット", desc: "日本語でのメッセージを、ネイティブ英語へ即時翻訳。" },
+                                        { title: "AI自動翻訳チャット", desc: "日本語で入力するだけで、英語で依頼に関する要望を伝えられます。" },
                                         { title: "依頼テンプレート", desc: "日程調整や撮影条件の面倒な交渉も、テンプレ選択で簡単に実現。" },
-                                        { title: "現場の負担ゼロ", desc: "通常業務の手を止めることなく、海外へ向けてショート動画を拡散。" }
+                                        { title: "現場の負担ゼロ", desc: "通常業務の手を止めることなく、スムーズにPR用動画撮影が完了。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-violet-100 rounded-full flex items-center justify-center">
@@ -1077,10 +1119,10 @@ export default function InsidersLP() {
                                 </ul>
                             </div>
 
-                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[480px] sm:h-[600px] overflow-visible items-center">
+                            <div className="flex-1 relative flex justify-center w-full lg:w-auto h-[320px] sm:h-[450px] overflow-visible items-start -mt-12 sm:mt-0">
                                 <div className="absolute inset-0 bg-violet-50 rounded-[2.5rem] sm:rounded-[3rem] rotate-1 sm:rotate-3 scale-105 -z-10" />
-                                <div className="w-full max-w-[320px] flex items-center justify-center">
-                                    <div className="scale-[0.8] sm:scale-[0.9] transform-gpu">
+                                <div className="w-full max-w-[280px] sm:max-w-[320px] flex items-center justify-center">
+                                    <div className="scale-[0.75] sm:scale-[0.9] transform-gpu">
                                         <HeroDualMockups isMiniFlow={true} />
                                     </div>
                                 </div>
@@ -1088,7 +1130,7 @@ export default function InsidersLP() {
                         </div>
 
                         {/* Point 04: THE LANDMARK */}
-                        <div id="landmark" className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 pb-10 sm:pb-20">
+                        <div id="landmark" className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 pb-10 sm:pb-20">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
                                     <LayoutGrid className="w-5 h-5 font-black" /> Point 04. コンテンツのアセット化
@@ -1098,9 +1140,9 @@ export default function InsidersLP() {
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "Googleマップへ同期", desc: "熱狂を生んだショート動画を、そのままお店の「デジタル看板」に。" },
-                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGooaleマップに掲載可能。" },
-                                        { title: "比較されない直予約ルート", desc: "星の数で比較されるのではなく、特定の動画を見たファンが指名来店。" }
+                                        { title: "動画資産のフル活用", desc: "好反応なショート動画を使い捨てずに、Googleマップで有効活用。" },
+                                        { title: "インバウンドフレンドリーの表明", desc: "外国人向け動画を掲載して、海外のお客様を呼び込みやすくします。" },
+                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGoogleマップに掲載可能。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -1128,10 +1170,10 @@ export default function InsidersLP() {
                                     <div className={`bg-emerald-50 rounded-xl p-3 mb-5 border border-emerald-100 transition-all duration-700 ${assetStep >= 1 ? 'opacity-100' : 'opacity-60'}`}>
                                         <div className="flex items-center gap-1.5 mb-1.5">
                                             <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                                            <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest">Secondary use license: Unlimited</span>
+                                            <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest">二次利用権限：承認済み</span>
                                         </div>
                                         <p className="text-[7px] text-emerald-600 leading-relaxed font-bold">
-                                            Googleマップ・自社サイトでの利用に追加費用なし。<br />著作権トラブルのリスクゼロ。
+                                            安心してGoogleマップに掲載いただけます。
                                         </p>
                                     </div>
 
@@ -1215,12 +1257,12 @@ export default function InsidersLP() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.05),transparent_50%)]" />
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h2 className="text-2xl md:text-5xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
-                        「買い切り集客」からの脱却<br className="sm:hidden" />
-                        インバウンド<span className="text-indigo-600">循環ループ</span>へ
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+                        「買い切り集客」からの脱却<br />
+                        <span className="text-indigo-600">インバウンド来店ループへ</span>
                     </h2>
-                    <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-                        ただマップに動画を埋め込むだけではありません。これはあなたのお店を<br className="hidden sm:block" />「24時間外国人を呼び込むデジタル資産」へと進化させるための第一歩です。
+                    <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-sm sm:text-sm font-bold leading-relaxed">
+                        ただ動画を投稿して、Googleマップに埋め込むだけではありません。<br className="hidden sm:block" />これはあなたのお店を「24時間外国人を呼び込むデジタル資産」へと進化させるための第一歩です。
                     </p>
 
                     <div className="relative">
@@ -1258,7 +1300,7 @@ export default function InsidersLP() {
                                     bg: 'bg-rose-600',
                                     color: 'text-rose-600',
                                     title: '4. 自動流入',
-                                    desc: '動画経由の集客導線が安定し、口コミが次のインバウンド客を呼ぶ',
+                                    desc: '動画経由の集客ルートができ、口コミが次のインバウンド客を呼ぶ',
                                     badge: 'Growth'
                                 },
                             ].map((step, idx) => (
@@ -1293,7 +1335,7 @@ export default function InsidersLP() {
                             </div>
                             <div className="text-sm font-black text-slate-900 tracking-widest flex items-center gap-3">
                                 <div className="w-8 h-px bg-slate-200" />
-                                成果がさらなる認知を呼ぶ<br />「インバウンド資産」の完成
+                                成果がさらなる認知を呼ぶ<br />「インバウンド来店ループ」へ
                                 <div className="w-8 h-px bg-slate-200" />
                             </div>
                         </div>
@@ -1304,7 +1346,7 @@ export default function InsidersLP() {
             {/* =========================================
           7. PRICING & SaaS TRIAL OFFER (インフラ維持費としての正当化)
       ========================================= */}
-            < section id="signup" className="py-24 bg-white border-t border-slate-100" >
+            <section id="signup" ref={pricingRef} className="py-24 bg-white border-t border-slate-100 scroll-mt-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     <div className="group bg-slate-50 rounded-[2.5rem] p-10 sm:p-14 shadow-2xl shadow-indigo-100/50 text-center relative overflow-hidden mb-12 border border-slate-200 transition-all duration-700 hover:shadow-indigo-200/50">
@@ -1322,14 +1364,13 @@ export default function InsidersLP() {
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 tracking-tight">INSIDERS. スタンダード</h2>
 
                         <div className="flex items-end justify-center gap-2 mb-10 translate-x-3">
-                            <span className="text-6xl sm:text-8xl font-black tracking-tighter text-indigo-600 leading-none">39,800</span>
+                            <span className="text-5xl sm:text-6xl font-black tracking-tighter text-indigo-600 leading-none">39,800</span>
                             <div className="text-left font-black text-slate-400 leading-tight">
-                                <div className="text-sm sm:text-xl tracking-tighter">円</div>
-                                <div className="text-[10px] sm:text-xs tracking-widest opacity-60">/ 月（税抜）</div>
+                                <div className="text-sm sm:text-xl tracking-tighter">円 / 月（税別）</div>
                             </div>
                         </div>
 
-                        <ul className="text-left max-w-sm mx-auto space-y-5 mb-12 text-slate-600 font-bold">
+                        <ul className="text-left w-fit mx-auto space-y-5 mb-12 text-slate-600 font-bold">
                             <li className="flex items-start gap-3">
                                 <div className="mt-1 w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center shrink-0"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /></div>
                                 <span>クリエイターへのオファー無制限</span>
@@ -1351,24 +1392,24 @@ export default function InsidersLP() {
                         {/* Trial Box - Light Glass Card */}
                         <div className="bg-white border-2 border-indigo-100 rounded-[2rem] p-8 mb-10 max-w-lg mx-auto shadow-xl shadow-indigo-100/50 group-hover:scale-[1.02] transition-transform duration-500">
                             <div className="text-indigo-600 font-black text-sm mb-3 flex items-center justify-center gap-2">
-                                <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" /> START YOUR JOURNEY
+                                <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" /> 早期アクセス特典
                             </div>
-                            <div className="text-slate-900 font-black text-xl mb-4 leading-tight">
-                                最初のオファー成立まで<br />
-                                システム利用料 <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent underline decoration-indigo-200">完全無料</span> で利用可能
+                            <div className="text-slate-900 font-black text-Lg mb-4 leading-tight">
+                                招待コードを入力すると、3名分の無料オファー枠を使って、すぐにサービスをご利用いただけます！<br />
                             </div>
                             <p className="text-[11px] text-slate-500 font-bold leading-relaxed space-y-1">
-                                <span className="block italic opacity-60">※クリエイターへの経費（商品・食事提供等）のみの実費負担</span>
-                                <span className="block italic opacity-60">※マッチングが成功するまでクレジットカード登録は不要です</span>
+                                <span className="block opacity-60">※システム利用料（クリエイター検索・オファー送信）が無料になります</span>
+                                <span className="block opacity-60">※クリエイターへの経費（商品提供・有償でのオファー）は実費負担となります</span>
                             </p>
                         </div>
 
-                        <Link href="/advertiser/gateway">
-                            <button className="hidden sm:flex w-full sm:w-auto px-16 py-6 bg-slate-900 text-white rounded-2xl font-black text-xl shadow-2xl hover:bg-slate-800 transition-all items-center justify-center gap-3 mx-auto active:scale-95">
-                                今すぐ無料でオファーを開始する
-                                <ArrowRight className="w-6 h-6" />
+                        <div className="flex flex-col items-center gap-4 w-full px-4 sm:px-0">
+                            <button onClick={() => window.location.href = '/advertiser/gateway'} className="w-full sm:w-auto px-10 sm:px-16 py-5 sm:py-6 bg-slate-900 text-white rounded-2xl font-black text-sm sm:text-xl shadow-2xl hover:bg-slate-800 transition-all items-center justify-center gap-3 mx-auto active:scale-95 flex leading-tight">
+                                今すぐ無料で<br className="sm:hidden" />オファーを開始する
+                                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                             </button>
-                        </Link>
+                            <p className="sm:hidden text-[10px] text-slate-400 font-bold">※タップするとログインページへ遷移します</p>
+                        </div>
                     </div>
 
                     {/* =========================================
@@ -1381,15 +1422,15 @@ export default function InsidersLP() {
                                 e.currentTarget.classList.toggle('opacity-30');
                             }
                         }}
-                        className="text-center pt-8 border-t border-slate-100 max-w-2xl mx-auto opacity-30 hover:opacity-100 transition-opacity duration-700 group cursor-pointer lg:cursor-default"
+                        className="text-center pt-8 border-t border-slate-100 max-w-3xl mx-auto opacity-30 hover:opacity-100 transition-opacity duration-700 group cursor-pointer lg:cursor-default"
                     >
                         <h4 className="text-xl font-black text-slate-900 mb-3 grayscale group-hover:grayscale-0 transition-all">もっと来店効率を高めたいなら…</h4>
-                        <p className="text-sm text-slate-500 mb-4 leading-relaxed font-bold">
-                            INSIDERS.で集客に成功した後、「Googleマップの多言語更新が追いつかない」「予約の導線最適化まで手が回らない」という嬉しい悲鳴が上がったら、BPOパッケージをご用意しています。<br />
-                            ダッシュボードすら見なくていい。AIと我々がすべてを巻き取る、究極の丸投げインフラをご用意しています。
+                        <p className="text-[12px] text-slate-500 mb-6 leading-relaxed max-w-sm mx-auto">
+                            INSIDERS.で集客に成功した後、「予約導線やGoogleマップの対応が追いつかない」というご相談をいただいています。
+                            より広範囲での集客支援が必要でしたら、スマートBPOサービスをご検討ください。
                         </p>
-                        <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors text-sm bg-indigo-50 px-4 py-2 rounded-full">
-                            丸投げインフラ「BUZZ OVER」の詳細を見る <ArrowUpRight className="w-4 h-4" />
+                        <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors text-sm bg-indigo-50 px-5 py-3 rounded-2xl border border-indigo-100/50 shadow-sm active:scale-95">
+                            インバウンド集客専門のスマートBPO<br className="sm:hidden" />「BUZZ OVER」の詳細を見る <ArrowUpRight className="w-4 h-4" />
                         </a>
                     </div>
 
@@ -1400,7 +1441,7 @@ export default function InsidersLP() {
               9. STICKY FOOTER CTA (Mobile Conversion Trigger)
           ========================================= */}
             {/* --- Sticky Footer CTA (Mobile Only) --- */}
-            <div className={`sm:hidden fixed bottom-6 left-4 right-4 z-[100] transition-all duration-500 transform ${showStickyCTA ? 'translate-y-0 opacity-100 animate-slide-up-sticky' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
+            <div className={`sm:hidden fixed bottom-6 left-4 right-4 z-[100] transition-all duration-500 transform ${showStickyCTA && !isPricingVisible ? 'translate-y-0 opacity-100 animate-slide-up-sticky' : 'translate-y-20 opacity-0 pointer-events-none'}`}>
                 <div className="max-w-md mx-auto">
                     {/* Microcopy Tooltip */}
                     <div className="flex justify-center mb-2">
@@ -1411,8 +1452,8 @@ export default function InsidersLP() {
                         className="w-full bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right transition-all duration-700 text-white py-4 px-6 rounded-2xl font-black text-base shadow-[0_15px_30px_-5px_rgba(79,70,229,0.5)] flex items-center justify-center gap-3 group relative overflow-hidden active:scale-95"
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
-                        <span className="text-xl">🎁</span>
-                        無料で3名にオファーする
+                        <span className="text-xl">✨️</span>
+                        無料でオファーを試してみる
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
@@ -1428,12 +1469,12 @@ export default function InsidersLP() {
                         </div>
 
                         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
-                            <div className="text-[10px] sm:text-xs text-slate-400 font-bold">© 2026 nots, inc.</div>
                             <div className="flex items-center gap-6">
                                 <a href="/privacy" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
-                                <a href="#" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">会社概要 <ArrowUpRight className="w-3 h-3" /></a>
+                                <a href="https://nots-inc.jp/" target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">会社概要 <ArrowUpRight className="w-3 h-3" /></a>
                             </div>
+                            <div className="text-[10px] sm:text-xs text-slate-400 font-bold">© 2026 nots, inc.</div>
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,47 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Sparkles, MessageCircle, BarChart3, Settings, Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
+
+function AdminNav({ menuItems, pathname, setIsNavigating }: any) {
+    const searchParams = useSearchParams();
+    const currentTab = searchParams.get('tab');
+
+    return (
+        <nav className="flex-1 px-4 space-y-1.5 pt-4">
+            {menuItems.map((item: any) => {
+                const isLogsTab = item.href.includes('tab=logs');
+                const isActive = isLogsTab 
+                    ? (pathname === '/admin' && currentTab === 'logs')
+                    : (pathname === item.href && !currentTab);
+
+                return (
+                    <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => {
+                            if (pathname !== item.href) {
+                                setIsNavigating(true);
+                            }
+                        }}
+                        className={`group px-4 py-3 rounded-xl cursor-pointer font-bold flex items-center gap-3 transition-all duration-200 relative ${isActive
+                            ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10'
+                            : 'hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        <item.icon size={18} className={`${isActive ? 'text-yellow-500' : 'text-slate-500 group-hover:text-slate-300'} transition-colors`} />
+                        <span className="flex-1">{item.name}</span>
+                        {isActive && (
+                            <div className="absolute right-2 w-1.5 h-1.5 bg-yellow-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.6)]" />
+                        )}
+                    </Link>
+                );
+            })}
+        </nav>
+    );
+}
 
 export default function AdminLayout({
     children,
@@ -11,12 +50,13 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [isNavigating, setIsNavigating] = React.useState(false);
 
     // ナビゲーション開始時にローディングを表示
     React.useEffect(() => {
         setIsNavigating(false);
-    }, [pathname]);
+    }, [pathname, searchParams]);
 
     const menuItems = [
         { name: 'CREATORS', icon: Sparkles, href: '/admin' },
@@ -42,35 +82,9 @@ export default function AdminLayout({
                     </div>
                     <span>NOTS <span className="text-yellow-500">ADMIN</span></span>
                 </div>
-                <nav className="flex-1 px-4 space-y-1.5 pt-4">
-                    {menuItems.map((item) => {
-                        // クエリパラメータを含めた完全一致チェック
-                        const currentFullHref = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : pathname;
-                        const isActive = currentFullHref === item.href || (item.href === '/admin' && currentFullHref === '/admin');
-
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                onClick={() => {
-                                    if (currentFullHref !== item.href) {
-                                        setIsNavigating(true);
-                                    }
-                                }}
-                                className={`group px-4 py-3 rounded-xl cursor-pointer font-bold flex items-center gap-3 transition-all duration-200 relative ${isActive
-                                    ? 'bg-slate-800 text-white shadow-lg ring-1 ring-white/10'
-                                    : 'hover:bg-slate-800 hover:text-white'
-                                    }`}
-                            >
-                                <item.icon size={18} className={`${isActive ? 'text-yellow-500' : 'text-slate-500 group-hover:text-slate-300'} transition-colors`} />
-                                <span className="flex-1">{item.name}</span>
-                                {isActive && (
-                                    <div className="absolute right-2 w-1.5 h-1.5 bg-yellow-500 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.6)]" />
-                                )}
-                            </Link>
-                        );
-                    })}
-                </nav>
+                <Suspense fallback={<div className="flex-1 p-4"><Loader2 className="animate-spin opacity-20" /></div>}>
+                    <AdminNav menuItems={menuItems} pathname={pathname} setIsNavigating={setIsNavigating} />
+                </Suspense>
 
                 <div className="p-4 border-t border-slate-800/50">
                     <div className="bg-slate-800/50 rounded-xl p-4">

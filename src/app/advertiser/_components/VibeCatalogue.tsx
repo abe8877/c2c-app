@@ -108,46 +108,57 @@ const getTikTokEmbedUrl = (url: string) => {
 // --- Sub-component: Portfolio Video Modal ---
 const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOpen: boolean; onClose: () => void; videoUrls: string[]; creatorName: string }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const embedUrl = videoUrls.length > 0 ? getTikTokEmbedUrl(videoUrls[currentIndex]) : null;
     const total = videoUrls.length;
 
-    // Reset index when modal opens with new creator
-    useEffect(() => {
-        if (isOpen) setCurrentIndex(0);
-    }, [isOpen, creatorName]);
+    const goNext = (e: React.MouseEvent) => { e.stopPropagation(); setCurrentIndex((prev) => (prev + 1) % total); };
+    const goPrev = (e: React.MouseEvent) => { e.stopPropagation(); setCurrentIndex((prev) => (prev - 1 + total) % total); };
 
-    const goPrev = (e: React.MouseEvent) => { e.stopPropagation(); setCurrentIndex(i => Math.max(0, i - 1)); };
-    const goNext = (e: React.MouseEvent) => { e.stopPropagation(); setCurrentIndex(i => Math.min(total - 1, i + 1)); };
+    useEffect(() => {
+        if (isOpen) {
+            setCurrentIndex(0);
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+    }, [isOpen]);
+
+    const currentUrl = videoUrls[currentIndex];
+    const embedUrl = getTikTokEmbedUrl(currentUrl);
+    const isDirectVideo = currentUrl?.match(/\.(mp4|mov|webm|ogv)(\?.*)?$/i);
+
+    if (!isOpen) return null;
 
     return (
         <AnimatePresence>
-            {isOpen && embedUrl && (
+            {isOpen && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-black/95 z-[300] flex flex-col items-center justify-center p-4"
+                    className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl"
                     onClick={onClose}
                 >
-                    <div className="absolute top-6 right-6 flex items-center gap-4 z-10">
-                        <div className="text-white text-right">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-0.5">Viewing Portfolio</p>
-                            <p className="font-black tracking-tight">@{creatorName}</p>
+                    <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
+                        <div className="space-y-1">
+                            <h3 className="text-white font-black text-xl tracking-tighter">Portfolio</h3>
+                            <p className="text-white/50 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                <Sparkles size={12} className="text-yellow-400" /> @{creatorName}
+                            </p>
                         </div>
                         <button
                             onClick={onClose}
-                            className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-md transition-all border border-white/10"
+                            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/10 transition-all active:scale-95"
                         >
                             <X size={24} />
                         </button>
                     </div>
 
-                    <div className="relative flex items-center gap-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative flex items-center gap-4 w-full max-w-4xl justify-center" onClick={(e) => e.stopPropagation()}>
                         {/* Prev Button */}
                         <button
                             onClick={goPrev}
-                            disabled={currentIndex === 0}
-                            className={`p-3 rounded-full transition-all ${currentIndex === 0 ? 'opacity-0 cursor-default' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
+                            disabled={total <= 1}
+                            className={`p-3 rounded-full transition-all shrink-0 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
                         >
                             <ChevronLeft size={24} />
                         </button>
@@ -157,34 +168,41 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full max-w-md aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/20"
+                            className="relative w-full max-w-[320px] sm:max-w-sm aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/20"
                         >
-                            <iframe
-                                src={embedUrl}
-                                className="w-full h-full border-none"
-                                allow="autoplay; encrypted-media"
-                                allowFullScreen
-                            />
+                            {isDirectVideo ? (
+                                <video
+                                    src={currentUrl}
+                                    controls
+                                    autoPlay
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <iframe
+                                    src={embedUrl || undefined}
+                                    className="w-full h-full border-none"
+                                    allow="autoplay; encrypted-media"
+                                    allowFullScreen
+                                />
+                            )}
                         </motion.div>
 
                         {/* Next Button */}
                         <button
                             onClick={goNext}
-                            disabled={currentIndex === total - 1}
-                            className={`p-3 rounded-full transition-all ${currentIndex === total - 1 ? 'opacity-0 cursor-default' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
+                            disabled={total <= 1}
+                            className={`p-3 rounded-full transition-all shrink-0 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
                         >
                             <ChevronRight size={24} />
                         </button>
                     </div>
 
-                    {/* Dot Indicator */}
                     {total > 1 && (
-                        <div className="flex gap-2 mt-6" onClick={(e) => e.stopPropagation()}>
+                        <div className="absolute bottom-10 flex gap-2">
                             {videoUrls.map((_, i) => (
-                                <button
+                                <div
                                     key={i}
-                                    onClick={(e) => { e.stopPropagation(); setCurrentIndex(i); }}
-                                    className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/50'}`}
+                                    className={`h-1.5 transition-all duration-300 rounded-full ${i === currentIndex ? 'w-8 bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : 'w-1.5 bg-white/20'}`}
                                 />
                             ))}
                         </div>
@@ -206,6 +224,7 @@ const CreatorCard = ({
     onPlayVideo: (urls: string[]) => void;
     priority?: boolean;
 }) => {
+    const [isTapped, setIsTapped] = useState(false);
     const hasVideos = creator.portfolio_video_urls && creator.portfolio_video_urls.length > 0;
     const hasScore = creator.vibeMatchScore !== undefined && creator.vibeMatchScore > 0;
     return (
@@ -213,6 +232,7 @@ const CreatorCard = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
+            onClick={() => setIsTapped(!isTapped)}
             className="relative aspect-[9/16] rounded-2xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
         >
             {/* Premium Fallback Background (Visible if img fails or is missing) */}
@@ -307,36 +327,36 @@ const CreatorCard = ({
                     )}
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1 sm:gap-1.5 overflow-hidden">
                     {/* FOLLOWERS - Unified Glass Box UI */}
-                    <div className="flex items-center gap-1.5 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit">
-                        <Users className="w-3 h-3 text-white/50" />
-                        {creator.followers} followers
+                    <div className="flex items-center gap-1.5 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
+                        <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
+                        <span className="truncate">{creator.followers} followers</span>
                     </div>
 
                     {/* AUDIENCE - Vertical stack, Unified Glass Box UI */}
-                    <div className="flex items-center gap-1.5 text-white/90 text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit">
-                        <Globe className="w-3 h-3 text-white/50" />
-                        AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}
+                    <div className="flex items-center gap-1.5 text-white/90 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
+                        <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
+                        <span className="truncate">AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}</span>
                     </div>
                 </div>
             </div>
 
             {/* Hover Overlay: Buttons */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+            <div className={`absolute inset-0 bg-black/40 transition-all duration-300 flex flex-col items-center justify-center gap-2 p-4 ${isTapped ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 pointer-events-none sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover:pointer-events-auto'}`}>
                 <button
                     onClick={(e) => { e.stopPropagation(); onOffer(creator); }}
-                    className="bg-white text-black font-black px-4 py-2.5 rounded-full shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 hover:scale-105 active:scale-95 text-[10px] flex items-center gap-1.5 uppercase tracking-wide"
+                    className="w-[140px] bg-white text-black font-black px-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 sm:transform sm:translate-y-4 sm:group-hover:translate-y-0 hover:scale-105 active:scale-95 text-[10px] flex items-center justify-center gap-1.5 uppercase tracking-wide"
                 >
-                    ✨ Offer This Creator
+                    ✨ オファーを送る
                 </button>
 
                 {hasVideos && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onPlayVideo(creator.portfolio_video_urls!); }}
-                        className="bg-white/20 backdrop-blur-md text-white font-bold px-5 py-2.5 rounded-full border border-white/30 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75 transform translate-y-4 group-hover:translate-y-0 hover:bg-white/30 active:scale-95 text-[10px] flex items-center gap-2 uppercase tracking-tight"
+                        className="w-[140px] bg-white/20 backdrop-blur-md text-white font-bold px-4 py-2.5 rounded-full border border-white/30 transition-all duration-500 sm:delay-75 sm:transform sm:translate-y-4 sm:group-hover:translate-y-0 hover:bg-white/30 active:scale-95 text-[10px] flex items-center justify-center gap-2 uppercase tracking-tight"
                     >
-                        <Play className="w-3 h-3 fill-current" /> 動画をチェックする {creator.portfolio_video_urls!.length > 1 ? `(${creator.portfolio_video_urls!.length})` : ''}
+                        <Play className="w-3 h-3 fill-current" /> 動画を見る {creator.portfolio_video_urls!.length > 1 ? `(${creator.portfolio_video_urls!.length})` : ''}
                     </button>
                 )}
             </div>
@@ -511,7 +531,7 @@ function AnalyzingScreen() {
                 <div className="absolute inset-0 border-4 border-yellow-500 rounded-full border-t-transparent animate-spin"></div>
                 <Sparkles className="absolute inset-0 m-auto text-yellow-500 animate-pulse" size={48} />
             </div>
-            <h2 className="text-3xl font-black tracking-tighter mb-4 uppercase">貴店の魅力を言語化中...</h2>
+            <h2 className="text-2xl font-black tracking-tighter mb-4 uppercase">貴店の魅力を言語化中...</h2>
             <div className="inline-flex flex-col items-center gap-3 text-stone-400 font-black text-xs uppercase tracking-widest">
                 <p className="animate-pulse">URLを分析しています...</p>
                 <p className="animate-pulse delay-700">親和性の高いクリエイターを選定しています...</p>
@@ -533,23 +553,25 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
                 <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-8 text-center">Detected Vibe Tags</h3>
                 <div className="flex flex-wrap gap-4 justify-center">
                     {tags.map((tag: string, i: number) => (
-                        <button
+                        <div
                             key={i}
-                            onClick={() => onRemoveTag(tag)}
-                            className="group relative px-6 py-4 bg-neutral-50 text-stone-800 rounded-2xl font-black text-lg animate-in zoom-in duration-300 flex items-center gap-2 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm border border-stone-200 overflow-hidden"
+                            className="group relative px-6 py-4 bg-neutral-50 text-stone-800 rounded-2xl font-black text-sm sm:text-lg animate-in zoom-in duration-300 flex items-center gap-2 shadow-sm border border-stone-200 overflow-hidden"
                         >
-                            <span className="group-hover:translate-x-[-12px] transition-transform duration-300">{tag}</span>
-                            <div className="absolute right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0 w-6 h-6 flex items-center justify-center bg-red-100 rounded-full">
-                                <X size={12} strokeWidth={4} className="text-red-600" />
-                            </div>
-                        </button>
+                            <span>{tag}</span>
+                            <button
+                                onClick={() => onRemoveTag(tag)}
+                                className="w-7 h-7 flex items-center justify-center bg-stone-100 hover:bg-red-100 text-stone-400 hover:text-red-600 rounded-full transition-all ml-1"
+                            >
+                                <X size={14} strokeWidth={3} />
+                            </button>
+                        </div>
                     ))}
                     {tags.length === 0 && <p className="text-stone-300 italic">タグがありません</p>}
                 </div>
-                <div className="mt-12 pt-10 border-t border-stone-100 text-center space-y-8">
-                    <p className="text-sm font-bold text-stone-400">貴店と好相性のクリエイター：<span className="text-4xl text-black font-black ml-3 underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
-                    <button onClick={onConfirm} className="px-14 py-5 bg-black text-white rounded-full font-black text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
-                        マッチング候補を見る <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+                <div className="mt-12 pt-12 border-t border-stone-100 text-center space-y-15">
+                    <p className="text-xs sm:text-sm font-bold text-stone-400 flex flex-col sm:flex-row items-center justify-center gap-2">貴店と好相性のクリエイター：<span className="text-xl sm:text-4xl text-black font-black underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
+                    <button onClick={onConfirm} className="w-full sm:w-auto px-8 sm:px-14 py-4 sm:py-5 bg-black text-white rounded-full font-black text-sm sm:text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
+                        <span className="truncate">マッチング候補を見る</span> <ArrowRight size={20} className="shrink-0 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
             </div>
@@ -876,7 +898,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         placeholder="例：ヘッドスパ60分無料、看板メニュー「〇〇セット」の提供"
                                         className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none h-20 text-sm placeholder:text-slate-400 shadow-inner"
                                     />
-                                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {/* PCでは入力欄内、モバイルでは入力欄外に配置 */}
+                                    <div className="md:absolute md:bottom-3 md:right-3 mt-2 md:mt-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex justify-end">
                                         <button
                                             onClick={() => handleTranslate(barterDetails, 'barter')}
                                             disabled={isTranslating === 'barter'}
@@ -915,7 +938,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             setIsManualMessage(true);
                                         }}
                                     />
-                                    <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {/* PCでは入力欄内、モバイルでは入力欄外に配置 */}
+                                    <div className="md:absolute md:bottom-3 md:right-3 mt-2 md:mt-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex justify-end">
                                         <button
                                             onClick={() => handleTranslate(invitationMessage, 'message')}
                                             disabled={isTranslating === 'message'}
@@ -1106,9 +1130,18 @@ export default function VibeCatalogue({
     const marqueeCreators = React.useMemo(() => {
         const genres = ["FOOD", "TRAVEL", "BEAUTY", "EXPERIENCE", "LIFESTYLE"];
         let selected: Creator[] = [];
+        const usedIds = new Set<string>();
+
+        // 共通のフィルタ条件: サムネイルがあり、公開中で、承認済みであること
+        const basePool = initialCreators.filter(c =>
+            c.thumbnail_url &&
+            c.is_public &&
+            c.review_status === 'approved'
+        );
+
         genres.forEach(g => {
-            const topPerGenre = initialCreators
-                .filter(c => c.tier === 'S' && (c.genre && c.genre.includes(g)))
+            const topPerGenre = basePool
+                .filter(c => c.tier === 'S' && (c.genre && c.genre.includes(g)) && !usedIds.has(c.id))
                 .sort((a, b) => {
                     const parseFollowers = (val: string) => {
                         if (!val) return 0;
@@ -1120,13 +1153,17 @@ export default function VibeCatalogue({
                     return parseFollowers(b.followers) - parseFollowers(a.followers);
                 })
                 .slice(0, 3);
-            selected = [...selected, ...topPerGenre];
+
+            topPerGenre.forEach(c => {
+                selected.push(c);
+                usedIds.add(c.id);
+            });
         });
-        
-        // もしTier Sが足りない場合は全体から補填
-        if (selected.length < 10) {
-            const extra = initialCreators
-                .filter(c => !selected.find(s => s.id === c.id))
+
+        // もし人数が足りない場合は全体から補填（ユニーク性は維持）
+        if (selected.length < 12) {
+            const extra = basePool
+                .filter(c => !usedIds.has(c.id))
                 .slice(0, 15 - selected.length);
             selected = [...selected, ...extra];
         }
@@ -1147,6 +1184,8 @@ export default function VibeCatalogue({
     } | null>(null);
     const [isPending, startTransition] = useTransition();
     const [filterGenre, setFilterGenre] = useState<string>(initialGenre || 'ALL');
+    const [searchGenre, setSearchGenre] = useState<string | null>(initialGenre || null);
+    const [searchGenreCount, setSearchGenreCount] = useState<number>(0);
     const [filterRegion, setFilterRegion] = useState<string>('ALL');
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isChatListOpen, setIsChatListOpen] = useState(false);
@@ -1157,6 +1196,18 @@ export default function VibeCatalogue({
     const [freshness, setFreshness] = useState(85);
     const [assetInsights, setAssetInsights] = useState<Record<string, any>>({});
     const [urlError, setUrlError] = useState<string | null>(null);
+
+    // 検索後の件数を不整合なく保持する
+    useEffect(() => {
+        if (step === 'result' && searchGenre) {
+            const count = initialCreators.filter(c =>
+                (searchGenre === 'ALL' || (c.genre && c.genre.includes(searchGenre.toUpperCase()))) &&
+                (c.tier === 'S' || c.tier === 'A') &&
+                (c.is_public && c.review_status === 'approved')
+            ).length;
+            setSearchGenreCount(count);
+        }
+    }, [step, searchGenre, initialCreators]);
     const [localAssets, setLocalAssets] = useState<Asset[]>(initialAssets);
 
     const [freeOffers, setFreeOffers] = useState(3);
@@ -1231,15 +1282,20 @@ export default function VibeCatalogue({
         // 3. Vibe Bonus: 一致クラスターごとに+10%
         const vibeBonus = matched.length * 10;
 
-        // 4. Tier Bonus: Supabaseの tier カラムを参照
-        let tierBonus = 1; // デフォルト微小揺らぎ
+        // 4. Tier Bonus: Supabaseの tier カラムを参照 (安定化のため揺らぎを排除)
+        let tierBonus = 0;
         if (c.tier === 'S') tierBonus = 5;
         else if (c.tier === 'A') tierBonus = 3;
         else if (c.tier === 'B') tierBonus = 2;
 
         // 5. 合計スコア（上限は99%）
+        // 安定化のため、10の倍数付近でキリの良い数字にする（若干の揺らぎを吸収）
         const rawScore = baseScore + vibeBonus + tierBonus;
         let score = Math.min(rawScore, 99);
+
+        // スコア表示の安定化: 5%刻み、または下1桁を固定するなどの処理を検討。
+        // ここでは単純に整数であることを保証し、上限を99にする
+        score = Math.floor(score);
 
         // 6. HOT Boost: 急上昇クリエイターを確実に上位へ (さらに+5ポイント、上限100へ拡大)
         if (c.is_hot) {
@@ -1279,6 +1335,7 @@ export default function VibeCatalogue({
                         setShopVibeClusters(clusters);
                     }
                     setFilterGenre(selectedGenre); // カタログ表示も同期
+                    setSearchGenre(selectedGenre); // 検索時のカテゴリを保持
                     setStep('vibe_check');
                 } else {
                     // Fallback
@@ -1289,10 +1346,11 @@ export default function VibeCatalogue({
                     const fallbackCount = initialCreators.filter(c => {
                         const genreMatch = selectedGenre === 'All' || selectedGenre === 'ALL' || (c.genre && c.genre.includes(selectedGenre.toUpperCase()));
                         const tierOk = c.tier === 'S' || c.tier === 'A';
-                        const publicOk = c.is_public !== false;
+                        const publicOk = c.is_public && c.review_status === 'approved';
                         return genreMatch && tierOk && publicOk;
                     }).length;
                     setMatchCount(fallbackCount);
+                    setSearchGenre(selectedGenre);
                     setStep('vibe_check');
                 }
             } catch (error: any) {
@@ -1422,9 +1480,9 @@ export default function VibeCatalogue({
     };
 
     return (
-        <div className="min-h-screen bg-stone-50 font-sans text-stone-900 pb-32 pt-16">
-            <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 z-40 px-6 flex items-center justify-between">
-                <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer" onClick={() => setActiveTab("search")}>
+        <div className="min-h-screen bg-stone-50 font-sans text-stone-900 pb-32 pt-14">
+            <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 z-40 px-6 flex items-center justify-between">
+                <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setActiveTab("search")}>
                     INSIDERS.
                 </div>
 
@@ -1456,7 +1514,7 @@ export default function VibeCatalogue({
                         )}
                     </button>
                     {isNotificationOpen && (
-                        <div className="absolute top-14 right-16 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                        <div className="absolute top-14 right-[-52px] sm:right-0 w-[calc(100vw-24px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'DECLINED').length === 0 && (
@@ -1493,7 +1551,7 @@ export default function VibeCatalogue({
                         )}
                     </button>
                     {isChatListOpen && (
-                        <div className="absolute top-14 right-8 w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                        <div className="absolute top-14 right-[-14px] sm:right-0 w-[calc(100vw-24px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Messages</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {localAssets
@@ -1594,39 +1652,40 @@ export default function VibeCatalogue({
                         exit={{ opacity: 0, y: -10 }}
                         className="animate-in fade-in"
                     >
-                        <main className="max-w-4xl mx-auto px-4 pt-8">
+                        <main className="max-w-4xl mx-auto px-4 pt-8 overflow-x-hidden md:overflow-visible">
                             {step === 'input' && (
                                 <div className="space-y-12 pb-12 text-center animate-in fade-in zoom-in-95 duration-700">
                                     {/* Hero Section */}
-                                    <div className="space-y-8 mb-4">
-                                        <div className="inline-flex items-center gap-2 bg-indigo-50/50 text-indigo-700 border border-indigo-100 rounded-full px-5 py-2 mb-4 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-1000">
+                                    <div className="space-y-6 mb-4 max-w-[280px] sm:max-w-xl mx-auto">
+                                        <div className="inline-flex items-center gap-2 bg-indigo-50/50 text-indigo-700 border border-indigo-100 rounded-full px-5 py-2 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-1000">
                                             <Sparkles className="w-4 h-4 text-indigo-500" />
-                                            <span className="text-[14px] font-bold tracking-wide">
-                                                あなたのお店がインバウンドの目的地になる
+                                            <span className="text-[11px] sm:text-[14px] font-bold tracking-wide whitespace-nowrap">
+                                                あなたのお店をインバウンドの目的地に
                                             </span>
                                         </div>
-                                        <h1 className="text-4xl md:text-5xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                            あなたのお店の「熱狂」を創り出す、<br className="hidden md:block" />AIマッチングを開始。
+                                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-4 italic duration-700 px-2 sm:px-0">
+                                            Find your best<br />Inbound Creators!
                                         </h1>
-                                        <p className="text-slate-500 font-bold max-w-2xl mx-auto text-base md:text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
-                                            貴店のGoogleマップ、またはInstagramのURLをペーストしてください。独自のデータ解析に基づき、1,000組以上の本物のクリエイターネットワークから、最も勝率の高い『アンバサダー』をAIが即座に導き出します。
+                                        <p className="text-slate-500 font-bold max-w-[280px] sm:max-w-xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200 px-4">
+                                            貴店のGoogleマップまたはInstagramのURLを入力してください。<br className="hidden sm:block" />INSIDERS.が保有する1000組以上のデータベースから、貴社にピッタリのインバウンドクリエイターを即座にご紹介します。
                                         </p>
                                     </div>
 
                                     {/* Search Input Bar */}
-                                    <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                                    <div className="max-w-[320px] sm:max-w-4xl mx-auto space-y-12 mt-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
                                         <div className="relative group">
                                             {/* Glow Effect */}
-                                            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-[42px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                                            <div className="absolute inset-0 bg-indigo-600/20 rounded-[30px] md:rounded-[40px] blur-3xl opacity-60 group-hover:opacity-80 transition duration-1000 group-hover:duration-200 -z-10 mx-auto max-w-xl"></div>
+                                            <div className="absolute inset-4 bg-violet-600/10 rounded-[30px] md:rounded-[40px] blur-2xl opacity-40 group-hover:opacity-60 transition duration-1000 group-hover:duration-200 -z-10 mx-auto max-w-lg"></div>
 
-                                            <div className="relative bg-white/80 backdrop-blur-xl p-3 md:p-4 rounded-[40px] shadow-2xl border border-white/50 flex flex-col overflow-hidden">
+                                            <div className="relative bg-white/80 backdrop-blur-xl p-1.5 md:p-2.5 rounded-[30px] shadow-2xl border border-white/50 flex flex-col overflow-hidden max-w-2xl mx-auto">
                                                 <div className="flex flex-col md:flex-row items-center gap-2">
                                                     {/* Genre Select (The Wand's head) */}
                                                     <div className="relative border-b md:border-b-0 md:border-r border-slate-100 pr-2 flex items-center shrink-0 w-full md:w-auto">
                                                         <select
                                                             value={selectedGenre}
                                                             onChange={(e) => setSelectedGenre(e.target.value)}
-                                                            className="appearance-none bg-transparent font-black text-sm pl-8 pr-12 py-5 outline-none cursor-pointer tracking-widest uppercase text-slate-900 w-full"
+                                                            className="appearance-none bg-transparent font-black text-sm pl-8 pr-12 py-4 outline-none cursor-pointer tracking-widest uppercase text-slate-900 w-full"
                                                         >
                                                             <option value="FOOD">🍣 Food</option>
                                                             <option value="BEAUTY">💅 Beauty</option>
@@ -1644,14 +1703,16 @@ export default function VibeCatalogue({
                                                     </div>
 
                                                     {/* Submit Button (The Wand's Sparkle) */}
-                                                    <button
-                                                        onClick={handleUrlSubmit}
-                                                        className="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-10 py-5 rounded-[30px] font-black text-sm uppercase tracking-widest hover:shadow-indigo-200 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 shrink-0 relative overflow-hidden group/btn"
-                                                    >
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
-                                                        <span>分析を開始</span>
-                                                        <Sparkles size={18} className="text-yellow-400" />
-                                                    </button>
+                                                    <div className="w-full md:w-auto p-1.5 md:p-0">
+                                                        <button
+                                                            onClick={handleUrlSubmit}
+                                                            className="w-full md:w-auto md:min-w-[180px] bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-8 py-4 sm:py-4.5 rounded-[22px] md:rounded-[25px] font-black text-sm sm:text-xs uppercase tracking-widest hover:shadow-indigo-500/25 hover:shadow-2xl hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-3 relative overflow-hidden group/btn shadow-xl shadow-indigo-500/10"
+                                                        >
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                                                            <span>分析を開始する</span>
+                                                            <Sparkles size={18} className="text-yellow-400" />
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 {/* Inline Error within the bar */}
@@ -1671,13 +1732,14 @@ export default function VibeCatalogue({
                                                     )}
                                                 </AnimatePresence>
                                             </div>
+                                            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 mt-3 text-center">
+                                                ※短尺URL（Googleマップの共有から取得できるURL）<br className="desktop:inline hidden" />は避け、フルURLを入力してください
+                                            </p>
                                         </div>
-                                        <p className="text-[11px] font-bold text-slate-400 mt-4">
-                                            ※短尺URL（Googleマップの共有から取得できるURL等）は避け、フルURLを入力してください
-                                        </p>
+
 
                                         {/* Social Proof: Infinite Marquee */}
-                                        <div className="relative pt-8 select-none pointer-events-none">
+                                        <div className="relative pt-0 mt-0 sm:mt-2 select-none pointer-events-none z-0">
                                             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-10" />
                                             <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10" />
 
@@ -1686,9 +1748,9 @@ export default function VibeCatalogue({
                                                     {[...marqueeCreators, ...marqueeCreators].map((creator, i) => (
                                                         <div key={`${creator.id}-${i}`} className="inline-block w-32 md:w-40 bg-white/40 backdrop-blur-sm border border-slate-100 rounded-2xl p-3 shadow-sm opacity-60 hover:opacity-100 transition-opacity">
                                                             <div className="aspect-[3/4] rounded-xl overflow-hidden mb-2 bg-slate-100">
-                                                                <img 
-                                                                    src={creator.thumbnail_url || ""} 
-                                                                    className="w-full h-full object-cover" 
+                                                                <img
+                                                                    src={creator.thumbnail_url || undefined}
+                                                                    className="w-full h-full object-cover"
                                                                     loading="eager"
                                                                 />
                                                             </div>
@@ -1698,15 +1760,10 @@ export default function VibeCatalogue({
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="text-[11px] text-slate-400 font-bold mt-6 tracking-widest uppercase">Trusted by 1,000+ top creators worldwide</p>
+                                            <p className="text-[11px] text-slate-400 font-bold mt-6 tracking-widest uppercase">Trusted by 1,000+ <br />top creators worldwide</p>
                                         </div>
                                     </div>
 
-                                    {/* Helper Text below the bar */}
-                                    <p className="text-[10px] text-stone-400 font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 mt-4 px-4 text-center">
-                                        <Info size={12} className="text-stone-300" />
-                                        短尺URL（Googleマップの共有から取得できるURL等）は避け、フルURLを入力してください
-                                    </p>
                                 </div>
                             )}
 
@@ -1727,34 +1784,32 @@ export default function VibeCatalogue({
 
                             {step === 'result' && (
                                 <div className="space-y-8 py-8">
-                                    <div className="flex justify-between items-end border-b border-stone-100 pb-6">
-                                        <div className="space-y-1 text-left">
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h2 className="text-3xl font-black tracking-tighter">Creator Catalog</h2>
-                                                {initialGenre && (
-                                                    <span className="bg-black text-white text-[10px] px-3 py-0.5 rounded-full align-middle font-bold flex items-center gap-1.5 shadow-lg border border-white/20 animate-in fade-in slide-in-from-left-4 duration-1000">
-                                                        <Sparkles className="w-3 h-3 text-yellow-400" /> Optimized for {initialGenre}
-                                                    </span>
-                                                )}
-                                                {freeOffers > 0 && (
-                                                    <span className="bg-yellow-100 text-yellow-800 text-[10px] px-3 py-0.5 rounded-full align-middle font-black flex items-center gap-1.5 shadow-sm border border-yellow-200">
-                                                        <Sparkles className="w-3 h-3 text-yellow-500" /> 残り {freeOffers}/3 回オファー無料
-                                                    </span>
-                                                )}
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-stone-100 pb-6 gap-6">
+                                        <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                                <div className="order-2 sm:order-1">
+                                                    <h2 className="text-2xl sm:text-3xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
+                                                </div>
+                                                <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
+                                                    {initialGenre && (
+                                                        <span className="bg-black text-white text-[9px] sm:text-[10px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-lg border border-white/20 animate-in fade-in slide-in-from-left-4 duration-1000">
+                                                            <Sparkles className="w-3 h-3 text-yellow-400" /> {initialGenre}
+                                                        </span>
+                                                    )}
+                                                    {freeOffers > 0 && (
+                                                        <span className="bg-yellow-100 text-yellow-800 text-[9px] sm:text-[10px] px-3 py-1 rounded-full font-black flex items-center gap-1.5 shadow-sm border border-yellow-200">
+                                                            <Sparkles className="w-3 h-3 text-yellow-500" /> 残り {freeOffers}/3 回無料
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-gray-900 text-sm font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{filteredCreators.length}名（{filterGenre !== 'ALL' ? filterGenre : (initialGenre || '全カテゴリ')}）</span></p>
-                                            <p className="text-[11px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい</p>
+                                            <p className="text-gray-900 text-sm sm:text-md font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{searchGenreCount || (filterGenre === searchGenre ? filteredCreators.length : 0) || '...'}名（{(searchGenre || initialGenre || '全カテゴリ').toUpperCase()}）</span></p>
+                                            <p className="text-[10px] sm:text-[11px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい。</p>
                                         </div>
-                                        <button
-                                            onClick={() => { setStep('input'); setUrl(''); setShopVibe([]); setFilterGenre('ALL'); setFilterRegion('ALL'); }}
-                                            className="text-stone-400 hover:text-black transition flex items-center gap-1 text-xs font-bold uppercase tracking-widest"
-                                        >
-                                            <RefreshCw size={14} /> リセット
-                                        </button>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <div className="flex gap-2 flex-wrap">
+                                    <div className="space-y-2">
+                                        <div className="flex gap-2 flex-nowrap overflow-x-auto pt-4 pb-6 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
                                             {[
                                                 { key: 'ALL', label: 'All' },
                                                 { key: 'FOOD', label: '🍣 Food' },
@@ -1766,22 +1821,21 @@ export default function VibeCatalogue({
                                                 <button
                                                     key={tab.key}
                                                     onClick={() => setFilterGenre(tab.key)}
-                                                    className={`relative px-5 py-2.5 rounded-full text-sm font-black transition-all duration-500 ${filterGenre === tab.key
-                                                        ? tab.key === initialGenre
-                                                            ? 'bg-gradient-to-br from-yellow-400 via-amber-300 to-yellow-500 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)] scale-110 ring-4 ring-yellow-400/30 z-10 border-none'
+                                                    className={`relative px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all duration-500 whitespace-nowrap ${filterGenre === tab.key
+                                                        ? tab.key === searchGenre
+                                                            ? 'bg-gradient-to-br from-yellow-400 via-amber-300 to-yellow-500 text-black scale-110 ring-4 ring-yellow-400/50 z-10 border-none px-6'
                                                             : 'bg-black text-white shadow-[0_15px_30px_rgba(0,0,0,0.3)] scale-110 ring-2 ring-black ring-offset-2 z-10'
-                                                        : tab.key === initialGenre
-                                                            ? 'bg-yellow-50 text-amber-600 border-2 border-yellow-200 shadow-sm opacity-80 hover:opacity-100'
-                                                            : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600'
+                                                        : tab.key === searchGenre
+                                                            ? 'bg-yellow-100 text-amber-700 border-2 border-yellow-300 shadow-[0_5px_15px_rgba(251,191,36,0.3)] opacity-100 px-6'
+                                                            : 'bg-white text-stone-400 border border-stone-200 hover:border-stone-400 hover:text-stone-600 px-5'
                                                         }`}
                                                 >
-                                                    <span className="relative z-10 flex items-center gap-2">
-                                                        {tab.key === initialGenre && <Sparkles className={`w-3.5 h-3.5 ${filterGenre === tab.key ? 'animate-pulse' : ''}`} />}
-                                                        {tab.label}
+                                                    <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                                                        <span>{tab.label}</span>
+                                                        {tab.key === searchGenre && <Sparkles className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${filterGenre === tab.key ? 'animate-pulse' : ''}`} />}
                                                     </span>
-                                                    {tab.key === initialGenre && (
+                                                    {tab.key === searchGenre && (
                                                         <>
-                                                            <div className="absolute inset-0 rounded-full bg-yellow-400/10 animate-ping pointer-events-none" />
                                                             <span className="absolute -top-2 -right-1 bg-yellow-400 text-black text-[8px] px-1.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5 font-bold border border-white">
                                                                 MATCHED
                                                             </span>
@@ -2170,16 +2224,16 @@ export default function VibeCatalogue({
                 )}
             </AnimatePresence>
 
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-                <div className="flex items-center gap-1 p-1.5 bg-[#1A1A1A]/95 backdrop-blur-2xl rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto">
+                <div className="flex items-center p-1 bg-[#1A1A1A]/95 backdrop-blur-2xl rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 shrink-0">
                     {/* Left: Search (URL Input) */}
                     <button
                         onClick={() => { setActiveTab("search"); setStep("input"); }}
-                        className={`group relative flex items-center gap-2.5 px-6 py-3 rounded-full transition-all duration-300 ${activeTab === "search" && step === "input" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
+                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "search" && step === "input" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
                     >
-                        <Search className="w-4 h-4" />
-                        <span className="text-sm">Search</span>
-                        {activeTab === "search" && step === "input" && <span className="w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
+                        <Search className="w-3.5 h-3.5" />
+                        <span className="text-[10px] sm:text-sm">Search</span>
+                        {activeTab === "search" && step === "input" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
                     </button>
 
                     <div className="w-px h-6 bg-white/20 mx-1" />
@@ -2195,21 +2249,23 @@ export default function VibeCatalogue({
                                 setStep("input");
                             }
                         }}
-                        className={`group relative flex items-center gap-2.5 px-6 py-3 rounded-full transition-all duration-300 ${activeTab === "search" && step === "result" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
+                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "search" && step === "result" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
                     >
-                        <Users className="w-4 h-4" />
-                        <span className="text-sm">Creators</span>
-                        {activeTab === "search" && step === "result" && <span className="w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
+                        <Users className="w-3.5 h-3.5" />
+                        <span className="text-[10px] sm:text-sm">Creators</span>
+                        {activeTab === "search" && step === "result" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
                     </button>
+
+                    <div className="w-px h-6 bg-white/20 mx-1" />
 
                     {/* Right: Asset Hub */}
                     <button
                         onClick={() => setActiveTab("assets")}
-                        className={`group relative flex items-center gap-2.5 px-6 py-3 rounded-full transition-all duration-300 ${activeTab === "assets" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
+                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "assets" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
                     >
-                        <Layers className="w-4 h-4" />
-                        <span className="text-sm">Asset Hub</span>
-                        {activeTab === "assets" && <span className="w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
+                        <Layers className="w-3.5 h-3.5" />
+                        <span className="text-[10px] sm:text-sm">Asset Hub</span>
+                        {activeTab === "assets" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
                     </button>
                 </div>
             </div>
