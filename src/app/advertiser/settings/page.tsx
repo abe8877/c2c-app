@@ -120,7 +120,7 @@ export default function SettingsPage() {
                             <h3 className="font-black text-teal-900 text-base flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-teal-500" /> 無料オファー特典（招待枠）
                             </h3>
-                            <p className="text-xs sm:text-sm text-teal-700 leading-relaxed max-w-md font-medium">残りの招待コード利用枠です。0になるとベーシックプランへの移行が必要です。</p>
+                            <p className="text-xs sm:text-sm text-teal-700 leading-relaxed max-w-md font-medium">残りの招待コード利用枠です。0になるとスタンダードプランへの移行が必要です。</p>
                         </div>
                         <div className="relative z-10 flex items-baseline gap-1 self-end sm:self-center">
                             <span className="text-5xl font-black text-teal-600 tracking-tighter tabular-nums drop-shadow-sm">
@@ -149,8 +149,8 @@ export default function SettingsPage() {
                                     <div className="text-[10px] font-black text-slate-400 mb-2 flex items-center gap-1.5 uppercase tracking-[2px]">
                                         <ShieldCheck className="w-3 h-3 text-teal-500" /> Active Plan
                                     </div>
-                                    <div className="text-2xl sm:text-3xl font-black tracking-tight leading-none mb-3 text-slate-900">
-                                        {shop?.is_premium ? "Premium Shop Plan" : "トライアルプラン"}
+                                    <div className="text-xl sm:text-xl font-black tracking-tight leading-none mb-3 text-slate-900">
+                                        {shop?.is_premium ? "スタンダードプラン" : "トライアルプラン"}
                                     </div>
                                     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-teal-50 text-[10px] font-black text-teal-700 border border-teal-100 uppercase tracking-widest">
                                         {shop?.is_premium ? "Unlimited Access" : "Limited Access"}
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                                         <ShieldCheck className="w-5 h-5" />
                                     </div>
                                     <p className="text-[11px] sm:text-[12px] text-slate-500 max-w-sm leading-relaxed font-medium">
-                                        クレジットカードの変更、領収書のダウンロード、プランのアップグレードや解約はセキュアな専用ポータルから行えます。
+                                        クレジットカードの変更、領収書のダウンロード、プランのアップグレードや解約は専用ポータルページから行えます。
                                     </p>
                                 </div>
                                 <button

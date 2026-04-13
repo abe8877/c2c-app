@@ -71,7 +71,7 @@ export function AnalysisView({ matchCount, genre, tags: initialTags }: { matchCo
                             </div>
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl font-black text-center tracking-tight mb-4 text-neutral-900 uppercase italic">
+                        <h1 className="text-4xl md:text-4xl font-black text-center tracking-tight mb-4 text-neutral-900 uppercase italic">
                             ANALYSIS COMPLETE
                         </h1>
 

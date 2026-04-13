@@ -142,15 +142,12 @@ export default async function AdvertiserPage() {
     }
 
     return (
-        <>
-            <OnboardingModal />
-            <VibeCatalogue
-                initialCreators={enrichedCreators}
-                initialAssets={assets}
-                clientTag={clientTag}
-                stats={stats}
-                topCreators={topCreators || []}
-            />
-        </>
+        <VibeCatalogue
+            initialCreators={enrichedCreators}
+            initialAssets={assets}
+            clientTag={clientTag}
+            stats={stats}
+            topCreators={topCreators || []}
+        />
     );
 }

@@ -1095,7 +1095,7 @@ export default function InsidersLP() {
                         <div id="viral-wave" className="flex flex-col lg:flex-row-reverse items-center justify-center gap-4 sm:gap-6 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 scroll-mt-24">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
-                                    <MessageSquare className="w-5 h-5 font-black" /> Point 03.  AI依頼アシスト機能
+                                    <MessageSquare className="w-5 h-5 font-black" /> Point 03.  AIアシスタント機能
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     お気に入りのクリエイターに<br />翻訳不要で簡単オファー

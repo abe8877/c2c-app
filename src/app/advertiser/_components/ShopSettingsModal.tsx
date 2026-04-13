@@ -362,9 +362,9 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
 
                                     <div className="space-y-6">
                                         <div className="space-y-3">
-                                            <label className="text-sm font-bold text-gray-700 block">撮影で盛り込んでほしい要素</label>
+                                            <label className="text-sm font-bold text-gray-700 block">動画に盛り込んでほしい要素</label>
                                             <div className="flex flex-wrap gap-2">
-                                                {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
+                                                {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', 'アクセス情報', '利用シーン提案'].map(tag => (
                                                     <button
                                                         key={tag}
                                                         onClick={() => toggleRequirement(tag)}
@@ -410,8 +410,8 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                                 IG
                                             </div>
                                             <div className="flex-1">
-                                                <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Instagram</label>
-                                                <input type="text" value={formData.instagram_handle} onChange={e => updateField('instagram_handle', e.target.value)} placeholder="@your_account" className="w-full bg-transparent border-b border-gray-300 py-2 outline-none focus:border-black font-bold text-gray-900" />
+                                                <label className="text-[10px] font-black tracking-widest text-gray-400">Instagram</label>
+                                                <input type="text" value={formData.instagram_handle} onChange={e => updateField('instagram_handle', e.target.value)} placeholder="@your_accountname" className="w-full bg-transparent border-b border-gray-300 py-2 outline-none focus:border-black font-bold text-gray-900" />
                                             </div>
                                         </div>
 
@@ -420,8 +420,8 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                                 TT
                                             </div>
                                             <div className="flex-1">
-                                                <label className="text-[10px] font-black tracking-widest text-gray-400 uppercase">TikTok</label>
-                                                <input type="text" value={formData.tiktok_handle} onChange={e => updateField('tiktok_handle', e.target.value)} placeholder="@your_account" className="w-full bg-transparent border-b border-gray-300 py-2 outline-none focus:border-black font-bold text-gray-900" />
+                                                <label className="text-[10px] font-black tracking-widest text-gray-400">TikTok</label>
+                                                <input type="text" value={formData.tiktok_handle} onChange={e => updateField('tiktok_handle', e.target.value)} placeholder="@your_accountname" className="w-full bg-transparent border-b border-gray-300 py-2 outline-none focus:border-black font-bold text-gray-900" />
                                             </div>
                                         </div>
                                     </div>

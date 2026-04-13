@@ -35,7 +35,7 @@ export async function sendMessage({
         }
 
         const { text } = await generateText({
-            model: google('gemini-2.5-flash-latest'),
+            model: google('gemini-1.5-flash'),
             system: systemPrompt,
             prompt: content,
         });
@@ -59,8 +59,6 @@ export async function sendMessage({
             sender_id: senderId,
             sender_type: senderType,
             message: content,
-            message_en: senderType === 'shop' ? translatedContent : content,
-            message_ja: senderType === 'shop' ? content : translatedContent,
         })
         .select()
         .single();
@@ -167,7 +165,7 @@ IMPORTANT: You MUST list the exact dates provided above in your message. Ask the
 
     try {
         const { text } = await generateText({
-            model: google('gemini-2.5-flash-latest'),
+            model: google('gemini-1.5-flash'),
             system: systemPrompt,
             prompt: prompt,
         });

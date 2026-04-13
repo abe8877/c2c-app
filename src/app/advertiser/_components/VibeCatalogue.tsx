@@ -10,7 +10,7 @@ import {
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
     Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target,
-    SettingsIcon
+    SettingsIcon, Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -21,6 +21,9 @@ import { translateText } from '@/app/actions/translate';
 import { createClient } from '@/utils/supabase/client';
 import ShopUpsellBanner from "./ShopUpsellBanner";
 import ShopSettingsModal from "./ShopSettingsModal";
+import OnboardingModal from "./OnboardingModal";
+import { FloatingActionBar } from '@/components/floating-action-bar';
+import { HelpCircle } from 'lucide-react';
 
 export interface Asset {
     id: string;
@@ -29,6 +32,10 @@ export interface Asset {
     status: string;
     video_url?: string;
     created_at?: string;
+    updated_at?: string;
+    approved_at?: string;
+    filming_at?: string;
+    delivered_at?: string;
     creator?: {
         name: string;
         tiktok_handle?: string;
@@ -153,12 +160,12 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                         </button>
                     </div>
 
-                    <div className="relative flex items-center gap-4 w-full max-w-4xl justify-center" onClick={(e) => e.stopPropagation()}>
-                        {/* Prev Button */}
+                    <div className="relative flex items-center w-full max-w-[320px] sm:max-w-sm justify-center" onClick={(e) => e.stopPropagation()}>
+                        {/* Prev Button - Absolute */}
                         <button
                             onClick={goPrev}
                             disabled={total <= 1}
-                            className={`p-3 rounded-full transition-all shrink-0 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
+                            className={`absolute left-[-60px] p-3 rounded-full transition-all z-30 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md transition-transform active:scale-90 hover:scale-110'}`}
                         >
                             <ChevronLeft size={24} />
                         </button>
@@ -168,7 +175,7 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full max-w-[320px] sm:max-w-sm aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/20"
+                            className="relative w-full aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/20"
                         >
                             {isDirectVideo ? (
                                 <video
@@ -187,11 +194,11 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                             )}
                         </motion.div>
 
-                        {/* Next Button */}
+                        {/* Next Button - Absolute */}
                         <button
                             onClick={goNext}
                             disabled={total <= 1}
-                            className={`p-3 rounded-full transition-all shrink-0 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'}`}
+                            className={`absolute right-[-60px] p-3 rounded-full transition-all z-30 ${total <= 1 ? 'hidden' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md transition-transform active:scale-90 hover:scale-110'}`}
                         >
                             <ChevronRight size={24} />
                         </button>
@@ -765,7 +772,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     // Changing to controlled for easier translation.
     useEffect(() => {
         if (!isManualMessage) {
-            setInvitationMessage(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your vibe.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`);
+            setInvitationMessage(`Hi ${creatorName}! We love your style.\nOur shop has a perfect match with your style.\nWe'd like to invite you for our Experience${plan === 'paid' ? ` with \u00a5${amount.toLocaleString()} reward` : ''}.`);
         }
     }, [plan, amount, barterDetails, creatorName, isManualMessage]);
 
@@ -797,7 +804,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                         <div className="p-6 space-y-8 overflow-y-auto">
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Gift className="w-4 h-4" /> 提供プラン
+                                    <Gift className="w-4 h-4" /> 依頼形式
                                 </label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div
@@ -805,20 +812,20 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${plan === 'barter' ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-300'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <div className="font-bold text-lg flex items-center gap-2">🎁 ギフティング</div>
+                                            <div className="font-bold text-[12px] flex items-center gap-2">🎁 ギフティング</div>
                                             {plan === 'barter' && <CheckCircle className="w-5 h-5 text-black" />}
                                         </div>
-                                        <div className="text-xs text-gray-500">金銭報酬なし（商品提供のみ）</div>
+                                        <div className="text-[12px] text-gray-500">商品提供のみ</div>
                                     </div>
                                     <div
                                         onClick={() => setPlan('paid')}
                                         className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${plan === 'paid' ? 'border-black bg-gray-50' : 'border-gray-100 hover:border-gray-300'}`}
                                     >
                                         <div className="flex justify-between items-start mb-1">
-                                            <div className="font-bold text-lg flex items-center gap-2">💰 報酬付きオファー</div>
+                                            <div className="font-bold text-[12px] flex items-center gap-2">💰 報酬付きオファー</div>
                                             {plan === 'paid' && <CheckCircle className="w-5 h-5 text-black" />}
                                         </div>
-                                        <div className="text-xs text-gray-500">商品提供 + 謝礼金</div>
+                                        <div className="text-[12px] text-gray-500">商品提供 + 謝礼金</div>
                                     </div>
                                 </div>
 
@@ -830,7 +837,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         >
                                             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-2 space-y-3">
                                                 <div className="flex justify-between items-center">
-                                                    <label className="text-sm font-bold text-gray-700">謝礼金額 (円)</label>
+                                                    <label className="text-sm font-bold text-gray-700">謝礼金額（¥）</label>
                                                     <input
                                                         type="number"
                                                         value={amount}
@@ -858,7 +865,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         <div>
                                             <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
                                             <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
-                                                こちらのクリエイターは人気が高いため、<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
+                                                こちらのクリエイターは人気のため、<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
                                             </p>
                                         </div>
                                     </div>
@@ -869,12 +876,12 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
                                 </label>
 
-                                <div className="flex flex-wrap gap-2">
-                                    {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', '調理シーン', 'テラス席'].map(tag => (
+                                <div className="flex flex-wrap gap-2.5">
+                                    {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', 'アクセス情報', '利用シーン'].map(tag => (
                                         <button
                                             key={tag}
                                             onClick={() => toggleTag(tag)}
-                                            className={`px-4 py-2 rounded-full text-sm font-bold border transition-all duration-200 ${selectedTags.includes(tag) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                                            className={`px-4 py-2 rounded-full text-[10px] font-bold border transition-all duration-200 ${selectedTags.includes(tag) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
                                         >
                                             {tag}
                                         </button>
@@ -882,21 +889,19 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 </div>
                             </div>
 
-                            {/* 🎁 Barter（必須提供価値）入力エリア */}
-                            <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-100 group">
-                                <label className="flex items-center gap-2 text-sm font-black text-slate-900 mb-1">
-                                    🎁 クリエイターへの提供内容（英語）<span className="text-red-500 text-xs">*</span>
+                            {/* Section: Barter Details */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                                    <Gift className="w-4 h-4" /> クリエイターへの提供内容（体験内容）
+                                    <span className="text-red-500 text-xs">*</span>
                                 </label>
-                                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                                    店頭で提供するサービスや体験の内容を具体的に記載してください。
-                                    <span className="font-bold text-amber-600">人気メニューや独自の体験を提案するとクリエイターの承諾率が高まります。</span>
-                                </p>
-                                <div className="relative">
+
+                                <div className="relative group">
                                     <textarea
                                         value={barterDetails}
                                         onChange={(e) => setBarterDetails(e.target.value)}
                                         placeholder="例：ヘッドスパ60分無料、看板メニュー「〇〇セット」の提供"
-                                        className="w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all resize-none h-20 text-sm placeholder:text-slate-400 shadow-inner"
+                                        className="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-800 leading-relaxed font-sans outline-none focus:ring-2 focus:ring-black resize-none"
                                     />
                                     {/* PCでは入力欄内、モバイルでは入力欄外に配置 */}
                                     <div className="md:absolute md:bottom-3 md:right-3 mt-2 md:mt-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex justify-end">
@@ -926,7 +931,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         <MessageSquare className="w-4 h-4" /> 招待メッセージ（英語）
                                     </label>
                                     <span className="text-xs font-bold text-yellow-600 flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded">
-                                        <Sparkles className="w-3 h-3" /> NOTS推奨
+                                        <Sparkles className="w-3 h-3" />推奨テンプレ
                                     </span>
                                 </div>
                                 <div className="relative group">
@@ -959,7 +964,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    <CheckCircle className="w-3 h-3" /> このまま送信可能ですが、依頼したい理由等を追記するとオファーが受諾されやすいです。
+                                    ※このままでも送信可能ですが、このクリエイターに依頼したい理由を具体的に記載するとオファーが受諾されやすいです。
                                 </p>
                             </div>
                         </div>
@@ -1007,9 +1012,9 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                         <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6 shadow-inner ring-4 ring-yellow-50">
                             <Sparkles className="w-8 h-8 text-yellow-600" />
                         </div>
-                        <h2 className="text-2xl font-black mb-4 tracking-tight">Premium Plan Required</h2>
+                        <h2 className="text-lg font-black mb-4 tracking-tight">トライアルプランのオファー枠<br />上限に達しました</h2>
                         <p className="text-sm text-stone-600 font-bold leading-relaxed mb-8">
-                            このクリエイターへのオファーを含め、月額3.98万円でSランククリエイターに依頼し放題のプレミアムプランを有効化しましょう。
+                            このクリエイターへのオファーを含め、<br />月額4万円でクリエイターに依頼し放題の<br />スタンダードプランを有効化しましょう！
                         </p>
 
                         <div className="w-full space-y-3 mb-6">
@@ -1029,30 +1034,10 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                             >
                                 <Layers className="w-4 h-4" /> 請求書払いを申し込む
                             </button>
-
-                            <div className="pt-4 border-t border-stone-100 mt-4 w-full">
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        placeholder="招待コードをお持ちの方はこちら"
-                                        className="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-2 text-[10px] font-bold outline-none focus:ring-1 focus:ring-black transition-all"
-                                        value={invitationCode}
-                                        onChange={(e) => setInvitationCode(e.target.value)}
-                                    />
-                                    {invitationCode && (
-                                        <button
-                                            onClick={() => { alert("コードを適用しました。"); setInvitationCode(""); }}
-                                            className="absolute right-2 top-1.2 bg-black text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest"
-                                        >
-                                            適用
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
                         </div>
 
                         <p className="text-[10px] text-stone-400 font-bold bg-stone-50 px-4 py-2 rounded-lg inline-block border border-stone-100 ring-1 ring-inset ring-stone-900/5">
-                            <Info className="w-3 h-3 inline mr-1 mb-0.5" /> 決済確認後、運営が手動でアカウントを有効化します
+                            <Info className="w-3 h-3 inline mr-1 mb-0.5" /> 決済確認後、すぐにオファーが再開できるようになります
                         </p>
                     </motion.div>
                 </motion.div>
@@ -1125,6 +1110,9 @@ export default function VibeCatalogue({
 
     const [activeTab, setActiveTab] = useState<"search" | "assets" | "analytics">(initialGenre ? "search" : "search");
     const [step, setStep] = useState<'input' | 'analyzing' | 'vibe_check' | 'result'>(initialGenre ? 'result' : 'input');
+
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+    const [assetHubHint, setAssetHubHint] = useState<string | null>(null);
 
     // ピックアップクリエイター（Tier S, カテゴリごとに上位3名）の選定
     const marqueeCreators = React.useMemo(() => {
@@ -1421,8 +1409,11 @@ export default function VibeCatalogue({
                 setTimeout(() => {
                     setIsModalOpen(false);
                     setIsSent(false);
-                    setTimeout(() => setIsChatOpen(true), 300);
-                }, 2000);
+                    // 修正: 自動でチャットを開かずにヒントを表示
+                    setAssetHubHint("オファーの進行状況はここからチェックできます");
+                    // 3秒後にヒントを表示
+                    setTimeout(() => setAssetHubHint(null), 3000);
+                }, 3000);
             } else if (res.error === 'PAYWALL_REQUIRED') {
                 setShowPaywall(true);
                 setIsModalOpen(false);
@@ -1500,6 +1491,14 @@ export default function VibeCatalogue({
 
                 <div className="flex items-center gap-3 relative z-50">
                     <button
+                        onClick={() => setIsOnboardingOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-full transition-all active:scale-95 group"
+                    >
+                        <HelpCircle className="w-4 h-4 text-stone-400 group-hover:text-stone-600" />
+                        <span className="text-[10px] font-bold">使い方</span>
+                    </button>
+
+                    <button
                         onClick={() => {
                             setIsNotificationOpen(!isNotificationOpen);
                             setIsChatListOpen(false);
@@ -1523,7 +1522,7 @@ export default function VibeCatalogue({
                                 {localAssets.filter(a => a.status === 'COMPLETED').map(a => (
                                     <div key={`notif-completed-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-stone-900 mb-1">🎬 動画が納品されました</div>
-                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！「資産管理」タブで確認できます。</div>
+                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！Asset Hubで確認しましょう。</div>
                                     </div>
                                 ))}
                                 {localAssets.filter(a => a.status === 'DECLINED').map(a => (
@@ -1615,7 +1614,7 @@ export default function VibeCatalogue({
                                 <div className="p-4 border-b border-slate-100 mb-2">
                                     <div className="text-sm font-black text-slate-900 truncate">{shop?.name || "店舗名未設定"}</div>
                                     <div className="text-[10px] font-bold text-amber-600 bg-amber-50 inline-block px-1.5 py-0.5 rounded mt-1">
-                                        {shop?.is_premium ? "ベーシックプラン" : "トライアルプラン"}
+                                        {shop?.is_premium ? "スタンダードプラン" : "トライアルプラン"}
                                     </div>
                                 </div>
                                 <div className="px-2 pb-2">
@@ -1788,7 +1787,7 @@ export default function VibeCatalogue({
                                         <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                 <div className="order-2 sm:order-1">
-                                                    <h2 className="text-2xl sm:text-3xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
+                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
                                                     {initialGenre && (
@@ -1883,76 +1882,67 @@ export default function VibeCatalogue({
                         transition={{ duration: 0.3 }}
                     >
                         <main className="max-w-6xl mx-auto px-4 pt-8 pb-32 space-y-16">
-                            <header className="flex justify-between items-end border-b border-stone-100 pb-8">
-                                <div className="space-y-1 text-left">
+                            <header className="flex flex-col md:flex-row justify-between items-center md:items-end border-b border-stone-100 pb-8 gap-4 text-center md:text-left">
+                                <div className="space-y-1">
                                     <h2 className="text-4xl font-black tracking-tighter uppercase italic">Asset Hub</h2>
-                                    <p className="text-stone-400 text-sm font-medium uppercase tracking-widest text-left">動画を集客資産として一元管理</p>
+                                    <p className="text-stone-400 text-xs sm:text-sm font-black uppercase tracking-[0.2em]">動画を集客資産として一元管理</p>
                                 </div>
                             </header>
 
                             {/* Dynamic KPI Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.1 }}
-                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                    className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all"
                                 >
-                                    <div className="text-5xl font-black text-stone-900 group-hover:text-blue-600 transition-colors">
+                                    <div className="text-5xl font-black text-stone-900 group-hover:text-indigo-600 transition-colors">
                                         <AnimatedCounter value={offeredCount} />
                                     </div>
-                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">交渉中</p>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">交渉中クリエイター</p>
                                 </motion.div>
 
                                 <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.2 }}
-                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform"
+                                    className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all"
                                 >
-                                    <div className="text-5xl font-black text-stone-900 group-hover:text-green-600 transition-colors">
+                                    <div className="text-5xl font-black text-stone-900 group-hover:text-emerald-500 transition-colors">
                                         <AnimatedCounter value={completedCount} />
                                     </div>
-                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">獲得動画</p>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">獲得済み動画数</p>
                                 </motion.div>
 
                                 <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     transition={{ delay: 0.3 }}
-                                    className="bg-white p-8 rounded-[32px] border border-stone-100 shadow-xl shadow-stone-200/50 flex flex-col items-center justify-center space-y-2 group hover:scale-[1.02] transition-transform relative"
+                                    className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all relative overflow-hidden"
                                 >
-                                    <div className="text-5xl font-black text-green-500 flex items-center gap-1">
+                                    <div className="text-5xl font-black text-emerald-500 flex items-center gap-1 group-hover:scale-110 transition-transform">
                                         <AnimatedCounter value={stats.freshness} />
                                         <span className="text-2xl">%</span>
                                     </div>
-                                    <p className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">資産鮮度</p>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">資産鮮度</p>
 
-                                    {/* Action Proposal Tooltip on Hover */}
-                                    <div className="absolute top-full w-80 pt-4 z-50 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all pointer-events-none">
-                                        <div className="pointer-events-auto shadow-2xl rounded-2xl overflow-hidden border border-stone-100">
-                                            {upsellInsight?.upsellPlan ? (
-                                                <ShopUpsellBanner
-                                                    upsellPlan={upsellInsight.upsellPlan}
-                                                    upsellMessage={upsellInsight.upsellMessage}
-                                                />
-                                            ) : (
-                                                <div className="bg-white p-4">
-                                                    <p className="text-xs text-stone-500">現在ご提案できるアクションはありません</p>
-                                                </div>
-                                            )}
+                                    {/* Action Proposal - Static/Tap friendly */}
+                                    <div className="mt-4 pt-4 border-t border-stone-50 w-full">
+                                        <div className="bg-emerald-50/50 p-3 rounded-2xl flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
+                                                <Sparkles size={14} className="text-emerald-500" />
+                                            </div>
+                                            <p className="text-[9px] font-bold text-emerald-700 leading-tight">
+                                                資産鮮度は、SNSにおけるPR効果の発揮度です。投稿後1ヶ月ほどがピークで、その後は緩やかに低下します。定期的な更新が集客を最大化します。
+                                            </p>
                                         </div>
                                     </div>
-
-                                    {/* Move Add Video button here */}
-                                    <button className="mt-4 w-full bg-stone-50 hover:bg-stone-100 text-stone-400 border-2 border-dashed border-stone-200 py-3 rounded-2xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase tracking-widest">
-                                        <Plus className="w-3 h-3" /> 動画を追加
-                                    </button>
                                 </motion.div>
                             </div>
 
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-left uppercase">オファーと交渉状況</h3>
+                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">オファーと交渉状況</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'OFFERED' || a.status === 'DECLINED').map((asset) => {
                                         const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
@@ -1960,8 +1950,17 @@ export default function VibeCatalogue({
                                         const src = asset.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=3000&auto=format&fit=crop';
                                         const isDeclined = asset.status === 'DECLINED';
 
+                                        // タイムラインの構築（実際のデータがない場合はフォールバック表示）
+                                        const timeline = [
+                                            { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
+                                            { label: 'オファー承諾', date: asset.approved_at, active: !!asset.approved_at, icon: <CheckCircle size={10} /> },
+                                            { label: '撮影完了', date: asset.filming_at, active: !!asset.filming_at, icon: <Camera size={10} /> },
+                                            { label: '納品完了', date: asset.delivered_at, active: !!asset.delivered_at, icon: <Video size={10} /> },
+                                            { label: '最終承認', date: asset.status === 'FINALIZED' ? asset.updated_at : null, active: asset.status === 'FINALIZED', icon: <CheckCircle size={10} /> },
+                                        ];
+
                                         return (
-                                            <div key={asset.id} className={`bg-white rounded-[32px] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all ring-1 ring-stone-50 flex flex-col`}>
+                                            <div key={asset.id} className={`bg-white rounded-[2.5rem] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col`}>
                                                 <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
                                                     {src && !src.includes('unsplash.com/photo-1529626455594-4ff0802cfb7e') ? (
                                                         <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
@@ -1975,15 +1974,15 @@ export default function VibeCatalogue({
                                                             <AlertTriangle className="w-3 h-3" /> 辞退
                                                         </div>
                                                     ) : (
-                                                        <div className="absolute top-4 right-4 z-10 bg-blue-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                        <div className="absolute top-4 right-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
                                                             <RefreshCw className="w-3 h-3 animate-spin-slow" /> 交渉中
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="p-6 space-y-4 text-left flex-1 flex flex-col">
+                                                <div className="p-8 space-y-4 text-left flex-1 flex flex-col">
                                                     <div>
-                                                        <h3 className="font-black text-lg tracking-tight">{creatorName}</h3>
-                                                        <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">{dateStr}</p>
+                                                        <h3 className="font-black text-xl tracking-tight">{creatorName}</h3>
+                                                        <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
                                                     </div>
 
                                                     {/* Inline AI Insight */}
@@ -1991,10 +1990,10 @@ export default function VibeCatalogue({
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
                                                             animate={{ opacity: 1, height: 'auto' }}
-                                                            className="bg-stone-900 text-white p-4 rounded-2xl relative overflow-hidden"
+                                                            className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl"
                                                         >
                                                             <Sparkles className="absolute -top-1 -right-1 text-yellow-400 opacity-20" size={40} />
-                                                            <p className="text-[11px] font-medium leading-relaxed italic relative z-10">
+                                                            <p className="text-[11px] font-bold leading-relaxed italic relative z-10 text-indigo-100">
                                                                 {assetInsights[asset.creator_id || (asset.creator as any).id]?.creatorAiHint}
                                                             </p>
                                                         </motion.div>
@@ -2005,30 +2004,36 @@ export default function VibeCatalogue({
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
                                                             animate={{ opacity: 1, height: 'auto' }}
-                                                            className="space-y-3 py-2 border-t border-stone-100 mt-2"
+                                                            className="space-y-4 py-4 border-t border-stone-50 mt-2"
                                                         >
-                                                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">交渉タイムライン</p>
-                                                            <div className="space-y-3">
-                                                                <div className="flex gap-3 items-start">
-                                                                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 shrink-0" />
-                                                                    <div>
-                                                                        <p className="text-[11px] font-bold">オファー送信済み</p>
-                                                                        <p className="text-[9px] text-stone-400">2024.03.10 14:20</p>
+                                                            <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
+                                                            <div className="space-y-4 relative">
+                                                                <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
+                                                                {timeline.map((step, idx) => (
+                                                                    <div key={idx} className="flex gap-4 items-start relative z-10">
+                                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white border-stone-100'}`}>
+                                                                            {step.active && <div className="text-white">{step.icon}</div>}
+                                                                        </div>
+                                                                        <div className="flex-1">
+                                                                            <p className={`text-[11px] font-black ${step.active ? 'text-stone-900' : 'text-stone-300'}`}>{step.label}</p>
+                                                                            {step.active && step.date && (
+                                                                                <p className="text-[9px] font-bold font-mono text-stone-400">
+                                                                                    {new Date(step.date).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                                <div className="flex gap-3 items-start">
-                                                                    <div className="w-1.5 h-1.5 bg-stone-300 rounded-full mt-1.5 shrink-0" />
-                                                                    <div>
-                                                                        <p className="text-[11px] font-bold">クリエイターが確認中</p>
-                                                                        <p className="text-[9px] text-stone-400">2024.03.11 09:15</p>
-                                                                    </div>
-                                                                </div>
+                                                                ))}
                                                                 {isDeclined && (
-                                                                    <div className="flex gap-3 items-start">
-                                                                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1.5 shrink-0" />
-                                                                        <div>
-                                                                            <p className="text-[11px] font-bold text-red-500">案件見送り (辞退)</p>
-                                                                            <p className="text-[9px] text-stone-400">2024.03.12 18:40</p>
+                                                                    <div className="flex gap-4 items-start relative z-10">
+                                                                        <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center shrink-0 border-2 border-red-500 shadow-lg shadow-red-100">
+                                                                            <AlertTriangle size={10} className="text-white" />
+                                                                        </div>
+                                                                        <div className="flex-1">
+                                                                            <p className="text-[11px] font-black text-red-500">案件見送り</p>
+                                                                            <p className="text-[9px] font-bold font-mono text-stone-400">
+                                                                                {asset.updated_at ? new Date(asset.updated_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit' }) : '---'}
+                                                                            </p>
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -2039,23 +2044,23 @@ export default function VibeCatalogue({
                                                     <div className="flex gap-2 mt-auto">
                                                         <button
                                                             onClick={() => setShowDetails(showDetails === asset.id ? null : asset.id)}
-                                                            className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3 transition-all uppercase ${showDetails === asset.id ? 'bg-stone-100 border-stone-100' : 'border-stone-100 hover:bg-stone-50'}`}
+                                                            className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${showDetails === asset.id ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
                                                         >
-                                                            {showDetails === asset.id ? '閉じる' : '詳細'}
+                                                            {showDetails === asset.id ? 'Close' : 'Timeline'}
                                                         </button>
                                                         {isDeclined ? (
                                                             <button
                                                                 onClick={() => asset.creator && handleAnalyzeInsight(asset.creator as any)}
-                                                                className="flex-1 text-[11px] font-black bg-stone-900 text-white rounded-xl py-3 hover:bg-black transition-all shadow-md active:scale-95 flex items-center justify-center gap-1 uppercase"
+                                                                className="flex-1 text-[11px] font-black bg-stone-900 text-white rounded-xl py-3.5 hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest"
                                                             >
-                                                                <Sparkles className="w-3 h-3 text-yellow-400" /> AI改善提案
+                                                                <Sparkles className="w-3 h-3 text-yellow-400" /> AI Proposal
                                                             </button>
                                                         ) : (
                                                             <button
                                                                 onClick={() => asset.creator && handleReject(asset.creator as any)}
-                                                                className="flex-1 text-[11px] font-black border-2 border-red-50 text-red-400 rounded-xl py-3 hover:bg-red-50 transition-all uppercase"
+                                                                className="flex-1 text-[11px] font-black border-2 border-red-50 text-red-400 rounded-xl py-3.5 hover:bg-red-50 transition-all uppercase tracking-widest"
                                                             >
-                                                                お断りする
+                                                                Reject
                                                             </button>
                                                         )}
                                                     </div>
@@ -2224,51 +2229,6 @@ export default function VibeCatalogue({
                 )}
             </AnimatePresence>
 
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto">
-                <div className="flex items-center p-1 bg-[#1A1A1A]/95 backdrop-blur-2xl rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 shrink-0">
-                    {/* Left: Search (URL Input) */}
-                    <button
-                        onClick={() => { setActiveTab("search"); setStep("input"); }}
-                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "search" && step === "input" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
-                    >
-                        <Search className="w-3.5 h-3.5" />
-                        <span className="text-[10px] sm:text-sm">Search</span>
-                        {activeTab === "search" && step === "input" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
-                    </button>
-
-                    <div className="w-px h-6 bg-white/20 mx-1" />
-
-                    {/* Middle: Creators (Analysis Result) */}
-                    <button
-                        onClick={() => {
-                            if (shopVibe.length > 0 || initialGenre) {
-                                setActiveTab("search");
-                                setStep("result");
-                            } else {
-                                setActiveTab("search");
-                                setStep("input");
-                            }
-                        }}
-                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "search" && step === "result" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
-                    >
-                        <Users className="w-3.5 h-3.5" />
-                        <span className="text-[10px] sm:text-sm">Creators</span>
-                        {activeTab === "search" && step === "result" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
-                    </button>
-
-                    <div className="w-px h-6 bg-white/20 mx-1" />
-
-                    {/* Right: Asset Hub */}
-                    <button
-                        onClick={() => setActiveTab("assets")}
-                        className={`group relative flex items-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all duration-300 shrink-0 ${activeTab === "assets" ? "bg-white text-black font-bold shadow-lg" : "text-stone-400 hover:text-white"}`}
-                    >
-                        <Layers className="w-3.5 h-3.5" />
-                        <span className="text-[10px] sm:text-sm">Asset Hub</span>
-                        {activeTab === "assets" && <span className="w-1.5 h-1.5 sm:w-2 h-2 bg-yellow-400 rounded-full ml-1 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.5)]" />}
-                    </button>
-                </div>
-            </div>
 
             {
                 isSent ? (
@@ -2281,7 +2241,7 @@ export default function VibeCatalogue({
                                 <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl p-16 text-center flex flex-col items-center justify-center min-h-[400px] max-w-lg w-full shadow-2xl">
                                     <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-8 animate-bounce"><Check size={48} strokeWidth={4} /></div>
                                     <h3 className="text-3xl font-black tracking-tighter mb-3 uppercase">Offer Sent!</h3>
-                                    <p className="text-stone-500 font-medium">招待状を送りました。承認されると通知が届きます。</p>
+                                    <p className="text-stone-500 font-medium">オファーが完了しました！<br />承認されると通知が届きます。</p>
                                 </motion.div>
                             </motion.div>
                         )}
@@ -2320,6 +2280,21 @@ export default function VibeCatalogue({
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
                 onSuccess={fetchShopInfo}
+            />
+
+            <FloatingActionBar
+                items={[
+                    { name: 'Search', link: 'search', icon: <Search className="w-4 h-4" />, onClick: () => setActiveTab("search") },
+                    { name: 'Creators', link: 'creators', icon: <Users className="w-4 h-4" />, onClick: () => setActiveTab("search") }, // Assuming Creators is part of search result
+                    { name: 'Asset Hub', link: 'assets', icon: <Layers className="w-4 h-4" />, onClick: () => setActiveTab("assets") },
+                ]}
+                hintedLink={assetHubHint ? 'assets' : undefined}
+                hintMessage={assetHubHint || undefined}
+            />
+
+            <OnboardingModal
+                controlledOpen={isOnboardingOpen}
+                onControlledClose={() => setIsOnboardingOpen(false)}
             />
         </div>
     );

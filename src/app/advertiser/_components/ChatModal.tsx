@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-    X, Send, Sparkles, Clock, MapPin, 
-    RefreshCw, Camera, AlertCircle, Loader2, User 
+import {
+    X, Send, Sparkles, Clock, MapPin,
+    RefreshCw, Camera, AlertCircle, Loader2, User
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { sendMessage, getAssistantResponse } from '@/app/actions/chat';
@@ -50,7 +50,7 @@ export default function ChatModal({
 
         const fetchData = async () => {
             setIsLoading(true);
-            
+
             // Partner Avatarの取得
             const { data: asset } = await supabase
                 .from('assets')
@@ -65,8 +65,8 @@ export default function ChatModal({
                 .single();
 
             if (asset) {
-                const avatar = currentUserType === 'shop' 
-                    ? (asset.creators as any)?.avatar_url 
+                const avatar = currentUserType === 'shop'
+                    ? (asset.creators as any)?.avatar_url
                     : (asset.shops as any)?.logo_url;
                 setPartnerAvatar(avatar);
             }
@@ -90,9 +90,9 @@ export default function ChatModal({
         // Realtime Subscription
         const channel = supabase
             .channel(`asset-chat-${assetId}`)
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
                 table: 'messages',
                 filter: `asset_id=eq.${assetId}`
             }, (payload) => {
@@ -192,7 +192,7 @@ export default function ChatModal({
                                 <h2 className="text-white font-bold text-base leading-tight">{partnerName}</h2>
                                 <div className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Active (AI Translated)</span>
+                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">AIアシスタント機能が作動中</span>
                                 </div>
                             </div>
                         </div>
@@ -211,7 +211,7 @@ export default function ChatModal({
                             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
                                 <AlertCircle className="w-12 h-12 mb-4" />
                                 <p className="text-sm font-bold">まだメッセージはありません</p>
-                                <p className="text-[10px] mt-1">早速 AI アシスタントを使ってオファーの内容を確認しましょう ✨</p>
+                                <p className="text-[10px] mt-1">早速 AIアシスタントを使って来店日程を調整しましょう！</p>
                             </div>
                         ) : (
                             messages.map((msg) => {
@@ -223,15 +223,13 @@ export default function ChatModal({
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         className={`flex w-full ${isMine ? 'justify-end' : 'justify-start'}`}
                                     >
-                                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${
-                                            isMine 
-                                                ? 'bg-black text-white rounded-tr-none' 
-                                                : 'bg-white text-zinc-800 border border-zinc-200 rounded-tl-none'
-                                        }`}>
-                                            <p className="whitespace-pre-wrap break-words">{msg.message}</p>
-                                            <div className={`mt-1.5 pt-1.5 border-t text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 ${
-                                                isMine ? 'border-white/10 text-white/40' : 'border-zinc-100 text-zinc-400'
+                                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm text-sm leading-relaxed ${isMine
+                                            ? 'bg-black text-white rounded-tr-none'
+                                            : 'bg-white text-zinc-800 border border-zinc-200 rounded-tl-none'
                                             }`}>
+                                            <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+                                            <div className={`mt-1.5 pt-1.5 border-t text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 ${isMine ? 'border-white/10 text-white/40' : 'border-zinc-100 text-zinc-400'
+                                                }`}>
                                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         </div>

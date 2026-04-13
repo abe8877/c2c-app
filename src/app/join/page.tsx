@@ -335,11 +335,11 @@ export default function CreatorJoinLandingPage() {
 
                                 {/* Screen 2: Creator Catalog */}
                                 <div className="p-5 bg-slate-50/50 border-b border-slate-100">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[11px] font-black text-slate-900">CREATOR CATALOG</span>
-                                            </div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] font-black text-slate-900">CREATOR CATALOG</span>
                                         </div>
+                                    </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         <div className="relative aspect-[9/16] rounded-[24px] overflow-hidden shadow-xl border-4 border-white">
                                             <div className="absolute inset-0 bg-slate-800">

@@ -269,7 +269,7 @@ export default function VibeOnboardingPage() {
                             onClick={() => router.push('/advertiser')}
                             className="w-full py-6 bg-black text-white rounded-[2rem] font-black text-xl shadow-2xl shadow-black/20 flex items-center justify-center gap-3 group"
                         >
-                            マッチング候補を見る
+                            マッチングしたクリエイターを見る
                             <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                         </motion.button>
                     </motion.div>

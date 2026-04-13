@@ -205,7 +205,7 @@ export default function GatewayPage() {
                                         </>
                                     ) : (
                                         <>
-                                            登録して貴店の魅力分析へ
+                                            登録して利用を開始する
                                             <ArrowRight className="w-5 h-5" />
                                         </>
                                     )}

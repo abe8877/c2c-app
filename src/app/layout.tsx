@@ -43,6 +43,8 @@ export const viewport: Viewport = {
   viewportFit: 'cover', // ノッチ領域まで背景を広げる
 };
 
+import ScrollToTop from "./_components/ScrollToTop";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -80,6 +82,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${cormorantGaramond.variable} ${playfairDisplay.variable} antialiased`}
         suppressHydrationWarning
       >
+        <ScrollToTop />
         {children}
       </body>
     </html>
