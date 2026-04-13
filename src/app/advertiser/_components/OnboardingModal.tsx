@@ -164,7 +164,7 @@ export default function OnboardingModal({
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleClose}
-                                className="w-full bg-teal-600 text-white font-black text-md py-6 rounded-[2rem] shadow-[0_20px_40px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:shadow-[0_24px_48px_rgba(13,148,136,0.4)] transition-all flex items-center justify-center gap-4 group"
+                                className="w-full bg-teal-600 text-white font-black text-center text-md py-6 rounded-[2rem] shadow-[0_20px_40px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:shadow-[0_24px_48px_rgba(13,148,136,0.4)] transition-all flex items-center justify-center gap-4 group"
                             >
                                 クリエイターマッチングを開始する
                                 <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />

@@ -892,7 +892,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             {/* Section: Barter Details */}
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Gift className="w-4 h-4" /> クリエイターへの提供内容（体験内容）
+                                    <Gift className="w-4 h-4" /> クリエイターへの提供内容（英語）
                                     <span className="text-red-500 text-xs">*</span>
                                 </label>
 
@@ -1803,7 +1803,7 @@ export default function VibeCatalogue({
                                                 </div>
                                             </div>
                                             <p className="text-gray-900 text-sm sm:text-md font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{searchGenreCount || (filterGenre === searchGenre ? filteredCreators.length : 0) || '...'}名（{(searchGenre || initialGenre || '全カテゴリ').toUpperCase()}）</span></p>
-                                            <p className="text-[10px] sm:text-[11px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい。</p>
+                                            <p className="text-[12px] sm:text-[12px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい。</p>
                                         </div>
                                     </div>
 
@@ -1885,7 +1885,7 @@ export default function VibeCatalogue({
                             <header className="flex flex-col md:flex-row justify-between items-center md:items-end border-b border-stone-100 pb-8 gap-4 text-center md:text-left">
                                 <div className="space-y-1">
                                     <h2 className="text-4xl font-black tracking-tighter uppercase italic">Asset Hub</h2>
-                                    <p className="text-stone-400 text-xs sm:text-sm font-black uppercase tracking-[0.2em]">動画を集客資産として一元管理</p>
+                                    <p className="text-stone-400 text-xs sm:text-sm font-black uppercase tracking-[0.2em]">動画を集客資産として管理</p>
                                 </div>
                             </header>
 
@@ -1933,8 +1933,8 @@ export default function VibeCatalogue({
                                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
                                                 <Sparkles size={14} className="text-emerald-500" />
                                             </div>
-                                            <p className="text-[9px] font-bold text-emerald-700 leading-tight">
-                                                資産鮮度は、SNSにおけるPR効果の発揮度です。投稿後1ヶ月ほどがピークで、その後は緩やかに低下します。定期的な更新が集客を最大化します。
+                                            <p className="text-[12px] font-bold text-emerald-700 leading-tight">
+                                                資産鮮度は、SNSにおけるPR効果の目安です。投稿後1ヶ月ほどがピークで、その後は緩やかに低下します。SNS以外にもGooaleマップに掲載して活用したり、定期的に動画を追加投稿することで、集客効果が最大化できます。
                                             </p>
                                         </div>
                                     </div>
@@ -2083,7 +2083,7 @@ export default function VibeCatalogue({
 
                             {/* Acquired Videos Section */}
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-left uppercase">投稿が完了した獲得動画</h3>
+                                <h3 className="text-xl font-black tracking-tight text-center uppercase">投稿が完了した獲得動画</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     {/* Real / Interactive completed videos */}
                                     {(localAssets.length > 0 ? localAssets : initialAssets)

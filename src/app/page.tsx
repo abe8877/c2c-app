@@ -621,7 +621,7 @@ export default function InsidersLP() {
                                 {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
                                 <div className="grid grid-cols-3 gap-3 px-2 mb-10 mt-10">
                                     {[
-                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター群</> },
+                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
                                         { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
                                         { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
                                     ].map((badge, idx) => (
@@ -643,7 +643,7 @@ export default function InsidersLP() {
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
                             <div className="hidden lg:flex items-center gap-12 mb-12">
                                 {[
-                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター群</> },
+                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
                                     { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
                                     { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
                                 ].map((badge, idx) => (
@@ -1001,7 +1001,7 @@ export default function InsidersLP() {
                             <div className="bg-slate-50 rounded-[3rem] p-8 sm:p-16 border border-slate-100">
                                 <div className="text-center mb-12">
                                     <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                        <Sparkles className="w-5 h-5 font-black" /> Point 01. 高いコストパフォーマンス
+                                        <Sparkles className="w-5 h-5 font-black" /> Point 01. 高コストパフォーマンス
                                     </div>
                                     <h3 className="text-xl sm:text-4xl font-black text-slate-900 mb-6">
                                         インバウンドクリエイターに月額定額でPR依頼し放題！
@@ -1028,7 +1028,7 @@ export default function InsidersLP() {
                                             {[
                                                 { item: "費用", standard: "30~50万円のパッケージ", insiders: "月額4万円でオファーし放題", highlight: true },
                                                 { item: "フォロワー単価", standard: "2~3円", insiders: "規定のフォロワー単価なし", highlight: true },
-                                                { item: "クリエイター選定", standard: <>旅行中や在日外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「属性基準」</span></>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「効果基準」</span></> },
+                                                { item: "クリエイター選定", standard: <>旅行中や在日の外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「ステータス基準」</span></>, insiders: <>訪日客のSNSにおける<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0 italic">「PR効果基準」</span></> },
                                             ].map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-black text-slate-900">{row.item}</td>
@@ -1060,7 +1060,7 @@ export default function InsidersLP() {
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "独自の分析技術によるクリエイター選定", desc: "訪日を検討している外国人のSNSアルゴリズムを分析し、信頼度の高いクリエイターを厳選。" },
+                                        { title: "独自の分析技術によるクリエイター選定", desc: "訪日を検討している外国人のSNSアルゴリズムを分析し、良質なクリエイターだけを目検で厳選。" },
                                         { title: "最適なクリエイターの推薦機能", desc: "GoogleマップやSNSのURLを入れるだけで、貴店と好相性のインバウンドクリエイターを推薦。" },
                                         { title: "データベースの常時アップデート", desc: "世界中に点在するクリエイターを見つけ出し、オファー可能なクリエイターを随時追加します。" }
                                     ].map((item, idx) => (
@@ -1103,7 +1103,7 @@ export default function InsidersLP() {
                                 <ul className="space-y-6">
                                     {[
                                         { title: "AI自動翻訳チャット", desc: "日本語で入力するだけで、英語で依頼に関する要望を伝えられます。" },
-                                        { title: "依頼テンプレート", desc: "日程調整や撮影条件の面倒な交渉も、テンプレ選択で簡単に実現。" },
+                                        { title: "充実した依頼テンプレート", desc: "日程調整や撮影条件の面倒な交渉も、テンプレ選択で簡単にクリア。" },
                                         { title: "現場の負担ゼロ", desc: "通常業務の手を止めることなく、スムーズにPR用動画撮影が完了。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
@@ -1205,7 +1205,7 @@ export default function InsidersLP() {
                                                 <div className={`p-1 rounded-md ${assetStep >= 2 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-300'}`}>
                                                     {assetStep >= 2 ? <CheckCircle2 className="w-3 h-3" /> : <PlayCircle className="w-3 h-3 animate-pulse" />}
                                                 </div>
-                                                <span className="text-[8px] font-black text-slate-700">RIGHTS CLEAR</span>
+                                                <span className="text-[8px] font-black text-slate-700">権利クリア</span>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-1 mb-1 overflow-hidden">
                                                 <motion.div
@@ -1221,7 +1221,7 @@ export default function InsidersLP() {
                                                 <div className={`p-1 rounded-md ${assetStep >= 3 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-300'}`}>
                                                     <MapPin className="w-3 h-3" />
                                                 </div>
-                                                <span className="text-[8px] font-black text-slate-700">MAP SYNC</span>
+                                                <span className="text-[8px] font-black text-slate-700">マップに掲載</span>
                                             </div>
                                             <div className="w-full bg-slate-100 rounded-full h-1 mb-1 overflow-hidden">
                                                 <motion.div
@@ -1262,7 +1262,7 @@ export default function InsidersLP() {
                         <span className="text-indigo-600">インバウンド来店ループへ</span>
                     </h2>
                     <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-sm sm:text-sm font-bold leading-relaxed">
-                        ただ動画を投稿して、Googleマップに埋め込むだけではありません。<br className="hidden sm:block" />これはあなたのお店を「24時間外国人を呼び込むデジタル資産」へと進化させるための第一歩です。
+                        ただ動画を投稿して、Googleマップに埋め込むだけではありません。<br className="hidden sm:block" />これはあなたのお店を「24時間外国人を呼び込むデジタル対応店舗」へと進化させるための第一歩です。
                     </p>
 
                     <div className="relative">
@@ -1292,7 +1292,7 @@ export default function InsidersLP() {
                                     bg: 'bg-emerald-600',
                                     color: 'text-emerald-600',
                                     title: '3. 資産化',
-                                    desc: 'Googleマップに動画が同期し、24時間働くデジタル看板として蓄積',
+                                    desc: 'Googleマップに動画を掲載、24時間働くデジタル看板として蓄積',
                                     badge: 'Asset'
                                 },
                                 {
@@ -1335,7 +1335,7 @@ export default function InsidersLP() {
                             </div>
                             <div className="text-sm font-black text-slate-900 tracking-widest flex items-center gap-3">
                                 <div className="w-8 h-px bg-slate-200" />
-                                成果がさらなる認知を呼ぶ<br />「インバウンド来店ループ」へ
+                                評判が更なる来店を呼ぶ<br />「インバウンド来店ループ」へ
                                 <div className="w-8 h-px bg-slate-200" />
                             </div>
                         </div>
@@ -1364,7 +1364,7 @@ export default function InsidersLP() {
                         <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2 tracking-tight">INSIDERS. スタンダード</h2>
 
                         <div className="flex items-end justify-center gap-2 mb-10 translate-x-3">
-                            <span className="text-5xl sm:text-6xl font-black tracking-tighter text-indigo-600 leading-none">39,800</span>
+                            <span className="text-5xl sm:text-6xl font-black tracking-tighter text-indigo-600 leading-none">40,000</span>
                             <div className="text-left font-black text-slate-400 leading-tight">
                                 <div className="text-sm sm:text-xl tracking-tighter">円 / 月（税別）</div>
                             </div>
@@ -1392,14 +1392,14 @@ export default function InsidersLP() {
                         {/* Trial Box - Light Glass Card */}
                         <div className="bg-white border-2 border-indigo-100 rounded-[2rem] p-8 mb-10 max-w-lg mx-auto shadow-xl shadow-indigo-100/50 group-hover:scale-[1.02] transition-transform duration-500">
                             <div className="text-indigo-600 font-black text-sm mb-3 flex items-center justify-center gap-2">
-                                <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" /> 早期アクセス特典
+                                <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" /> 早期アクセス特典（承認制）
                             </div>
-                            <div className="text-slate-900 font-black text-Lg mb-4 leading-tight">
-                                招待コードを入力すると、3名分の無料オファー枠を使って、すぐにサービスをご利用いただけます！<br />
+                            <div className="text-slate-900 font-black text-md mb-4 leading-tight">
+                                3名分のオファー枠がもらえるトライアルプランで、<br />無料ですぐにサービスをご利用いただけます！
                             </div>
                             <p className="text-[11px] text-slate-500 font-bold leading-relaxed space-y-1">
-                                <span className="block opacity-60">※システム利用料（クリエイター検索・オファー送信）が無料になります</span>
-                                <span className="block opacity-60">※クリエイターへの経費（商品提供・有償でのオファー）は実費負担となります</span>
+                                <span className="block opacity-60">※クリエイター検索やオファーなど、サービスの機能全てが無料でご利用いただけます。</span>
+                                <span className="block opacity-60">※クリエイターへの商品提供や有償オファーをする場合は実費でのご負担となります。</span>
                             </p>
                         </div>
 

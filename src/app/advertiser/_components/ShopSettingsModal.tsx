@@ -328,7 +328,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                     </div>
 
                                     <div className="space-y-6">
-                                        {renderAITextField("クリエイターに提供するメニュー・サービス (英語)", "preset_menu_en", "例: 特選和牛コース（8品）")}
+                                        {renderAITextField("クリエイターに提供するメニュー・サービス (英語)", "preset_menu_en", "例: 和牛ランチ+デザート")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-3">対応可能な食事制限（あれば）</label>
