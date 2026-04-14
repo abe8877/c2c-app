@@ -24,26 +24,23 @@ export async function sendMessage({
 
     const senderId = user.id;
 
-    // 1. AI Translation
-    let translatedContent = "";
+    // 1. AI Translation (Automatic Japanese to English)
+    let finalContent = content;
     try {
-        let systemPrompt = "";
-        if (senderType === 'shop') {
-            systemPrompt = "Translate the following Japanese message to professional, friendly English suitable for business communication with a creator. Output ONLY the translated text without any quotes or explanations.";
-        } else {
-            systemPrompt = "次のクリエイターからの英語のメッセージを、自然で丁寧な日本語のビジネス表現に翻訳してください。翻訳されたテキストのみを出力してください。";
+        // メッセージが日本語を含むか判定（簡易判定）
+        const isJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(content);
+        
+        if (isJapanese && senderType === 'shop') {
+            const systemPrompt = "Translate the following Japanese message to natural, friendly English suitable for professional business communication. Output ONLY the translated text.";
+            const { text } = await generateText({
+                model: google('gemini-2.5-flash'),
+                system: systemPrompt,
+                prompt: content,
+            });
+            finalContent = text.trim();
         }
-
-        const { text } = await generateText({
-            model: google('gemini-1.5-flash'),
-            system: systemPrompt,
-            prompt: content,
-        });
-
-        translatedContent = text.trim();
     } catch (error) {
-        console.error("Translation Error:", error);
-        translatedContent = "[Translation temporarily unavailable]";
+        console.error("Auto Translation Error:", error);
     }
 
     // 2. Save to Database
@@ -58,14 +55,14 @@ export async function sendMessage({
             asset_id: assetId,
             sender_id: senderId,
             sender_type: senderType,
-            message: content,
+            message: finalContent, // 翻訳後のメッセージを保存
         })
         .select()
         .single();
 
     if (error) {
         console.error("🔥 Database Insert Error:", error);
-        throw new Error("Failed to send message: " + error.message);
+        return { success: false, message: error.message };
     }
 
     // 3. Trigger n8n Webhook Notification
@@ -98,14 +95,14 @@ export async function sendMessage({
                         subject: `[INSIDERS] New message from ${senderName || 'your partner'}`,
                         assetId: assetId
                     })
-                }).catch(err => console.error("n8n Chat Notification Error:", err));
+                }).catch(e => console.error("n8n Webhook Error:", e));
             }
         }
-    } catch (notifErr) {
-        console.error("Chat Notification Trigger Error:", notifErr);
+    } catch (webhookError) {
+        console.error("Webhook Trigger Error:", webhookError);
     }
 
-    return { success: true, message: data };
+    return { success: true, data };
 }
 
 /**
@@ -114,17 +111,21 @@ export async function sendMessage({
 export async function getAssistantResponse({
     type,
     shopId,
-    dates
+    dates,
+    contentOverride,
+    structuredData
 }: {
     type: 'map' | 'menu' | 'camera' | 'schedule';
     shopId: string;
     dates?: string[];
+    contentOverride?: string;
+    structuredData?: any;
 }) {
     const supabase = await createServerClient();
 
     const { data: shop, error: shopError } = await supabase
         .from('shops')
-        .select('name, address_en, access_info_en, preset_menu_en, shoot_rules_en, requirements')
+        .select('*')
         .eq('id', shopId)
         .single();
 
@@ -134,38 +135,48 @@ export async function getAssistantResponse({
     }
 
     let prompt = "";
-    let systemPrompt = "You are a professional AI Concierge. Generate a friendly, professional message in English from the shop to the creator. Output ONLY the message text without any quotes or preamble. Use natural emojis.";
+    let systemPrompt = "You are a professional AI Concierge. Generate a friendly, professional message in English from the shop to the creator. Output ONLY the message text without any quotes or preamble. Use natural emojis. ALWAYS mention specific details provided.";
+
+    const data = structuredData || {};
 
     switch (type) {
         case 'map':
-            const address = [shop.address_en, shop.access_info_en].filter(Boolean).join(' / ');
             prompt = `The shop (${shop.name}) is sharing their location.
-Shop Address Info: ${address || 'Please contact us for directions.'}
-Generate a message guiding the creator to the shop.`;
+Business Hours: ${data.hours || shop.business_hours}
+Holidays: ${data.holidays || shop.irregular_holidays}
+Address: ${data.address || shop.address_jp}
+English Access Info: ${data.access_en || shop.address_en}
+Map: ${data.map_url || shop.google_map_url}
+Generate a message guiding the creator to the shop clearly.`;
             break;
         case 'menu':
-            prompt = `The shop (${shop.name}) is sharing the menu they will provide.
-Menu: ${shop.preset_menu_en || 'Our signature dishes.'}
-Generate a welcoming message explaining what the creator will experience.`;
+            prompt = `The shop (${shop.name}) is sharing the menu.
+Menu Details: ${data.description || shop.preset_menu_en}
+Dietary Restrictions support: ${data.restrictions?.join(', ') || shop.dietary_restrictions?.join(', ') || 'None specified'}
+Generate a welcoming message explaining the menu and hospitality.`;
             break;
         case 'camera':
-            const rules = [shop.shoot_rules_en, ...(shop.requirements || [])].filter(Boolean).join(', ');
-            prompt = `The shop (${shop.name}) has specific filming guidelines.
-Rules: ${rules || 'Please capture our vibe naturally.'}
-Generate a polite message explaining these filming guidelines.`;
+            prompt = `The shop (${shop.name}) is sharing shooting rules.
+Must-have Elements: ${data.elements?.join(', ') || shop.shoot_elements?.join(', ')}
+Preferred Time: ${data.time || shop.shoot_time_slot}
+Staff Face Appearance: ${data.staff || shop.shoot_staff_appearance}
+Special Rules: ${data.special || shop.shoot_rules_en}
+Generate a polite message explaining the shooting guidelines.`;
             break;
         case 'schedule':
             const datesStr = dates && dates.length > 0 ? dates.join('\n- ') : 'flexible dates';
+            const extraNote = contentOverride ? `\nAdditional Message: ${contentOverride}` : "";
             prompt = `The shop (${shop.name}) is suggesting candidate dates for the visit.
 Candidate Dates:
 - ${datesStr}
+${extraNote}
 IMPORTANT: You MUST list the exact dates provided above in your message. Ask the creator to pick one.`;
             break;
     }
 
     try {
         const { text } = await generateText({
-            model: google('gemini-1.5-flash'),
+            model: google('gemini-2.5-flash'),
             system: systemPrompt,
             prompt: prompt,
         });
@@ -173,6 +184,56 @@ IMPORTANT: You MUST list the exact dates provided above in your message. Ask the
         return { success: true, text: text.trim() };
     } catch (error: any) {
         console.error("AI Generation Error:", error);
-        return { success: false, error: "AIによるテキスト生成に失敗しました: " + error.message };
+        return { success: false, error: "AI生成に失敗しました: " + (error.message || "Unknown error") };
     }
+}
+
+/**
+ * チャットからの入力をプリセットに同期
+ */
+export async function updateShopPreset({
+    shopId,
+    type,
+    data
+}: {
+    shopId: string;
+    type: 'map' | 'menu' | 'camera';
+    data: any;
+}) {
+    const supabase = await createServerClient();
+
+    let updateData = {};
+    if (type === 'map') {
+        updateData = {
+            business_hours: data.hours,
+            irregular_holidays: data.holidays,
+            address_jp: data.address,
+            address_en: data.access_en,
+            google_map_url: data.map_url
+        };
+    } else if (type === 'menu') {
+        updateData = {
+            preset_menu_en: data.description,
+            dietary_restrictions: data.restrictions
+        };
+    } else if (type === 'camera') {
+        updateData = {
+            shoot_elements: data.elements,
+            shoot_time_slot: data.time,
+            shoot_staff_appearance: data.staff,
+            shoot_rules_en: data.special
+        };
+    }
+
+    const { error } = await supabase
+        .from('shops')
+        .update(updateData)
+        .eq('id', shopId);
+
+    if (error) {
+        console.error("🔥 Shop Preset Update Error:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true };
 }

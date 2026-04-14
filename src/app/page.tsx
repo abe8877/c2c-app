@@ -414,10 +414,10 @@ function Header() {
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinks = [
-        { name: 'INSIDERS.とは', href: '#top' },
-        { name: 'インバウンド集客の課題', href: '#concept' },
+        { name: 'INSIDERS.とは', href: '#concept' },
+        { name: 'インバウンド集客の課題', href: '#problem' },
         { name: 'サービスの特徴', href: '#solution' },
-        { name: 'プラン案内', href: '#signup' }
+        { name: 'プラン案内', href: '#plan' }
     ];
 
     return (

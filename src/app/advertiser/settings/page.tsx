@@ -3,14 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Bell, Sparkles, Crown, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bell, Sparkles, Crown, ShieldCheck, Loader2 } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
 
 export default function SettingsPage() {
     const router = useRouter();
     const [emailNotifications, setEmailNotifications] = useState(true);
-    // const [lineNotifications, setLineNotifications] = useState(false); // 使っていない場合はコメントアウト/削除でOK
+    const [notificationEmail, setNotificationEmail] = useState("");
     const [shop, setShop] = useState<any>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     // 🌟 追加：Stripeポータル遷移のローディング状態管理
     const [isPortalLoading, setIsPortalLoading] = useState(false);
@@ -26,14 +27,33 @@ export default function SettingsPage() {
             if (user) {
                 const { data } = await supabase
                     .from('shops')
-                    .select('name, is_premium, free_offers_remaining')
+                    .select('name, is_premium, free_offers_remaining, notification_email, email_notifications_enabled')
                     .eq('id', user.id)
                     .single();
-                if (data) setShop(data);
+                if (data) {
+                    setShop(data);
+                    setNotificationEmail(data.notification_email || "");
+                    setEmailNotifications(data.email_notifications_enabled ?? true);
+                }
             }
         };
         fetchShop();
     }, [supabase]);
+
+    const handleSaveNotifications = async (enabled: boolean, email: string) => {
+        setIsSaving(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            await supabase
+                .from('shops')
+                .update({
+                    notification_email: email,
+                    email_notifications_enabled: enabled
+                })
+                .eq('id', user.id);
+        }
+        setIsSaving(false);
+    };
 
     // 🌟 追加：Stripeカスタマーポータルへの遷移ハンドラー
     const handlePortalRedirect = async () => {
@@ -99,9 +119,47 @@ export default function SettingsPage() {
                                 <p className="text-xs text-slate-500 font-medium mt-1">マッチング結果や重要なお知らせをメールで受け取る</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" checked={emailNotifications} onChange={(e) => setEmailNotifications(e.target.checked)} />
+                                <input 
+                                    type="checkbox" 
+                                    className="sr-only peer" 
+                                    checked={emailNotifications} 
+                                    onChange={(e) => {
+                                        const val = e.target.checked;
+                                        setEmailNotifications(val);
+                                        handleSaveNotifications(val, notificationEmail);
+                                    }} 
+                                />
                                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                             </label>
+                        </div>
+
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                            <h3 className="font-bold text-slate-900 text-sm">通知用メールアドレス</h3>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="email" 
+                                    placeholder="your@email.com"
+                                    value={notificationEmail}
+                                    onChange={(e) => setNotificationEmail(e.target.value)}
+                                    className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                />
+                                <button 
+                                    onClick={async () => {
+                                        await handleSaveNotifications(emailNotifications, notificationEmail);
+                                        alert("通知設定を保存しました！");
+                                    }}
+                                    disabled={isSaving}
+                                    className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50"
+                                >
+                                    {isSaving ? (
+                                        <div className="flex items-center gap-1">
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Saving...
+                                        </div>
+                                    ) : "Save"}
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-slate-400 font-bold italic">※設定をONにすると、こちらのアドレスに通知が送信されます。</p>
                         </div>
                     </div>
                 </motion.section>

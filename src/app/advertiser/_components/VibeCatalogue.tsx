@@ -2031,7 +2031,12 @@ export default function VibeCatalogue({
                                                                         </div>
                                                                         <div className="flex-1">
                                                                             <p className="text-[11px] font-black text-red-500">案件見送り</p>
-                                                                            <p className="text-[9px] font-bold font-mono text-stone-400">
+                                                                            { (asset as any).rejection_reason && (
+                                                                                <p className="text-[10px] font-bold text-red-400 mt-1 leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100">
+                                                                                    理由: {(asset as any).rejection_reason}
+                                                                                </p>
+                                                                            )}
+                                                                            <p className="text-[9px] font-bold font-mono text-stone-400 mt-1">
                                                                                 {asset.updated_at ? new Date(asset.updated_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit' }) : '---'}
                                                                             </p>
                                                                         </div>
@@ -2048,19 +2053,12 @@ export default function VibeCatalogue({
                                                         >
                                                             {showDetails === asset.id ? 'Close' : 'Timeline'}
                                                         </button>
-                                                        {isDeclined ? (
+                                                        {isDeclined && (
                                                             <button
                                                                 onClick={() => asset.creator && handleAnalyzeInsight(asset.creator as any)}
                                                                 className="flex-1 text-[11px] font-black bg-stone-900 text-white rounded-xl py-3.5 hover:bg-black transition-all shadow-xl active:scale-95 flex items-center justify-center gap-1 uppercase tracking-widest"
                                                             >
                                                                 <Sparkles className="w-3 h-3 text-yellow-400" /> AI Proposal
-                                                            </button>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => asset.creator && handleReject(asset.creator as any)}
-                                                                className="flex-1 text-[11px] font-black border-2 border-red-50 text-red-400 rounded-xl py-3.5 hover:bg-red-50 transition-all uppercase tracking-widest"
-                                                            >
-                                                                Reject
                                                             </button>
                                                         )}
                                                     </div>

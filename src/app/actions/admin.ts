@@ -274,3 +274,97 @@ function getMockOngoingOffers() {
         }
     ];
 }
+
+/**
+ * アセットの進行状況（タイムスタンプ）を更新する
+ */
+export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at', timestamp: string | null) {
+    return publicAction({}, async () => {
+        const supabase = await createClient();
+
+        const { error } = await supabase
+            .from('assets')
+            .update({ [field]: timestamp })
+            .eq('id', assetId);
+
+        if (error) throw error;
+        return { success: true };
+    });
+}
+
+/**
+ * 運営による代行メッセージ送信
+ */
+export async function sendAdminProxyMessage({
+    assetId,
+    content,
+    senderType
+}: {
+    assetId: string;
+    content: string;
+    senderType: 'shop' | 'creator';
+}) {
+    return publicAction({}, async () => {
+        const supabase = await createClient();
+
+        // 1. メッセージ保存
+        const { data, error } = await supabase
+            .from('messages')
+            .insert({
+                asset_id: assetId,
+                message: content,
+                sender_type: senderType,
+                is_admin_action: true
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // 2. 通知実行 (n8n Webhook)
+        try {
+            const { data: asset } = await supabase
+                .from('assets')
+                .select(`
+                    shop_id,
+                    creator_id,
+                    shops ( name, login_email, notification_email, email_notifications_enabled ),
+                    creators ( name, email )
+                `)
+                .eq('id', assetId)
+                .single();
+
+            if (asset) {
+                const shop = asset.shops as any;
+                const creator = asset.creators as any;
+
+                // 通知先の設定
+                let recipientEmail = senderType === 'shop' ? creator?.email : (shop?.notification_email || shop?.login_email);
+                const senderName = senderType === 'shop' ? `(Admin) ${shop?.name}` : `(Admin) ${creator?.name}`;
+
+                // ショップへの通知の場合、設定を確認
+                const shouldNotify = senderType === 'creator' ? (shop?.email_notifications_enabled !== false) : true;
+
+                const n8nChatWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+                if (n8nChatWebhookUrl && recipientEmail && shouldNotify) {
+                    fetch(n8nChatWebhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'CHAT',
+                            recipientEmail: recipientEmail,
+                            senderName: senderName,
+                            content: content,
+                            subject: `[INSIDERS] New message from ${senderName}`,
+                            assetId: assetId
+                        })
+                    }).catch(err => console.error("Admin Proxy n8n Error:", err));
+                }
+            }
+        } catch (err) {
+            console.error("Admin Proxy Notification Error:", err);
+        }
+
+        return { success: true };
+    });
+}

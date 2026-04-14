@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
-import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers } from '@/app/actions/admin';
+import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage } from '@/app/actions/admin';
 import { triggerN8nWebhook } from '@/app/actions/creator';
-import { Info } from 'lucide-react';
+import { Info, MessageCircle, Send, Plus, X } from 'lucide-react';
 
 // Define the Creator Interface
 interface CreatorData {
@@ -51,6 +51,250 @@ const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean; onToggle: () => void 
         />
     </button>
 );
+
+// --- Admin Timeline Button Components ---
+const TimelineButton = ({ label, assetId, field, currentValue, onUpdate }: { label: string, assetId: string, field: string, currentValue: string | null, onUpdate?: () => void }) => {
+    const [loading, setLoading] = useState(false);
+    const [value, setValue] = useState(currentValue);
+    const [showApproveModal, setShowApproveModal] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState("");
+
+    useEffect(() => {
+        setValue(currentValue);
+    }, [currentValue]);
+
+    const handleUpdate = async (approved: boolean = true) => {
+        if (loading) return;
+        // 不承認（approved=false）で理由が空の場合は中断
+        if (!approved && !rejectionReason.trim()) {
+            alert("不承認の理由を入力してください。");
+            return;
+        }
+
+        setLoading(true);
+        const now = new Date().toISOString();
+        
+        const supabase = createClient();
+        if (field === 'approved_at') {
+            await supabase
+                .from('assets')
+                .update({ 
+                    approved_at: approved ? now : null,
+                    status: approved ? 'WORKING' : 'DECLINED',
+                    rejection_reason: approved ? null : rejectionReason
+                })
+                .eq('id', assetId);
+        } else if (field === 'final_status' || field === 'confirmed_at') {
+             await supabase
+                .from('assets')
+                .update({ status: 'FINALIZED', updated_at: now })
+                .eq('id', assetId);
+        } else {
+            await updateAssetTimestamp(assetId, field as any, now);
+        }
+        
+        setValue(now);
+        setLoading(false);
+        setShowApproveModal(false);
+        if (onUpdate) onUpdate();
+    };
+
+    const handleReset = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm("タイムスタンプをリセットしますか？")) return;
+        setLoading(true);
+        await updateAssetTimestamp(assetId, field as any, null);
+        setValue(null);
+        setLoading(false);
+        if (onUpdate) onUpdate();
+    };
+
+    if (field === 'approved_at') {
+        const isDeclined = currentValue === null && label.includes("不承認"); // ステータス判定用
+        return (
+            <>
+                <button
+                    onClick={() => setShowApproveModal(true)}
+                    disabled={loading}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
+                        ? (isDeclined ? "bg-red-50 border-red-200 text-red-700" : "bg-emerald-50 border-emerald-200 text-emerald-700")
+                        : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                >
+                    <div className="flex flex-col items-start">
+                        <span className="opacity-60">{value && isDeclined ? "オファー不承認" : label}</span>
+                        {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                    </div>
+                    {value ? (isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : <CheckCircle2 size={14} className="text-emerald-500" />) : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                </button>
+
+                <AnimatePresence>
+                    {showApproveModal && (
+                        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
+                                <button onClick={() => setShowApproveModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+                                
+                                <div className="text-center space-y-2 mb-8">
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Offer Approval Management</h4>
+                                    <p className="text-[10px] font-bold text-slate-400">オファーの承認状態を選択してください</p>
+                                </div>
+                                
+                                <div className="space-y-6">
+                                    <button onClick={() => handleUpdate(true)} className="w-full py-4 bg-emerald-500 text-white rounded-2xl text-[12px] font-black hover:bg-emerald-600 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                                        <CheckCircle2 size={18} /> APPROVE (承認)
+                                    </button>
+
+                                    <div className="pt-6 border-t border-slate-100 space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">不承認の理由 (必須)</label>
+                                            <textarea 
+                                                placeholder="例: オファー金額が不十分、日程が合わない 等"
+                                                value={rejectionReason}
+                                                onChange={(e) => setRejectionReason(e.target.value)}
+                                                className="w-full h-28 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-bold outline-none focus:ring-2 focus:ring-red-500 text-slate-600 resize-none transition-all focus:bg-white"
+                                            />
+                                        </div>
+                                        <button 
+                                            onClick={() => handleUpdate(false)} 
+                                            disabled={!rejectionReason.trim()}
+                                            className="w-full py-4 bg-slate-100 text-slate-400 disabled:opacity-50 enabled:bg-red-50 enabled:text-red-500 enabled:hover:bg-red-100 rounded-2xl text-[12px] font-black transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <X size={18} /> OK (不承認を確定)
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </>
+        );
+    }
+
+    return (
+        <button
+            onClick={() => handleUpdate()}
+            disabled={loading}
+            className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+        >
+            <div className="flex flex-col items-start">
+                <span className="opacity-60">{label}</span>
+                {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+            </div>
+            {value ? (
+                <CheckCircle2 size={14} className="text-emerald-500" />
+            ) : (
+                <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />
+            )}
+            {value && (
+                <div 
+                    onClick={handleReset}
+                    className="absolute -top-2 -right-2 bg-white text-slate-400 rounded-full p-0.5 border border-slate-100 opacity-0 group-hover/btn:opacity-100 hover:text-red-500 shadow-sm z-10"
+                >
+                    <X size={10} />
+                </div>
+            )}
+        </button>
+    );
+};
+
+// --- Admin Proxy Chat Modal ---
+const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: string, advertiserName: string, creatorName: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [input, setInput] = useState("");
+    const [senderType, setSenderType] = useState<'creator' | 'shop'>('creator');
+    const [loading, setLoading] = useState(false);
+    const supabase = createClient();
+
+    const fetchMessages = async () => {
+        const { data } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('asset_id', assetId)
+            .order('created_at', { ascending: true });
+        if (data) setMessages(data);
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchMessages();
+            const channel = supabase
+                .channel(`admin_chat_${assetId}`)
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `asset_id=eq.${assetId}` }, (payload) => {
+                    setMessages(prev => {
+                        if (prev.find(m => m.id === payload.new.id)) return prev;
+                        return [...prev, payload.new];
+                    });
+                })
+                .subscribe();
+            return () => { supabase.removeChannel(channel); };
+        }
+    }, [isOpen]);
+
+    const handleSend = async () => {
+        if (!input.trim() || loading) return;
+        setLoading(true);
+        const res = await sendAdminProxyMessage({ assetId, content: input, senderType });
+        if (res.success) {
+            setInput("");
+            fetchMessages();
+        }
+        setLoading(false);
+    };
+
+    return (
+        <>
+            <button
+                onClick={() => setIsOpen(true)}
+                className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-[11px] font-black hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+            >
+                <MessageCircle size={14} /> View Chat
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsOpen(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[80vh]">
+                            <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none mb-1">Proxy Chat Monitoring</h3>
+                                    <p className="text-[10px] font-bold text-slate-400">{advertiserName} × {creatorName}</p>
+                                </div>
+                                <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200 text-slate-400"><X size={20} /></button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50">
+                                {messages.map((msg) => (
+                                    <div key={msg.id} className={`flex flex-col ${msg.sender_type === 'shop' ? 'items-start' : 'items-end'}`}>
+                                        <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm border ${msg.sender_type === 'shop' ? 'bg-white text-slate-800 border-slate-100 rounded-tl-none' : 'bg-indigo-500 text-white border-transparent rounded-tr-none'}`}>
+                                            {msg.message}
+                                        </div>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{msg.sender_type === 'shop' ? 'ADVERTISER' : 'CREATOR'}</span>
+                                            {msg.is_admin_action && msg.sender_type === 'shop' && <span className="text-[8px] font-black text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">BY ADMIN</span>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-6 bg-white border-t border-slate-100 space-y-4">
+                                <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
+                                    <button onClick={() => setSenderType('creator')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${senderType === 'creator' ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Reply as Creator</button>
+                                    <button onClick={() => setSenderType('shop')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${senderType === 'shop' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Reply as ADMIN</button>
+                                </div>
+                                <div className="relative">
+                                    <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder={`${senderType === 'creator' ? creatorName : '運営'} として送信...`} className="w-full h-24 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none" />
+                                    <button onClick={handleSend} disabled={loading || !input.trim()} className="absolute bottom-3 right-3 bg-indigo-500 text-white p-2 rounded-xl hover:bg-indigo-600 disabled:opacity-50 transition-all shadow-lg active:scale-95"><Send size={16} /></button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </>
+    );
+};
 
 function AdminDashboard() {
     const supabase = createClient(); // ★ Supabaseインスタンス化
@@ -134,80 +378,100 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
     };
 
     // ★ 1. データ取得処理 (SupabaseからRead)
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
 
-                // ユーザー情報の取得
-                const { data: { user } } = await supabase.auth.getUser();
-                setUser(user);
+            // ユーザー情報の取得
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
 
-                // クリエイター一覧
-                const { data, error } = await supabase
+            // 10,000人規模まで対応するためのページング取得 (pageSizeを小さめにして確実にページングさせる)
+            let allCreators: any[] = [];
+            let page = 0;
+            const pageSize = 500;
+            let hasMore = true;
+
+            while (hasMore && page < 20) { // 最大10000人まで取得可能に
+                const { data, error, count } = await supabase
                     .from('creators')
-                    .select('*')
+                    .select('*', { count: 'exact' })
                     .order('followers', { ascending: false })
-                    .limit(5000); // Increase limit from default 1000
+                    .range(page * pageSize, (page + 1) * pageSize - 1);
 
                 if (error) throw error;
-
-                // 取得したデータをUI用に整形
-                const formattedData = (data || []).map((item, index) => {
-                    const isSystemHidden = !item.is_onboarded && item.was_public; // was_publicカラムがあると想定、なければitem.idから推測等
-
-                    // is_ai_recommendedの場合、未着手ならデフォルトをセット
-                    let reviewStatus = item.review_status || 'pending';
-                    if (item.is_ai_recommended && reviewStatus === 'pending') {
-                        reviewStatus = 'ai_recommended';
+                if (data && data.length > 0) {
+                    allCreators = [...allCreators, ...data];
+                    // 取得件数がpageSize未満ならこれ以上データはない
+                    if (data.length < pageSize) {
+                        hasMore = false;
                     }
-
-                    return {
-                        id: item.id,
-                        name: item.name || item.tiktok_handle || 'Unknown',
-                        tier: item.tier || '-',
-                        genre: item.genre || [],
-                        ethnicity: item.ethnicity || '-',
-                        followers: item.followers || 0,
-                        followersStr: (item.followers || 0).toLocaleString(),
-                        tiktokUrl: item.tiktok_url || '',
-                        vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
-                        vibeCluster: item.vibe_tags || [],
-                        bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
-                        imgColor: getColorByIndex(index),
-                        status: 'approved',
-                        review_status: reviewStatus,
-                        is_public: item.is_public || false,
-                        is_system_hidden: isSystemHidden,
-                        is_ai_recommended: !!item.is_ai_recommended,
-                        thumbnail_url: item.thumbnail_url || item.avatar_url || null
-                    };
-                });
-                setCreators(formattedData);
-
-                // 統計情報 (Server Action)
-                const adminStats = await getAdminStats();
-                if (adminStats.success) setStats(adminStats.data);
-
-                // Success案件 (Server Action)
-                const success = await getSuccessLogs();
-                if (success.success) setSuccessLogs(success.data);
-
-                // Lost案件 (Server Action)
-                const lost = await getLostAssets();
-                if (lost.success) setLostAssets(lost.data);
-
-                // Ongoing案件 (Server Action)
-                const ongoing = await getOngoingOffers();
-                if (ongoing.success) setOngoingOffers(ongoing.data);
-
-                setLoading(false);
-            } catch (error: any) {
-                console.error('Data Fetch Error:', error);
-                setErrorMsg("データの読み込みに失敗しました。");
-                setLoading(false);
+                    page++;
+                } else {
+                    hasMore = false;
+                }
             }
-        };
+
+            console.log(`Fetched total ${allCreators.length} creators.`);
+
+            // 取得したデータをUI用に整形
+            const formattedData = allCreators.map((item, index) => {
+                const isSystemHidden = !item.is_onboarded && item.was_public;
+
+                // is_ai_recommendedの場合、未着手ならデフォルトをセット
+                let reviewStatus = item.review_status || 'pending';
+                if (item.is_ai_recommended && reviewStatus === 'pending') {
+                    reviewStatus = 'ai_recommended';
+                }
+
+                return {
+                    id: item.id,
+                    name: item.name || item.tiktok_handle || 'Unknown',
+                    tier: item.tier || '-',
+                    genre: item.genre || [],
+                    ethnicity: item.ethnicity || '-',
+                    followers: item.followers || 0,
+                    followersStr: (item.followers || 0).toLocaleString(),
+                    tiktokUrl: item.tiktok_url || '',
+                    vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
+                    vibeCluster: item.vibe_tags || [],
+                    bestVideoUrl: item.portfolio_video_urls?.[0] || item.scouted_video_url || '',
+                    imgColor: getColorByIndex(index),
+                    status: 'approved',
+                    review_status: reviewStatus,
+                    is_public: item.is_public || false,
+                    is_system_hidden: isSystemHidden,
+                    is_ai_recommended: !!item.is_ai_recommended,
+                    thumbnail_url: item.thumbnail_url || item.avatar_url || null
+                };
+            });
+            setCreators(formattedData);
+
+            // 統計情報 (Server Action)
+            const adminStats = await getAdminStats();
+            if (adminStats.success) setStats(adminStats.data);
+
+            // Success案件 (Server Action)
+            const success = await getSuccessLogs();
+            if (success.success) setSuccessLogs(success.data);
+
+            // Lost案件 (Server Action)
+            const lost = await getLostAssets();
+            if (lost.success) setLostAssets(lost.data);
+
+            // Ongoing案件 (Server Action)
+            const ongoing = await getOngoingOffers();
+            if (ongoing.success) setOngoingOffers(ongoing.data);
+
+            setLoading(false);
+        } catch (error: any) {
+            console.error('Data Fetch Error:', error);
+            setErrorMsg("データの読み込みに失敗しました。");
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -970,21 +1234,116 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                 className="overflow-hidden bg-indigo-50/30"
                                                             >
                                                                 <div className="p-8 border-t border-indigo-100 shadow-inner">
-                                                                    <div className="grid grid-cols-2 gap-8 mb-8">
-                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                                                        {/* Offer Details (Chips UI) */}
+                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
+                                                                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                                                                <Save size={40} className="text-indigo-600" />
+                                                                            </div>
                                                                             <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                                                <Info size={12} /> Offer Details (JSON)
+                                                                                <Info size={12} /> Offer Conditions
                                                                             </h5>
-                                                                            <pre className="text-[11px] font-medium bg-slate-50 p-4 rounded-xl overflow-auto max-h-40 border border-slate-100 scrollbar-hide text-slate-700">
-                                                                                {JSON.stringify(offer.offerDetails, null, 2)}
-                                                                            </pre>
+                                                                            
+                                                                            {/* Offer Conditions Chips */}
+                                                                            <div className="flex flex-wrap gap-2">
+                                                                                {offer.offerDetails?.amount && (
+                                                                                    <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-2 shadow-sm">
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Reward</span>
+                                                                                        <span className="text-xs font-black">¥{Number(offer.offerDetails.amount).toLocaleString()}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {(offer.offerDetails?.visit_date || offer.offerDetails?.date) && (
+                                                                                    <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-2 shadow-sm">
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Visit</span>
+                                                                                        <span className="text-xs font-black">{offer.offerDetails?.visit_date || offer.offerDetails?.date} {offer.offerDetails?.visit_time || ""}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {(offer.offerDetails?.participants || offer.offerDetails?.guests) && (
+                                                                                    <div className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-2 shadow-sm">
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Pax</span>
+                                                                                        <span className="text-xs font-black">{offer.offerDetails?.participants || offer.offerDetails?.guests}名</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {(offer.offerDetails?.language_option || offer.offerDetails?.language) && (
+                                                                                    <div className="bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-100 flex items-center gap-2 shadow-sm">
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Lang</span>
+                                                                                        <span className="text-xs font-black uppercase">{offer.offerDetails?.language_option || offer.offerDetails?.language}</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {(!offer.offerDetails || Object.keys(offer.offerDetails).length === 0) && (
+                                                                                    <span className="text-slate-300 text-[10px] font-bold italic">No structured details available</span>
+                                                                                )}
+                                                                            </div>
+
+                                                                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Barter Requirements</p>
+                                                                                <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner">
+                                                                                    {offer.barterDetails || "提供内容の記載なし"}
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm">
-                                                                            <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                                                <Sparkles size={12} /> Barter Requirements
-                                                                            </h5>
-                                                                            <div className="text-sm font-bold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-100 min-h-[100px] leading-relaxed">
-                                                                                {offer.barterDetails || '提供内容の記載なし'}
+
+                                                                        {/* Status Management & Chat */}
+                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm flex flex-col">
+                                                                            <div className="flex justify-between items-center mb-4">
+                                                                                <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                                                                                    <Clock size={12} /> Timeline Management
+                                                                                </h5>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <AdminChatModal assetId={offer.id} advertiserName={offer.advertiser} creatorName={offer.creator} />
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                            <div className="space-y-3">
+                                                                                {offer.status === 'DECLINED' && offer.rejection_reason && (
+                                                                                    <div className="bg-red-50 border border-red-100 p-3 rounded-xl mb-3 flex items-start gap-2">
+                                                                                        <AlertTriangle size={14} className="text-red-500 shrink-0 mt-0.5" />
+                                                                                        <p className="text-[10px] font-bold text-red-600 leading-relaxed">不承諾理由: {offer.rejection_reason}</p>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div className="grid grid-cols-2 gap-3">
+                                                                                    <TimelineButton 
+                                                                                        label="オファー承認" 
+                                                                                        assetId={offer.id} 
+                                                                                        field="approved_at" 
+                                                                                        currentValue={offer.approved_at}
+                                                                                        onUpdate={fetchData} 
+                                                                                    />
+                                                                                    <TimelineButton 
+                                                                                        label="動画撮影完了" 
+                                                                                        assetId={offer.id} 
+                                                                                        field="filming_at" 
+                                                                                        currentValue={offer.filming_at} 
+                                                                                        onUpdate={fetchData} 
+                                                                                    />
+                                                                                    <TimelineButton 
+                                                                                        label="納品完了" 
+                                                                                        assetId={offer.id} 
+                                                                                        field="delivered_at" 
+                                                                                        currentValue={offer.delivered_at} 
+                                                                                        onUpdate={fetchData} 
+                                                                                    />
+                                                                                    <TimelineButton 
+                                                                                        label="最終承認" 
+                                                                                        assetId={offer.id} 
+                                                                                        field="confirmed_at" 
+                                                                                        currentValue={offer.confirmed_at} 
+                                                                                        onUpdate={fetchData} 
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="grid grid-cols-1 gap-2">
+                                                                                    <TimelineButton 
+                                                                                        label="完了フラグ (COMPLETEDへ)" 
+                                                                                        assetId={offer.id} 
+                                                                                        field="final_status" // 特別なフラグとして扱うか検討
+                                                                                        currentValue={offer.status === 'COMPLETED' ? new Date().toISOString() : null}
+                                                                                        onUpdate={fetchData} 
+                                                                                    />
+                                                                                </div>
+                                                                                <p className="text-[9px] text-slate-400 font-bold bg-slate-50 p-2 rounded border border-slate-100 flex items-center gap-2">
+                                                                                    <Sparkles size={10} className="text-amber-500" />
+                                                                                    ボタンを押すと現在時刻が記録され、アセットハブのタイムラインに即座に反映されます。
+                                                                                </p>
                                                                             </div>
                                                                         </div>
                                                                     </div>
