@@ -1058,7 +1058,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         />
                                         <div className="space-y-0.5">
                                             <p className="text-[11px] font-black text-gray-900 leading-tight">演出の一任と修正ルール</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">クリエイターの世界観（VIBE）を尊重するため事前コンテ確認は行いません。納品後の修正依頼は「事実誤認」のみ最大2回までとなることに同意します。</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">クリエイターの世界観や表現手法を尊重します。納品後の修正依頼は「事実誤認」のみ最大2回までとなることに同意します。</p>
                                         </div>
                                     </label>
                                     <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">

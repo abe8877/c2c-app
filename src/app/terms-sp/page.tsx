@@ -88,7 +88,7 @@ export default function SpecifiedCommercialTransactions() {
                             <dt className="font-bold text-slate-900">役務の提供時期</dt>
                             <dd className="col-span-2 text-slate-600 font-medium leading-relaxed space-y-2">
                                 <p>・月額プラン：決済完了後、直ちにご利用いただけます。</p>
-                                <p>・マッチングサービス：マッチング成立後、広告主とクリエイター間で合意した日程に基づき、クリエイターによる店舗訪問・撮影・成果物（動画データ等）の納品が行われます。納品までの期間は個別契約により異なります。</p>
+                                <p>・マッチングサービス：マッチング成立後、広告主とクリエイター間で合意した日程に基づき、クリエイターによる店舗訪問・撮影・SNSへの投稿・成果物（動画データ等）の納品が行われます。納品までの期間は個別契約により異なります。</p>
                             </dd>
                         </div>
 
