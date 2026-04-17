@@ -355,7 +355,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                 <motion.div key="rules" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                                     <div className="space-y-1">
                                         <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                                            <Camera className="w-6 h-6 text-purple-500" /> 撮影ルール・要望設定
+                                            <Camera className="w-6 h-6 text-purple-500" /> 撮影ルール・要望
                                         </h3>
                                         <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
                                     </div>

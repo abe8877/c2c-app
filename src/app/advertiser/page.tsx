@@ -49,7 +49,7 @@ export default async function AdvertiserPage() {
 
     const { data: creators, error } = await supabase
         .from('creators')
-        .select('*')
+        .select('id, name, tiktok_handle, genre, ethnicity, vibe_tags, followers, thumbnail_url, avatar_url, portfolio_video_urls, tier, is_public, is_hot, is_ai_recommended, review_status, pricing_guide')
         .eq('is_public', true)
         .eq('review_status', 'approved')
         .order('followers', { ascending: false }) // フォロワー順
@@ -76,12 +76,13 @@ export default async function AdvertiserPage() {
             // ★修正ポイント: 本人のアップロード画像があれば優先、なければジャンル画像（今回の要件でFallback UIが対応するためここはそのままDBの値を渡す）
             thumbnail_url: c.thumbnail_url || c.avatar_url || null,
 
-            portfolio_video_urls: c.portfolio_video_urls || (c.portfolio_video_url ? [c.portfolio_video_url] : []),
+            portfolio_video_urls: c.portfolio_video_urls || [],
             tier: c.tier || '-',
             is_public: !!c.is_public,
             is_hot: !!c.is_hot,
             is_ai_recommended: !!c.is_ai_recommended,
-            review_status: c.review_status
+            review_status: c.review_status,
+            pricing_guide: c.pricing_guide // 追加
         };
     });
 

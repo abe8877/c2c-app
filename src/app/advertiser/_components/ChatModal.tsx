@@ -148,7 +148,7 @@ export default function ChatModal({
         const textToSend = typeof manualText === 'string' ? manualText : inputText;
         if (!textToSend.trim() || isAiGenerating) return;
 
-        setInputText(""); 
+        setInputText("");
 
         try {
             // ステートを即時更新して体感速度を向上
@@ -168,12 +168,12 @@ export default function ChatModal({
                 content: textToSend,
                 senderType: currentUserType
             });
-            
+
             if (!res.success) throw new Error(res.message);
 
             // 翻訳されたメッセージがある場合、表示をそれに差し替える（体感向上）
             if (res.data?.message && res.data.message !== textToSend) {
-                setMessages(prev => prev.map(m => 
+                setMessages(prev => prev.map(m =>
                     m.id === tempId ? { ...m, id: res.data.id, message: res.data.message } : m
                 ));
             }
@@ -190,7 +190,7 @@ export default function ChatModal({
 
         try {
             const currentShopId = shopData?.id || (await supabase.from('assets').select('shop_id').eq('id', assetId).single()).data?.shop_id;
-            
+
             // 編集された内容があれば保存を試みる
             let currentData = null;
             if (activeTemplate === 'map') currentData = formAccess;
@@ -204,7 +204,7 @@ export default function ChatModal({
                     type: activeTemplate as 'map' | 'menu' | 'camera',
                     data: currentData
                 });
-                
+
                 // ローカル状態を更新 (簡易的)
                 setShopData((prev: any) => ({
                     ...prev,
@@ -270,7 +270,7 @@ export default function ChatModal({
                     exit={{ y: "100%", opacity: 0 }}
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-lg bg-white rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[90vh] relative"
+                    className="w-full max-w-lg bg-white rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[90dvh] relative"
                 >
                     {/* Header */}
                     <div className="bg-[#1A1A1A] px-6 py-4 flex items-center justify-between shrink-0">
@@ -310,7 +310,7 @@ export default function ChatModal({
                                         {activeTemplate === 'schedule' && '日程候補を選択'}
                                         {activeTemplate === 'map' && 'アクセス・店舗情報を編集'}
                                         {activeTemplate === 'menu' && 'メニュー情報を編集'}
-                                        {activeTemplate === 'camera' && '撮影ルール・要望を編集'}
+                                        {activeTemplate === 'camera' && '撮影ルール・要望（オファー時に送付済みなら不要）'}
                                     </h3>
                                     <button onClick={() => setActiveTemplate(null)} className="p-1.5 hover:bg-zinc-100 rounded-full"><X className="w-5 h-5" /></button>
                                 </div>
@@ -325,11 +325,10 @@ export default function ChatModal({
                                                         <button
                                                             key={day}
                                                             onClick={() => setSelectedDates(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day])}
-                                                            className={`p-3 rounded-xl border-2 text-[10px] font-black transition-all ${
-                                                                selectedDates.includes(day)
-                                                                    ? 'border-black bg-black text-white shadow-lg'
-                                                                    : 'border-zinc-100 bg-zinc-50 text-zinc-400 hover:border-zinc-200'
-                                                            }`}
+                                                            className={`p-3 rounded-xl border-2 text-[10px] font-black transition-all ${selectedDates.includes(day)
+                                                                ? 'border-black bg-black text-white shadow-lg'
+                                                                : 'border-zinc-100 bg-zinc-50 text-zinc-400 hover:border-zinc-200'
+                                                                }`}
                                                         >
                                                             {day}
                                                         </button>
@@ -351,31 +350,31 @@ export default function ChatModal({
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-1.5">
                                                     <p className="text-[10px] font-black text-zinc-400 uppercase">営業時間</p>
-                                                    <input value={formAccess.hours} onChange={(e) => setFormAccess({...formAccess, hours: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="Mon-Sun 17:00-23:00" />
+                                                    <input value={formAccess.hours} onChange={(e) => setFormAccess({ ...formAccess, hours: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="Mon-Sun 17:00-23:00" />
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <p className="text-[10px] font-black text-zinc-400 uppercase">定休日</p>
-                                                    <input value={formAccess.holidays} onChange={(e) => setFormAccess({...formAccess, holidays: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="Irregular holidays" />
+                                                    <input value={formAccess.holidays} onChange={(e) => setFormAccess({ ...formAccess, holidays: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="Irregular holidays" />
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">住所</p>
-                                                <input value={formAccess.address} onChange={(e) => setFormAccess({...formAccess, address: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="東京都渋谷区..." />
+                                                <input value={formAccess.address} onChange={(e) => setFormAccess({ ...formAccess, address: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="東京都渋谷区..." />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">アクセス（英語）</p>
-                                                <textarea value={formAccess.access_en} onChange={(e) => setFormAccess({...formAccess, access_en: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="3 min walk from Shibuya Station..." />
+                                                <textarea value={formAccess.access_en} onChange={(e) => setFormAccess({ ...formAccess, access_en: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="3 min walk from Shibuya Station..." />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">Google Map URL</p>
-                                                <input value={formAccess.map_url} onChange={(e) => setFormAccess({...formAccess, map_url: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="https://maps.google.com/..." />
+                                                <input value={formAccess.map_url} onChange={(e) => setFormAccess({ ...formAccess, map_url: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="https://maps.google.com/..." />
                                             </div>
                                         </div>
                                     ) : activeTemplate === 'menu' ? (
                                         <div className="space-y-4">
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">提供メニュー内容（英語）</p>
-                                                <textarea value={formMenu.description} onChange={(e) => setFormMenu({...formMenu, description: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-24 resize-none" placeholder="Premium Wagyu Course with Seasonal Desserts..." />
+                                                <textarea value={formMenu.description} onChange={(e) => setFormMenu({ ...formMenu, description: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-24 resize-none" placeholder="Premium Wagyu Course with Seasonal Desserts..." />
                                             </div>
                                             <div className="space-y-2">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">対応可能な食事制限</p>
@@ -411,7 +410,7 @@ export default function ChatModal({
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-1.5">
                                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">希望撮影時間</p>
-                                                    <select value={formShooting.time} onChange={(e) => setFormShooting({...formShooting, time: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none">
+                                                    <select value={formShooting.time} onChange={(e) => setFormShooting({ ...formShooting, time: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none">
                                                         <option>Lunch</option>
                                                         <option>Dinner</option>
                                                         <option>Flexible</option>
@@ -419,7 +418,7 @@ export default function ChatModal({
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">スタッフ映り込み</p>
-                                                    <select value={formShooting.staff} onChange={(e) => setFormShooting({...formShooting, staff: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none">
+                                                    <select value={formShooting.staff} onChange={(e) => setFormShooting({ ...formShooting, staff: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none">
                                                         <option>OK</option>
                                                         <option>NG</option>
                                                         <option>Ask Creator</option>
@@ -427,8 +426,8 @@ export default function ChatModal({
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">特別ルール・注意事項（英語）</p>
-                                                <textarea value={formShooting.special} onChange={(e) => setFormShooting({...formShooting, special: e.target.value})} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="Please do not show other customers' faces..." />
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">注意事項（撮影時の注意点やNG事項があれば）</p>
+                                                <textarea value={formShooting.special} onChange={(e) => setFormShooting({ ...formShooting, special: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="Please do not show other customers' faces..." />
                                             </div>
                                         </div>
                                     )}

@@ -65,6 +65,7 @@ export interface Creator {
     is_ai_recommended?: boolean;
     review_status?: string;
     offer_count?: number;
+    pricing_guide?: string;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -346,6 +347,14 @@ const CreatorCard = ({
                         <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
                         <span className="truncate">AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}</span>
                     </div>
+
+                    {/* PRICING GUIDE - Multi-line supported */}
+                    {creator.pricing_guide && (
+                        <div className="flex items-start gap-1.5 text-white text-[9px] sm:text-[10px] font-black tracking-tight px-2 py-1.5 bg-indigo-500/30 backdrop-blur-md rounded border border-indigo-400/30 w-fit max-w-full shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+                            <DollarSign className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
+                            <span className="leading-tight">{creator.pricing_guide}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -741,6 +750,19 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     const [isManualMessage, setIsManualMessage] = useState(false);
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
+    // 移植項目: 撮影条件 & NG事項
+    const [shootingTime, setShootingTime] = useState('Flexible');
+    const [staffAppearance, setStaffAppearance] = useState('OK');
+    const [ngItems, setNgItems] = useState('');
+
+    // 同意事項
+    const [consent, setConsent] = useState({
+        creative: false,
+        noDirect: false,
+        cancel: false
+    });
+    const isAllAgreed = consent.creative && consent.noDirect && consent.cancel;
+
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     };
@@ -856,6 +878,17 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                                         </button>
                                                     ))}
                                                 </div>
+                                                {creator?.pricing_guide && (
+                                                    <div className="pt-2 animate-in fade-in slide-in-from-top-1 duration-500">
+                                                        <div className="flex items-start gap-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                                                            <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                                                            <div className="space-y-1">
+                                                                <div className="text-[11px] font-black text-indigo-600 tracking-tight leading-none">{creator.pricing_guide}</div>
+                                                                <p className="text-[8px] text-indigo-400 font-bold leading-tight">直近の動画パフォーマンスに基づいて、随時変動します。<br />この金額を下回るオファーでも受諾される可能性がございます。</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </motion.div>
                                     )}
@@ -886,6 +919,48 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             {tag}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            {/* Section: Shooting Conditions & NG Items (Ported from ChatModal) */}
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                                    <Clock className="w-4 h-4" /> 撮影条件 & NG事項
+                                </label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">希望撮影時間</p>
+                                        <select
+                                            value={shootingTime}
+                                            onChange={(e) => setShootingTime(e.target.value)}
+                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-bold outline-none focus:ring-2 focus:ring-black"
+                                        >
+                                            <option value="Flexible">Flexible</option>
+                                            <option value="Lunch">Lunch</option>
+                                            <option value="Dinner">Dinner</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">スタッフ映り込み</p>
+                                        <select
+                                            value={staffAppearance}
+                                            onChange={(e) => setStaffAppearance(e.target.value)}
+                                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-bold outline-none focus:ring-2 focus:ring-black"
+                                        >
+                                            <option value="OK">OK</option>
+                                            <option value="NG">NG</option>
+                                            <option value="Ask Creator">Ask Creator</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">注意事項（撮影時や動画でのNG事項があれば）</p>
+                                    <textarea
+                                        value={ngItems}
+                                        onChange={(e) => setNgItems(e.target.value)}
+                                        placeholder="例：他のお客様の顔は映さないでください。厨房内の撮影はご遠慮ください。"
+                                        className="w-full h-20 bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-black resize-none"
+                                    />
                                 </div>
                             </div>
 
@@ -964,8 +1039,53 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    ※このままでも送信可能ですが、このクリエイターに依頼したい理由を具体的に記載するとオファーが受諾されやすいです。
+                                    ※このままでも送信可能ですが、このクリエイターに依頼したい理由を具体的に記載するとオファーが受諾されやすくなります。
                                 </p>
+                            </div>
+
+                            {/* Section: Consent Checkboxes */}
+                            <div className="space-y-3 pt-6 border-t border-gray-100">
+                                <label className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2">
+                                    <CheckCircle2 className="w-4 h-4 text-green-500" /> オファー送信前の確認事項
+                                </label>
+                                <div className="space-y-3">
+                                    <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={consent.creative}
+                                            onChange={(e) => setConsent(prev => ({ ...prev, creative: e.target.checked }))}
+                                            className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                                        />
+                                        <div className="space-y-0.5">
+                                            <p className="text-[11px] font-black text-gray-900 leading-tight">演出の一任と修正ルール</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">クリエイターの世界観（VIBE）を尊重するため事前コンテ確認は行いません。納品後の修正依頼は「事実誤認」のみ最大2回までとなることに同意します。</p>
+                                        </div>
+                                    </label>
+                                    <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={consent.noDirect}
+                                            onChange={(e) => setConsent(prev => ({ ...prev, noDirect: e.target.checked }))}
+                                            className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                                        />
+                                        <div className="space-y-0.5">
+                                            <p className="text-[11px] font-black text-gray-900 leading-tight">直接交渉の禁止</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">進行はすべて専属コンシェルジュ（運営）を介して行い、クリエイターとの直接連絡やプラットフォーム外での直接取引を行わないことに同意します。</p>
+                                        </div>
+                                    </label>
+                                    <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
+                                        <input
+                                            type="checkbox"
+                                            checked={consent.cancel}
+                                            onChange={(e) => setConsent(prev => ({ ...prev, cancel: e.target.checked }))}
+                                            className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
+                                        />
+                                        <div className="space-y-0.5">
+                                            <p className="text-[11px] font-black text-gray-900 leading-tight">キャンセル規定</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">マッチング成立後は速やかに決済（デポジット）を行い、その後の広告主都合によるキャンセルはできないことに同意します。</p>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -976,9 +1096,23 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         alert('「クリエイターへの提供価値」を入力してください。\n魅力的な提供内容がオファー承諾率を高めます！');
                                         return;
                                     }
-                                    onSend({ plan, amount, selectedTags, barterDetails });
+                                    if (!isAllAgreed) {
+                                        alert('確認事項への同意が必要です。');
+                                        return;
+                                    }
+                                    onSend({
+                                        plan,
+                                        amount,
+                                        selectedTags,
+                                        barterDetails,
+                                        invitationMessage,
+                                        shootingTime,
+                                        staffAppearance,
+                                        ngItems
+                                    });
                                 }}
-                                className="w-full bg-black text-white font-bold text-lg py-4 rounded-xl shadow-xl hover:bg-gray-800 hover:scale-[1.02] transition-all active:scale-95 flex items-center justify-center gap-2"
+                                disabled={!isAllAgreed}
+                                className={`w-full font-bold text-lg py-4 rounded-xl shadow-xl transition-all flex items-center justify-center gap-2 ${isAllAgreed ? 'bg-black text-white hover:bg-gray-800 hover:scale-[1.02] active:scale-95' : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-70'}`}
                             >
                                 <Send className="w-5 h-5" />
                                 {plan === 'paid' ? `\u00a5${amount.toLocaleString()} でオファーを送る` : '招待状を送る'}
@@ -1110,6 +1244,23 @@ export default function VibeCatalogue({
 
     const [activeTab, setActiveTab] = useState<"search" | "assets" | "analytics">(initialGenre ? "search" : "search");
     const [step, setStep] = useState<'input' | 'analyzing' | 'vibe_check' | 'result'>(initialGenre ? 'result' : 'input');
+    const [sortBy, setSortBy] = useState<'vibe' | 'followers_desc' | 'followers_asc' | 'price_desc' | 'price_asc'>('vibe');
+    const isInitialMount = useRef(true);
+
+    const getPriceValue = (guide?: string) => {
+        if (!guide) return 0;
+        const match = guide.match(/¥([\d,]+)/);
+        if (!match) return 0;
+        return parseInt(match[1].replace(/,/g, ''));
+    };
+
+    const parseFollowers = (val?: string): number => {
+        if (!val) return 0;
+        const clean = val.replace(/,/g, '').toLowerCase();
+        if (clean.includes('k')) return parseFloat(clean) * 1000;
+        if (clean.includes('m')) return parseFloat(clean) * 1000000;
+        return parseInt(clean) || 0;
+    };
 
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
     const [assetHubHint, setAssetHubHint] = useState<string | null>(null);
@@ -1180,6 +1331,17 @@ export default function VibeCatalogue({
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [selectedChatAsset, setSelectedChatAsset] = useState<Asset | null>(null);
+
+    // チャットボタンクリック時のガード処理
+    const handleOpenChat = (asset: Asset) => {
+        const allowedStatuses = ['APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED', 'confirmed'];
+        if (!allowedStatuses.includes(asset.status.toUpperCase())) {
+            alert('チャットはオファーが承認された後に開通します。');
+            return;
+        }
+        setSelectedChatAsset(asset);
+        setIsChatOpen(true);
+    };
     const [synced, setSynced] = useState(false);
     const [freshness, setFreshness] = useState(85);
     const [assetInsights, setAssetInsights] = useState<Record<string, any>>({});
@@ -1228,6 +1390,15 @@ export default function VibeCatalogue({
     useEffect(() => {
         fetchShopInfo();
     }, []);
+
+    // 🌟 URL検索やステップ遷移時に必ず最上部を表示する (初回マウントやブラウザバック時は維持)
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [step, activeTab]);
 
     // Derived stats from localAssets
     const offeredCount = localAssets.filter(a => a.status === 'OFFERED' || a.status === 'DECLINED').length;
@@ -1292,9 +1463,20 @@ export default function VibeCatalogue({
 
         return { ...c, vibeMatchScore: score, matchedClusters: matched };
     }).sort((a, b) => {
-        const scoreA = a.vibeMatchScore ?? 0;
-        const scoreB = b.vibeMatchScore ?? 0;
-        return scoreB - scoreA;
+        if (sortBy === 'vibe') {
+            const scoreA = a.vibeMatchScore ?? 0;
+            const scoreB = b.vibeMatchScore ?? 0;
+            return scoreB - scoreA;
+        } else if (sortBy === 'followers_desc') {
+            return parseFollowers(b.followers) - parseFollowers(a.followers);
+        } else if (sortBy === 'followers_asc') {
+            return parseFollowers(a.followers) - parseFollowers(b.followers);
+        } else if (sortBy === 'price_desc') {
+            return getPriceValue(b.pricing_guide) - getPriceValue(a.pricing_guide);
+        } else if (sortBy === 'price_asc') {
+            return getPriceValue(a.pricing_guide) - getPriceValue(b.pricing_guide);
+        }
+        return 0;
     });
 
     // mock data for UI fallback removed in favor of initialAssets
@@ -1471,7 +1653,7 @@ export default function VibeCatalogue({
     };
 
     return (
-        <div className="min-h-screen bg-stone-50 font-sans text-stone-900 pb-32 pt-14">
+        <div className="min-h-[100dvh] bg-stone-50 font-sans text-stone-900 pb-32 pt-14">
             <header className="fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-xl border-b border-stone-200/50 z-40 px-6 flex items-center justify-between">
                 <div className="font-black text-xl tracking-tighter flex items-center gap-1.5 cursor-pointer hover:opacity-70 transition-opacity" onClick={() => setActiveTab("search")}>
                     INSIDERS.
@@ -1513,7 +1695,7 @@ export default function VibeCatalogue({
                         )}
                     </button>
                     {isNotificationOpen && (
-                        <div className="absolute top-14 right-[-52px] sm:right-0 w-[calc(100vw-24px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                        <div className="fixed top-20 left-1/2 -translate-x-1/2 sm:absolute sm:top-14 sm:right-0 sm:left-auto sm:translate-x-0 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'DECLINED').length === 0 && (
@@ -1550,11 +1732,11 @@ export default function VibeCatalogue({
                         )}
                     </button>
                     {isChatListOpen && (
-                        <div className="absolute top-14 right-[-14px] sm:right-0 w-[calc(100vw-24px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
+                        <div className="fixed top-20 left-1/2 -translate-x-1/2 sm:absolute sm:top-14 sm:right-0 sm:left-auto sm:translate-x-0 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Messages</div>
                             <div className="max-h-80 overflow-y-auto">
                                 {localAssets
-                                    .filter(a => a.creator && (a.status === 'OFFERED' || a.status === 'COMPLETED' || a.status === 'approved' || a.status === 'ACTIVE' || a.status === 'PENDING_APPROVAL'))
+                                    .filter(a => a.creator && (a.status === 'APPROVED' || a.status === 'WORKING' || a.status === 'COMPLETED' || a.status === 'DELIVERED' || a.status === 'confirmed' || a.status === 'ACTIVE'))
                                     .map(a => (
                                         <button
                                             key={a.id}
@@ -1805,6 +1987,22 @@ export default function VibeCatalogue({
                                             <p className="text-gray-900 text-sm sm:text-md font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{searchGenreCount || (filterGenre === searchGenre ? filteredCreators.length : 0) || '...'}名（{(searchGenre || initialGenre || '全カテゴリ').toUpperCase()}）</span></p>
                                             <p className="text-[12px] sm:text-[12px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい。</p>
                                         </div>
+
+                                        {/* SORT UI */}
+                                        <div className="flex items-center gap-2 bg-stone-50 p-1.5 rounded-2xl border border-stone-200 shadow-sm self-end sm:self-center">
+                                            <BarChart3 className="w-4 h-4 text-stone-400 ml-1.5" />
+                                            <select
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value as any)}
+                                                className="bg-transparent border-none text-[11px] font-black uppercase tracking-widest text-stone-600 focus:ring-0 cursor-pointer pr-8"
+                                            >
+                                                <option value="vibe">おすすめ順</option>
+                                                <option value="followers_desc">フォロワーが多い順</option>
+                                                <option value="followers_asc">フォロワーが少ない順</option>
+                                                <option value="price_desc">推奨金額が高い順</option>
+                                                <option value="price_asc">推奨金額が低い順</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-2">
@@ -2031,7 +2229,7 @@ export default function VibeCatalogue({
                                                                         </div>
                                                                         <div className="flex-1">
                                                                             <p className="text-[11px] font-black text-red-500">案件見送り</p>
-                                                                            { (asset as any).rejection_reason && (
+                                                                            {(asset as any).rejection_reason && (
                                                                                 <p className="text-[10px] font-bold text-red-400 mt-1 leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100">
                                                                                     理由: {(asset as any).rejection_reason}
                                                                                 </p>

@@ -565,7 +565,7 @@ export default function InsidersLP() {
     // --- Handlers ---
     const scrollToPricing = (e: React.MouseEvent) => {
         e.preventDefault();
-        document.getElementById('signup')?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const jsonLd = {
@@ -595,7 +595,7 @@ export default function InsidersLP() {
             {/* =========================================
           1. HERO SECTION (Core Narrative Injected)
       ========================================= */}
-            <section id="top" className="relative pt-20 pb-16 lg:pt-32 lg:pb-32 overflow-hidden bg-slate-50 border-b border-slate-200">
+            <section id="concept" className="relative pt-20 pb-16 lg:pt-32 lg:pb-32 overflow-hidden bg-slate-50 border-b border-slate-200">
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem][mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -683,7 +683,7 @@ export default function InsidersLP() {
                 2. CONCEPT & PAINS SECTION
                 FV直下に新設、コンセプトと課題提起を統合
             ========================================= */}
-            <section id="concept" className="py-24 bg-white relative overflow-hidden scroll-mt-24">
+            <section id="problem" className="py-24 bg-white relative overflow-hidden scroll-mt-24">
                 <div className="max-w-6xl mx-auto px-6 lg:px-8 relative z-10">
                     <div className="flex flex-col lg:flex-row gap-16 items-center mb-32">
                         <div className="flex-1 text-center lg:text-left">
@@ -1346,7 +1346,7 @@ export default function InsidersLP() {
             {/* =========================================
           7. PRICING & SaaS TRIAL OFFER (インフラ維持費としての正当化)
       ========================================= */}
-            <section id="signup" ref={pricingRef} className="py-24 bg-white border-t border-slate-100 scroll-mt-24">
+            <section id="plan" ref={pricingRef} className="py-24 bg-white border-t border-slate-100 scroll-mt-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     <div className="group bg-slate-50 rounded-[2.5rem] p-10 sm:p-14 shadow-2xl shadow-indigo-100/50 text-center relative overflow-hidden mb-12 border border-slate-200 transition-all duration-700 hover:shadow-indigo-200/50">
@@ -1472,6 +1472,7 @@ export default function InsidersLP() {
                             <div className="flex items-center gap-6">
                                 <a href="/privacy" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
+                                <a href="/terms-sp" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">特定商取引法に基づく表記 <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="https://nots-inc.jp/" target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">会社概要 <ArrowUpRight className="w-3 h-3" /></a>
                             </div>
                             <div className="text-[10px] sm:text-xs text-slate-400 font-bold">© 2026 nots, inc.</div>
