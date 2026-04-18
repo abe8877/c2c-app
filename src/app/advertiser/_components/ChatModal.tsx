@@ -286,7 +286,7 @@ export default function ChatModal({
                                 <h2 className="text-white font-bold text-base leading-tight">{partnerName}</h2>
                                 <div className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">AI Concierge Active</span>
+                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">AIアシスタントが作動中</span>
                                 </div>
                             </div>
                         </div>
@@ -362,8 +362,8 @@ export default function ChatModal({
                                                 <input value={formAccess.address} onChange={(e) => setFormAccess({ ...formAccess, address: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none" placeholder="東京都渋谷区..." />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase">アクセス（英語）</p>
-                                                <textarea value={formAccess.access_en} onChange={(e) => setFormAccess({ ...formAccess, access_en: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="3 min walk from Shibuya Station..." />
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase">アクセス</p>
+                                                <textarea value={formAccess.access_en} onChange={(e) => setFormAccess({ ...formAccess, access_en: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-20 resize-none" placeholder="渋谷駅から道玄坂方面へ徒歩3分で到着します..." />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">Google Map URL</p>
@@ -373,8 +373,8 @@ export default function ChatModal({
                                     ) : activeTemplate === 'menu' ? (
                                         <div className="space-y-4">
                                             <div className="space-y-1.5">
-                                                <p className="text-[10px] font-black text-zinc-400 uppercase">提供メニュー内容（英語）</p>
-                                                <textarea value={formMenu.description} onChange={(e) => setFormMenu({ ...formMenu, description: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-24 resize-none" placeholder="Premium Wagyu Course with Seasonal Desserts..." />
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase">提供メニュー内容</p>
+                                                <textarea value={formMenu.description} onChange={(e) => setFormMenu({ ...formMenu, description: e.target.value })} className="w-full p-3 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold outline-none h-24 resize-none" placeholder="看板メニューの〇〇コースを無料でご提供します..." />
                                             </div>
                                             <div className="space-y-2">
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase">対応可能な食事制限</p>
@@ -453,7 +453,7 @@ export default function ChatModal({
                                         className="w-full bg-black text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 shadow-xl hover:scale-[1.01] active:scale-98 transition-all disabled:opacity-30"
                                     >
                                         {isAiGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5 text-teal-400" />}
-                                        英語チャットをAI生成して送信
+                                        英語でチャットを送信
                                     </button>
                                 </div>
                             </motion.div>

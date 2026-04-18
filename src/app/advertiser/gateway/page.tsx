@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Sparkles, ShieldCheck, ArrowRight, AlertCircle, ExternalLink, Crown, Mail, Key, ArrowLeft } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
+import Link from 'next/link';
 
 const VALID_CODES = ['INVITATION2026'];
 
@@ -25,6 +26,9 @@ export default function GatewayPage() {
 
     const requestFormUrl = process.env.NEXT_PUBLIC_REQUEST_FORM_URL || '#';
     const stripePaymentUrl = process.env.NEXT_PUBLIC_STRIPE_PAYMENT_URL || '#';
+
+    const [isAgreedInvite, setIsAgreedInvite] = useState(false); // 上部用
+    const [isAgreed, setIsAgreed] = useState(false);// 下部用
 
     // Supabaseクライアントの初期化 (App Router用)
     const supabase = createBrowserClient(
@@ -103,9 +107,11 @@ export default function GatewayPage() {
                     <Lock className="w-3 h-3 text-indigo-600" />
                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Invite Only Access</span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
-                    INSIDERS.
-                </h1>
+                <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+                    <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
+                        INSIDERS.
+                    </h1>
+                </Link>
                 <p className="text-slate-500 text-sm md:text-base max-w-md mx-auto leading-relaxed font-medium">
                     招待コードを入力すると、3名分の無料オファー枠を使って、すぐにサービスをご利用いただけます。
                 </p>
@@ -148,12 +154,33 @@ export default function GatewayPage() {
                                     </motion.div>
                                 )}
 
+                                <div className="flex items-start gap-3 mt-4 mb-4 px-2">
+                                    <input
+                                        type="checkbox"
+                                        id="terms-agree-invite"
+                                        checked={isAgreedInvite}
+                                        onChange={(e) => setIsAgreedInvite(e.target.checked)}
+                                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer shrink-0"
+                                    />
+                                    <label htmlFor="terms-agree-invite" className="text-xs text-slate-500 leading-relaxed cursor-pointer select-none">
+                                        <Link href="/terms" target="_blank" className="underline hover:text-slate-900" onClick={(e) => e.stopPropagation()}>利用規約</Link>
+                                        および
+                                        <Link href="/privacy" target="_blank" className="underline hover:text-slate-900" onClick={(e) => e.stopPropagation()}>プライバシーポリシー</Link>
+                                        に同意します。
+                                    </label>
+                                </div>
+
+                                {/* ▼ 154行目からのボタンを修正 ▼ */}
                                 <button
                                     type="submit"
-                                    disabled={!inviteCode.trim()}
-                                    className="w-full py-4.5 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all duration-300 shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98]"
+                                    // ↓招待コードが空、または未同意の場合はボタンを無効化
+                                    disabled={!inviteCode.trim() || !isAgreedInvite}
+                                    className={`w-full py-4.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-200 ${(inviteCode.trim() && isAgreedInvite)
+                                        ? "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-md hover:from-indigo-600 hover:to-indigo-700"
+                                        : "bg-slate-100 text-slate-400 cursor-not-allowed opacity-70"
+                                        }`}
                                 >
-                                    次へ進む <ArrowRight className="w-5 h-5 text-indigo-400 group-hover:text-white" />
+                                    次へ進む <ArrowRight className={`w-5 h-5 ${inviteCode.trim() && isAgreedInvite ? "text-indigo-400" : "text-slate-400"}`} />
                                 </button>
                             </motion.form>
 
@@ -238,13 +265,51 @@ export default function GatewayPage() {
                             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">REQUEST ACCESS OR PURCHASE</p>
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <a href={requestFormUrl} className="group w-full py-4 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-100 text-slate-700 hover:text-indigo-600 rounded-2xl font-black text-[13px] flex items-center justify-center gap-2 transition-all shadow-sm">
-                            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" /> リクエストを送る（フォームへ遷移）
+
+                    <div className="space-y-6">
+                        {/* ボタン1：リクエストを送る（チェック不要でいつでも押せる） */}
+                        <a
+                            href={requestFormUrl}
+                            className="group w-full py-4 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl flex items-center justify-center gap-2 font-bold text-slate-700 hover:text-indigo-600 transition-all duration-200 shadow-sm"
+                        >
+                            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+                            リクエストを送る（フォームへ遷移）
                         </a>
-                        <a href={stripePaymentUrl} className="w-full py-4 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border border-amber-200 text-amber-700 rounded-2xl font-black text-[13px] flex items-center justify-center gap-2 transition-all shadow-sm">
-                            <Crown className="w-4 h-4" /> プランを購入してすぐに開始する
-                        </a>
+
+                        {/* 区切り線とプラン購入セクション */}
+                        <div className="pt-6 border-t border-slate-100 space-y-4">
+
+                            {/* ▼▼ 追加：同意チェックボックス（購入用） ▼▼ */}
+                            <div className="flex items-start gap-3 px-2">
+                                <input
+                                    type="checkbox"
+                                    id="terms-agree-purchase"
+                                    checked={isAgreed}
+                                    onChange={(e) => setIsAgreed(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 cursor-pointer shrink-0"
+                                />
+                                <label htmlFor="terms-agree-purchase" className="text-xs text-slate-500 leading-relaxed cursor-pointer select-none">
+                                    <Link href="/terms" target="_blank" className="underline hover:text-slate-900" onClick={(e) => e.stopPropagation()}>利用規約</Link>
+                                    および
+                                    <Link href="/privacy" target="_blank" className="underline hover:text-slate-900" onClick={(e) => e.stopPropagation()}>プライバシーポリシー</Link>
+                                    に同意します。
+                                </label>
+                            </div>
+                            {/* ▲▲ 追加ここまで ▲▲ */}
+
+                            {/* ボタン2：プランを購入する（チェックで制御） */}
+                            <a
+                                href={isAgreed ? `https://buy.stripe.com/bJe00l5128Q1dEB64g1wY00?client_reference_id=guest&prefilled_email=${encodeURIComponent(email)}` : "#"}
+                                onClick={(e) => { if (!isAgreed) e.preventDefault(); }}
+                                className={`w-full py-4 flex items-center justify-center gap-2 border rounded-xl font-bold transition-all duration-200 ${isAgreed
+                                    ? "bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 border-amber-200 text-amber-900 shadow-sm"
+                                    : "bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed pointer-events-none"
+                                    }`}
+                            >
+                                <Crown className={`w-4 h-4 ${isAgreed ? "text-amber-500" : "text-slate-300"}`} />
+                                プランを購入してすぐに開始する
+                            </a>
+                        </div>
                     </div>
                 </motion.div>
             </div>

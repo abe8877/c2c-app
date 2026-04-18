@@ -53,15 +53,19 @@ const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean; onToggle: () => void 
 );
 
 // --- Admin Timeline Button Components ---
-const TimelineButton = ({ label, assetId, field, currentValue, onUpdate }: { label: string, assetId: string, field: string, currentValue: string | null, onUpdate?: () => void }) => {
+const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, onUpdate }: { label: string, assetId: string, field: string, currentValue: string | null, currentStatus?: string, onUpdate?: () => void }) => {
     const [loading, setLoading] = useState(false);
     const [value, setValue] = useState(currentValue);
     const [showApproveModal, setShowApproveModal] = useState(false);
+    const [showDeliveryModal, setShowDeliveryModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
+    const [videoUrl, setVideoUrl] = useState("");
+    const [localStatus, setLocalStatus] = useState(currentStatus || "");
 
     useEffect(() => {
         setValue(currentValue);
-    }, [currentValue]);
+        if (currentStatus) setLocalStatus(currentStatus);
+    }, [currentValue, currentStatus]);
 
     const handleUpdate = async (approved: boolean = true) => {
         if (loading) return;
@@ -89,13 +93,23 @@ const TimelineButton = ({ label, assetId, field, currentValue, onUpdate }: { lab
                 .from('assets')
                 .update({ status: 'FINALIZED', updated_at: now })
                 .eq('id', assetId);
+        } else if (field === 'delivered_at') {
+            await updateAssetTimestamp(assetId, field as any, now, { videoUrl });
         } else {
             await updateAssetTimestamp(assetId, field as any, now);
         }
         
-        setValue(now);
+        setValue(field === 'approved_at' && !approved ? null : now);
+        if (field === 'approved_at') {
+            setLocalStatus(approved ? 'WORKING' : 'DECLINED');
+        } else if (field === 'delivered_at') {
+            setLocalStatus('COMPLETED');
+        } else if (field === 'final_status' || field === 'confirmed_at') {
+            setLocalStatus('FINALIZED');
+        }
         setLoading(false);
         setShowApproveModal(false);
+        setShowDeliveryModal(false);
         if (onUpdate) onUpdate();
     };
 
@@ -110,21 +124,21 @@ const TimelineButton = ({ label, assetId, field, currentValue, onUpdate }: { lab
     };
 
     if (field === 'approved_at') {
-        const isDeclined = currentValue === null && label.includes("不承認"); // ステータス判定用
+        const isDeclined = localStatus === 'DECLINED';
         return (
             <>
                 <button
                     onClick={() => setShowApproveModal(true)}
                     disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
-                        ? (isDeclined ? "bg-red-50 border-red-200 text-red-700" : "bg-emerald-50 border-emerald-200 text-emerald-700")
-                        : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${isDeclined 
+                        ? "bg-red-50 border-red-200 text-red-700" 
+                        : (value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm")}`}
                 >
                     <div className="flex flex-col items-start">
-                        <span className="opacity-60">{value && isDeclined ? "オファー不承認" : label}</span>
-                        {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                        <span className="opacity-60">{isDeclined ? "オファー不承認" : label}</span>
+                        {value && !isDeclined && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
-                    {value ? (isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : <CheckCircle2 size={14} className="text-emerald-500" />) : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                    {isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : (value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />)}
                 </button>
 
                 <AnimatePresence>
@@ -161,6 +175,62 @@ const TimelineButton = ({ label, assetId, field, currentValue, onUpdate }: { lab
                                             <X size={18} /> OK (不承認を確定)
                                         </button>
                                     </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </>
+        );
+    }
+
+    if (field === 'delivered_at') {
+        return (
+            <>
+                <button
+                    onClick={() => setShowDeliveryModal(true)}
+                    disabled={loading}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                        : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                >
+                    <div className="flex flex-col items-start">
+                        <span className="opacity-60">{label}</span>
+                        {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                    </div>
+                    {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                </button>
+
+                <AnimatePresence>
+                    {showDeliveryModal && (
+                        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
+                                <button onClick={() => setShowDeliveryModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+                                
+                                <div className="text-center space-y-2 mb-8">
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Deliver Asset</h4>
+                                    <p className="text-[10px] font-bold text-slate-400">納品した動画へのリンク等を添付してください</p>
+                                </div>
+                                
+                                <div className="space-y-6">
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">動画URL (TikTok, Google Drive等) 必須</label>
+                                        <input 
+                                            type="url"
+                                            placeholder="https://..."
+                                            value={videoUrl}
+                                            onChange={(e) => setVideoUrl(e.target.value)}
+                                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-bold outline-none focus:ring-2 focus:ring-indigo-500 text-slate-600 transition-all focus:bg-white"
+                                        />
+                                    </div>
+
+                                    <button 
+                                        onClick={() => handleUpdate(true)} 
+                                        disabled={!videoUrl.trim() || loading}
+                                        className="w-full py-4 bg-indigo-500 text-white disabled:opacity-50 enabled:hover:bg-indigo-600 rounded-2xl text-[12px] font-black transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle2 size={18} /> 納品完了として報告
+                                    </button>
                                 </div>
                             </motion.div>
                         </div>
@@ -221,7 +291,7 @@ const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: str
         if (isOpen) {
             fetchMessages();
             const channel = supabase
-                .channel(`admin_chat_${assetId}`)
+                .channel(`asset-chat-${assetId}`)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `asset_id=eq.${assetId}` }, (payload) => {
                     setMessages(prev => {
                         if (prev.find(m => m.id === payload.new.id)) return prev;
@@ -1054,7 +1124,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                         {/* Summary Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 mr-8">
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">今週の解析数</p>
+                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">検索回数(今週)</p>
                                 <div className="text-3xl font-black">
                                     {stats?.weeklyAnalysis?.toLocaleString() || '1,280'}
                                     <span className="text-sm text-green-500 font-bold ml-2">↑ 12%</span>
@@ -1074,18 +1144,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                         </div>
 
                         {/* Tab Switcher */}
-                        <div className="flex bg-slate-200 p-1 rounded-xl h-fit">
+                        <div className="flex bg-slate-200 p-1 rounded-xl h-fit w-fit">
                             <button
                                 onClick={() => setLogTab('ongoing')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'ongoing' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 進行中
-                            </button>
-                            <button
-                                onClick={() => setLogTab('success')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'success' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                マッチ
                             </button>
                             <button
                                 onClick={() => setLogTab('lost')}
@@ -1246,28 +1310,32 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                             
                                                                             {/* Offer Conditions Chips */}
                                                                             <div className="flex flex-wrap gap-2">
-                                                                                {offer.offerDetails?.amount && (
+                                                                                <div className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-100 flex items-center gap-2 shadow-sm">
+                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Plan</span>
+                                                                                    <span className="text-xs font-black uppercase">{offer.offerDetails?.plan || "barter"}</span>
+                                                                                </div>
+                                                                                {offer.offerDetails?.plan === 'paid' && offer.offerDetails?.amount && (
                                                                                     <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-2 shadow-sm">
                                                                                         <span className="text-[10px] font-black uppercase opacity-50">Reward</span>
                                                                                         <span className="text-xs font-black">¥{Number(offer.offerDetails.amount).toLocaleString()}</span>
                                                                                     </div>
                                                                                 )}
-                                                                                {(offer.offerDetails?.visit_date || offer.offerDetails?.date) && (
+                                                                                {offer.offerDetails?.shootingTime && (
                                                                                     <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Visit</span>
-                                                                                        <span className="text-xs font-black">{offer.offerDetails?.visit_date || offer.offerDetails?.date} {offer.offerDetails?.visit_time || ""}</span>
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Time</span>
+                                                                                        <span className="text-xs font-black">{offer.offerDetails.shootingTime}</span>
                                                                                     </div>
                                                                                 )}
-                                                                                {(offer.offerDetails?.participants || offer.offerDetails?.guests) && (
+                                                                                {offer.offerDetails?.staffAppearance && (
                                                                                     <div className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Pax</span>
-                                                                                        <span className="text-xs font-black">{offer.offerDetails?.participants || offer.offerDetails?.guests}名</span>
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Staff</span>
+                                                                                        <span className="text-xs font-black">{offer.offerDetails.staffAppearance}</span>
                                                                                     </div>
                                                                                 )}
-                                                                                {(offer.offerDetails?.language_option || offer.offerDetails?.language) && (
-                                                                                    <div className="bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Lang</span>
-                                                                                        <span className="text-xs font-black uppercase">{offer.offerDetails?.language_option || offer.offerDetails?.language}</span>
+                                                                                {offer.offerDetails?.selectedTags && offer.offerDetails.selectedTags.length > 0 && (
+                                                                                    <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-2 shadow-sm">
+                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Tags</span>
+                                                                                        <span className="text-[10px] font-black">{offer.offerDetails.selectedTags.join(', ')}</span>
                                                                                     </div>
                                                                                 )}
                                                                                 {(!offer.offerDetails || Object.keys(offer.offerDetails).length === 0) && (
@@ -1276,9 +1344,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                             </div>
 
                                                                             <div className="mt-4 pt-4 border-t border-slate-100">
-                                                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Barter Requirements</p>
-                                                                                <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner">
-                                                                                    {offer.barterDetails || "提供内容の記載なし"}
+                                                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Barter Requirements / NG Items</p>
+                                                                                <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner flex flex-col gap-2">
+                                                                                    <div>{offer.barterDetails || offer.offerDetails?.barterDetails || "提供内容の記載なし"}</div>
+                                                                                    {offer.offerDetails?.ngItems && (
+                                                                                        <div className="text-[10px] text-red-500 font-bold border-t border-red-100 pt-2 mt-1">NG: {offer.offerDetails.ngItems}</div>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1307,13 +1378,15 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         assetId={offer.id} 
                                                                                         field="approved_at" 
                                                                                         currentValue={offer.approved_at}
+                                                                                        currentStatus={offer.status}
                                                                                         onUpdate={fetchData} 
                                                                                     />
                                                                                     <TimelineButton 
-                                                                                        label="動画撮影完了" 
+                                                                                        label="撮影完了" 
                                                                                         assetId={offer.id} 
                                                                                         field="filming_at" 
                                                                                         currentValue={offer.filming_at} 
+                                                                                        currentStatus={offer.status}
                                                                                         onUpdate={fetchData} 
                                                                                     />
                                                                                     <TimelineButton 
@@ -1321,6 +1394,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         assetId={offer.id} 
                                                                                         field="delivered_at" 
                                                                                         currentValue={offer.delivered_at} 
+                                                                                        currentStatus={offer.status}
                                                                                         onUpdate={fetchData} 
                                                                                     />
                                                                                     <TimelineButton 
@@ -1328,6 +1402,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         assetId={offer.id} 
                                                                                         field="confirmed_at" 
                                                                                         currentValue={offer.confirmed_at} 
+                                                                                        currentStatus={offer.status}
                                                                                         onUpdate={fetchData} 
                                                                                     />
                                                                                 </div>

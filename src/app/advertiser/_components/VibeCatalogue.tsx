@@ -161,7 +161,7 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                         </button>
                     </div>
 
-                    <div className="relative flex items-center w-full max-w-[320px] sm:max-w-sm justify-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative flex items-center h-[70vh] md:h-[85vh] aspect-[9/16] justify-center" onClick={(e) => e.stopPropagation()}>
                         {/* Prev Button - Absolute */}
                         <button
                             onClick={goPrev}
@@ -1125,7 +1125,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     );
 };
 
-const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const PaywallModal = ({ isOpen, onClose, companyId = 'guest', companyEmail = '' }: { isOpen: boolean; onClose: () => void; companyId?: string; companyEmail?: string }) => {
     const [invitationCode, setInvitationCode] = useState("");
     return (
         <AnimatePresence>
@@ -1152,9 +1152,9 @@ const PaywallModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
                         </p>
 
                         <div className="w-full space-y-3 mb-6">
+                            // ※ href の中のリンクは、スクショのURLに置き換えてください
                             <a
-                                href="#"
-                                onClick={(e) => { e.preventDefault(); alert("Stripe決済ページへ遷移します。"); onClose(); }}
+                                href={`https://buy.stripe.com/bJe00l5128Q1dEB64g1wY00?client_reference_id=${companyId}&prefilled_email=${encodeURIComponent(companyEmail)}`}
                                 className="w-full flex items-center justify-center gap-2 bg-black text-white font-black text-sm py-4 rounded-xl shadow-xl hover:bg-stone-800 hover:scale-[1.02] transition-all active:scale-95"
                             >
                                 <DollarSign className="w-4 h-4" /> クレジットカードで決済
@@ -1390,6 +1390,35 @@ export default function VibeCatalogue({
     useEffect(() => {
         fetchShopInfo();
     }, []);
+
+    const fetchAssets = async () => {
+        if (!shop?.id) return;
+        const supabase = createClient();
+        const { data: fetchedAssets } = await supabase
+            .from('assets')
+            .select(`
+                *,
+                creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url )
+            `)
+            .eq('shop_id', shop.id);
+        
+        if (fetchedAssets) {
+            setLocalAssets(fetchedAssets);
+        }
+    };
+
+    useEffect(() => {
+        if (shop?.id) {
+            fetchAssets();
+            const channel = createClient()
+                .channel('assets_update')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'assets', filter: `shop_id=eq.${shop.id}` }, () => {
+                    fetchAssets();
+                })
+                .subscribe();
+            return () => { createClient().removeChannel(channel); };
+        }
+    }, [shop]);
 
     // 🌟 URL検索やステップ遷移時に必ず最上部を表示する (初回マウントやブラウザバック時は維持)
     useEffect(() => {
@@ -1969,7 +1998,7 @@ export default function VibeCatalogue({
                                         <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                 <div className="order-2 sm:order-1">
-                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
+                                                    <h2 className="text-5xl sm:text-5xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
                                                     {initialGenre && (
@@ -2151,7 +2180,13 @@ export default function VibeCatalogue({
                                         // タイムラインの構築（実際のデータがない場合はフォールバック表示）
                                         const timeline = [
                                             { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
-                                            { label: 'オファー承諾', date: asset.approved_at, active: !!asset.approved_at, icon: <CheckCircle size={10} /> },
+                                            { 
+                                                label: isDeclined ? 'オファー不承諾' : 'オファー承諾', 
+                                                date: isDeclined ? asset.updated_at : asset.approved_at, 
+                                                active: isDeclined || !!asset.approved_at, 
+                                                icon: isDeclined ? <AlertTriangle size={10} /> : <CheckCircle size={10} />,
+                                                isError: isDeclined
+                                            },
                                             { label: '撮影完了', date: asset.filming_at, active: !!asset.filming_at, icon: <Camera size={10} /> },
                                             { label: '納品完了', date: asset.delivered_at, active: !!asset.delivered_at, icon: <Video size={10} /> },
                                             { label: '最終承認', date: asset.status === 'FINALIZED' ? asset.updated_at : null, active: asset.status === 'FINALIZED', icon: <CheckCircle size={10} /> },
@@ -2209,11 +2244,11 @@ export default function VibeCatalogue({
                                                                 <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
                                                                 {timeline.map((step, idx) => (
                                                                     <div key={idx} className="flex gap-4 items-start relative z-10">
-                                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white border-stone-100'}`}>
+                                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? (step.isError ? 'bg-red-500 border-red-500 shadow-lg shadow-red-100' : 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100') : 'bg-white border-stone-100'}`}>
                                                                             {step.active && <div className="text-white">{step.icon}</div>}
                                                                         </div>
                                                                         <div className="flex-1">
-                                                                            <p className={`text-[11px] font-black ${step.active ? 'text-stone-900' : 'text-stone-300'}`}>{step.label}</p>
+                                                                            <p className={`text-[11px] font-black ${step.active ? (step.isError ? 'text-red-500' : 'text-stone-900') : 'text-stone-300'}`}>{step.label}</p>
                                                                             {step.active && step.date && (
                                                                                 <p className="text-[9px] font-bold font-mono text-stone-400">
                                                                                     {new Date(step.date).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -2279,7 +2314,7 @@ export default function VibeCatalogue({
 
                             {/* Acquired Videos Section */}
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-center uppercase">投稿が完了した獲得動画</h3>
+                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">獲得した動画一覧</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                     {/* Real / Interactive completed videos */}
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
@@ -2317,7 +2352,7 @@ export default function VibeCatalogue({
                                                                         <Clock className="w-3 h-3 text-blue-500" />
                                                                         <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Auto-Approve</span>
                                                                     </div>
-                                                                    <span className="text-[10px] font-bold text-stone-400">72h remaining</span>
+                                                                    <span className="text-[10px] font-bold text-stone-400">120h (5days) remaining</span>
                                                                 </div>
                                                                 <div className="w-full bg-stone-100 h-1 rounded-full overflow-hidden">
                                                                     <motion.div
@@ -2327,14 +2362,13 @@ export default function VibeCatalogue({
                                                                     />
                                                                 </div>
                                                                 <p className="text-[8px] text-zinc-400 mt-2 leading-tight">
-                                                                    提出から72時間以内にアクションがない場合、自動で承認されます。
+                                                                    提出から120時間（5日）以内にアクションがない場合、自動で承認されます。
                                                                 </p>
                                                             </div>
                                                             <button
                                                                 onClick={async () => {
-                                                                    const { approveAsset } = await import('@/app/actions/creator');
-                                                                    await approveAsset(asset.id);
-                                                                    setLocalAssets(prev => prev.map(a => a.id === asset.id ? { ...a, status: 'APPROVED' } : a));
+                                                                    const { finalizeAsset } = await import('@/app/actions/creator');
+                                                                    await finalizeAsset(asset.id);
                                                                     setCelebrationAssetId(asset.id);
                                                                     setTimeout(() => setCelebrationAssetId(null), 5000);
                                                                 }}

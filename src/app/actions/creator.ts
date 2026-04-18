@@ -41,6 +41,25 @@ export async function approveAsset(assetId: string) {
     return { success: true, assetId, newStatus: 'APPROVED' };
 }
 
+export async function finalizeAsset(assetId: string) {
+    const supabase = await createClient();
+    
+    const { error } = await supabase
+        .from('assets')
+        .update({ 
+            status: 'FINALIZED', 
+            confirmed_at: new Date().toISOString()
+        })
+        .eq('id', assetId);
+
+    if (error) {
+        console.error("Finalize Asset Error:", error);
+        throw new Error(error.message);
+    }
+    
+    return { success: true, assetId, newStatus: 'FINALIZED' };
+}
+
 export async function updateCreatorPortfolio(creatorId: string, videoUrl: string) {
     const supabase = await createClient();
 

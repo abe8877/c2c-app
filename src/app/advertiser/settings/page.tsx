@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Bell, Sparkles, Crown, ShieldCheck, Loader2 } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
+import Link from 'next/link';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -119,15 +120,15 @@ export default function SettingsPage() {
                                 <p className="text-xs text-slate-500 font-medium mt-1">マッチング結果や重要なお知らせをメールで受け取る</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    className="sr-only peer" 
-                                    checked={emailNotifications} 
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={emailNotifications}
                                     onChange={(e) => {
                                         const val = e.target.checked;
                                         setEmailNotifications(val);
                                         handleSaveNotifications(val, notificationEmail);
-                                    }} 
+                                    }}
                                 />
                                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                             </label>
@@ -136,14 +137,14 @@ export default function SettingsPage() {
                         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
                             <h3 className="font-bold text-slate-900 text-sm">通知用メールアドレス</h3>
                             <div className="flex gap-2">
-                                <input 
-                                    type="email" 
+                                <input
+                                    type="email"
                                     placeholder="your@email.com"
                                     value={notificationEmail}
                                     onChange={(e) => setNotificationEmail(e.target.value)}
                                     className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-all"
                                 />
-                                <button 
+                                <button
                                     onClick={async () => {
                                         await handleSaveNotifications(emailNotifications, notificationEmail);
                                         alert("通知設定を保存しました！");
@@ -248,6 +249,30 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </div>
+                    {/* ↑ 【修正】ここで「サブスクリプション管理エリア」の枠を完全に閉じました */}
+
+                    {/* ▼▼ 独立させた法的情報・ヘルプセクション（枠の外側） ▼▼ */}
+                    <div className="mt-12 mb-8 flex flex-col items-center justify-center text-center">
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500">
+                            <Link href="/terms" target="_blank" className="hover:text-slate-900 transition-colors">
+                                利用規約
+                            </Link>
+                            <Link href="/privacy" target="_blank" className="hover:text-slate-900 transition-colors">
+                                プライバシーポリシー
+                            </Link>
+                            <Link href="/terms-sp" target="_blank" className="hover:text-slate-900 transition-colors">
+                                特定商取引法に基づく表記
+                            </Link>
+                            <a href="mailto:info@insiders-hub.jp" className="hover:text-slate-900 transition-colors">
+                                お問い合わせ
+                            </a>
+                        </div>
+                        <p className="mt-6 text-[10px] text-slate-400 font-bold tracking-wider">
+                            © 2026 nots, inc.
+                        </p>
+                    </div>
+                    {/* ▲▲ ここまで ▲▲ */}
+
                 </motion.section>
             </main>
         </div>
