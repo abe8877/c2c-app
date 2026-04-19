@@ -609,8 +609,9 @@ export default function InsidersLP() {
                             </div>
 
                             <h1 className="text-3xl sm:text-5xl lg:text-4xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.0] lg:leading-[1.1] max-w-[900px]">
-                                <span className="block mb-2">訪日客の「行きたい！」</span>
-                                <span className="block mb-2">を生み出すショート動画PR</span>
+                                <span className="block mb-2">世界中のスマホに</span>
+                                <span className="block mb-2">“インバウンド動画看板”</span>
+                                <span className="block mb-2">を立てよう。</span>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 block mt-2">
                                     『INSIDERS.』
                                 </span>
@@ -622,8 +623,8 @@ export default function InsidersLP() {
                                 <div className="grid grid-cols-3 gap-3 px-2 mb-10 mt-10">
                                     {[
                                         { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
-                                        { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
-                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
+                                        { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "直接取引", sub: <>代理店マージン・<br />仲介手数料ゼロ</> },
+                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "二次利用フリー", sub: <>納品動画を<br />永続的な集客資産に</> },
                                     ].map((badge, idx) => (
                                         <div key={idx} className="flex flex-col items-center justify-center p-2 sm:p-4 bg-transparent border-none rounded-none text-center">
                                             <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2 justify-center w-full">
@@ -643,9 +644,9 @@ export default function InsidersLP() {
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
                             <div className="hidden lg:flex items-center gap-12 mb-12">
                                 {[
-                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1,000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
-                                    { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "定額制", sub: <>月に何人でも<br />オファーし放題</> },
-                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "0円", sub: <>Googleマップ<br />での二次利用保証</> },
+                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
+                                    { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "直接取引", sub: <>代理店マージン・<br />仲介手数料ゼロ</> },
+                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "二次利用フリー", sub: <>納品動画を<br />永続的な集客資産に</> },
                                 ].map((badge, idx) => (
                                     <div key={idx} className="flex flex-col items-center lg:items-center transition-all group text-center">
                                         <div className="flex items-center gap-3 mb-2 transition-transform group-hover:scale-110">
@@ -688,14 +689,15 @@ export default function InsidersLP() {
                     <div className="flex flex-col lg:flex-row gap-16 items-center mb-32">
                         <div className="flex-1 text-center lg:text-left">
                             <h2 className="text-2xl md:text-4xl font-black text-slate-900 mb-10 leading-[1.2]">
+                                「旅の目的地はアルゴリズムに“決めさせられている”」<br />
                                 SNSは旅行行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”に。</span>
                             </h2>
                             <div className="text-slate-500 text-base md:text-lg leading-relaxed space-y-6 font-medium">
                                 <p>
-                                    訪日客の行動は完全にSNS前提になりました。<br />インバウンド集客を成功させるために必要なのは、今まさに日本旅行を検討している外国人のスマホに入り込み、彼らの『行きたいリスト』に直接あなたのお店を保存させることです。
+                                    私達が異国を訪れて言語に不安があるとしたら、お店選びの決め手が「SNSで見つけた動画」と「Googleマップでの評判」になるのはごく自然なことです。インバウンド集客を成功させる近道は、今まさに日本旅行を検討している外国人のスマホに入り込み、彼らの『行きたいリスト』に直接あなたのお店を保存させてしまうことです。
                                 </p>
                                 <p className="text-slate-900 font-black">
-                                    だからこそ、「フォロワー数が多いだけのインフルエンサー」にPRを頼んだり、「OTAで競合と上位表示争い」をしても、彼らのSNSのおすすめタブに表示されなければ意味がないのです。
+                                    だからこそ、「フォロワー数が多いだけのインフルエンサー」にPRを頼んだり、「OTAで競合と上位表示争い」をするのはもう意味がありません。現代の訪日客は、お店を探すためにOTAを開く前に、SNSで目的地を決め、そのままGoogleマップで来店してしまうからです。
                                 </p>
                             </div>
                         </div>
@@ -706,7 +708,7 @@ export default function InsidersLP() {
                                     {
                                         step: "STEP 1",
                                         tag: "旅マエ",
-                                        desc: "SNSのおすすめタブで直感的に発見（AIレコメンド）",
+                                        desc: "SNSのおすすめタブで直感的に発見",
                                         icon: <PlayCircle className="w-6 h-6 text-indigo-600" />,
                                         visual: (
                                             <div className="relative w-full h-48 bg-slate-50 rounded-[2.5rem] overflow-hidden flex items-center justify-center gap-6 shadow-inner border border-slate-100">
@@ -758,7 +760,7 @@ export default function InsidersLP() {
                                     {
                                         step: "STEP 2",
                                         tag: "計画",
-                                        desc: "行きたいリストがそのまま旅程に",
+                                        desc: "「行きたいリスト」が連なり旅程に",
                                         icon: <Bookmark className="w-6 h-6 text-indigo-600" />,
                                         visual: (
                                             <div className="relative w-full h-48 bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-xl p-4">
@@ -843,7 +845,7 @@ export default function InsidersLP() {
                                     {
                                         step: "STEP 3",
                                         tag: "旅ナカ",
-                                        desc: "スマホ片手に目的地へ直行。待ち時間も周辺スポットをSNSでリサーチ",
+                                        desc: "保存したピンを頼りに目的地へ直行",
                                         icon: <MapPin className="w-6 h-6 text-indigo-600" />,
                                         visual: (
                                             <div className="relative w-full h-48 bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl flex items-center justify-center">
@@ -924,9 +926,9 @@ export default function InsidersLP() {
 
                     <div id="problems" className="pt-10 sm:pt-20 border-t border-slate-100 scroll-mt-24">
                         <div className="text-center mb-10 sm:mb-16">
-                            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.3] lg:leading-[1.2] max-w-4xl mx-auto mb-2 sm:mb-4">
-                                インバウンド集客は<br className="sm:hidden" />
-                                <span className="text-indigo-600">もっと“ズルくていい”</span>
+                            <h2 className="text-xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.5] lg:leading-[1.5] max-w-4xl mx-auto mb-2 sm:mb-4">
+                                比較サイトでの消耗戦は不要。<br />
+                                <span className="text-indigo-600">インバウンド集客はもっとズルくていい</span>
                             </h2>
                         </div>
 
@@ -935,20 +937,20 @@ export default function InsidersLP() {
                                 {
                                     icon: <Target className="w-8 h-8" />,
                                     color: 'amber',
-                                    title: <>外国人にだけリーチすればいい</>,
-                                    desc: '日本人を完全に無視することが重要です。訪日意欲の高い外国人だけを狙い打ちできるインフルエンサーが実はたくさん存在します。'
+                                    title: <>日本人を捨てて、<br />訪日客のスマホだけを狙う</>,
+                                    desc: 'マスに向けたビラ配りのようなPRは不要です。今まさに日本旅行を計画している外国人の「SNSのおすすめタブ」にだけピンポイントで看板を出すのが最も効率的です。'
                                 },
                                 {
                                     icon: <Zap className="w-8 h-8" />,
                                     color: 'rose',
-                                    title: <>競合との消耗戦は避けていい</>,
-                                    desc: '現代の訪日客の来店ルートはOTAだけではありません。手数料や上位表示争いで消耗しない、SNSからの直予約ルートを構築しましょう。'
+                                    title: <>比較サイトから逃げ、<br />マップ上で勝負する</>,
+                                    desc: 'OTAの検索結果で、価格や評価を競合と争うのはやめましょう。Googleマップという行動の終着点に直接「動画の看板」を立てることで、比較されることなく「指名買い」されます。'
                                 },
                                 {
                                     icon: <Globe className="w-8 h-8" />,
                                     color: 'indigo',
-                                    title: <>英語ができなくてもいい</>,
-                                    desc: '慣れない英語でのDM対応で現場を疲弊させる必要はありません。面倒ごとはシステムに任せ、目の前のお客様に専念できます。'
+                                    title: <>英語力を諦め、<br />ネイティブの熱量に頼る</>,
+                                    desc: '不慣れな外国語での発信で現場を疲弊させる必要はありません。言葉の壁の突破とお店の魅力の翻訳は、その国のトレンドを知り尽くしたクリエイターに任せるのが一番の近道です。'
                                 }
                             ].map((pain, idx) => (
                                 <div key={idx} className="bg-slate-50 p-7 sm:p-9 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
@@ -969,9 +971,6 @@ export default function InsidersLP() {
 
                         {/* Bridge Copy */}
                         <div className="mt-20 text-center max-w-3xl mx-auto">
-                            <p className="text-2xl md:text-2xl font-black text-slate-900 leading-tight">
-                                インバウンド集客を<br className="sm:hidden" />もっとお手軽に。
-                            </p>
                             <div className="mt-10 flex justify-center">
                                 <div className="flex flex-col items-center gap-2 animate-bounce">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scroll to Solution</span>
@@ -989,9 +988,9 @@ export default function InsidersLP() {
             <section id="solution" className="py-16 sm:py-24 bg-white border-t border-slate-100 overflow-hidden scroll-mt-24">
                 <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
-                        <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.2]">
-                            <span className="text-indigo-600">INSIDERS.が支える</span><br />
-                            インバウンド×ショート動画PRのススメ
+                        <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.5]">
+                            <span className="text-indigo-600">インバウンド動画看板を構築する</span><br />
+                            『INSIDERS.』4つの独自システム
                         </h2>
                     </div>
 

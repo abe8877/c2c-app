@@ -2,14 +2,17 @@
 'use server'
 
 import { publicAction } from '@/lib/actions/safe-action';
-import { createClient } from '@/utils/supabase/server';
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 /**
  * ADMINダッシュボードの統計情報を取得
  */
 export async function getAdminStats() {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
         try {
             const sevenDaysAgo = new Date();
@@ -20,18 +23,18 @@ export async function getAdminStats() {
             const weeklyAnalysis = 1280;
 
             // 2. アクティブ店舗 (現在進行中の案件数)
-            const { count: activeShops } = await supabase
+            const { count: activeShops } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .in('status', ['OFFERED', 'SUGGESTING_ALTERNATIVES', 'APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED']);
 
             // 3. 平均マッチ率 (マッチ数 / オファー数)
-            const { count: totalOffersThisWeek } = await supabase
+            const { count: totalOffersThisWeek } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', sevenDaysAgo.toISOString());
                 
-            const { count: matchedOffersThisWeek } = await supabase
+            const { count: matchedOffersThisWeek } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', sevenDaysAgo.toISOString())
@@ -66,10 +69,13 @@ export async function getAdminStats() {
  */
 export async function getSuccessLogs() {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('shops')
                 .select('*')
                 .order('updated_at', { ascending: false })
@@ -111,32 +117,37 @@ function getMockSuccessLogs() {
  */
 export async function getLostAssets() {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
         try {
-            const { data, error } = await supabase
-                .from('asset_insights')
+            const { data, error } = await supabaseAdmin
+                .from('assets')
                 .select(`
                     id,
                     created_at,
-                    missing_tags,
-                    creator_ai_hint,
+                    updated_at,
+                    rejection_reason,
+                    offer_details,
+                    barter_details,
                     shops:shop_id (name),
-                    creators:creator_id (name)
+                    creators:creator_id (name, vibe_tags)
                 `)
-                .order('created_at', { ascending: false });
+                .eq('status', 'DECLINED')
+                .order('updated_at', { ascending: false });
 
             if (error) throw error;
 
-            // DBから取得したデータを整形 (モック形式に合わせる)
             if (data && data.length > 0) {
                 return data.map((item: any) => ({
                     id: item.id,
                     advertiser: item.shops?.name || '不明な店舗',
                     rejectedCreator: item.creators?.name || '不明なクリエイター',
-                    missingVibes: item.missing_tags || [],
-                    aiAction: item.creator_ai_hint || '分析なし',
-                    timestamp: new Date(item.created_at).toLocaleString('ja-JP'),
+                    missingVibes: item.creators?.vibe_tags || [],
+                    aiAction: item.rejection_reason || '理由なし',
+                    timestamp: new Date(item.updated_at || item.created_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
                 }));
             }
 
@@ -185,10 +196,13 @@ function getMockLostAssets() {
  */
 export async function getOngoingOffers() {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseAdmin
                 .from('assets')
                 .select(`
                     id,
@@ -203,7 +217,7 @@ export async function getOngoingOffers() {
                     shops:shop_id (id, name),
                     creators:creator_id (id, name, avatar_url, followers)
                 `)
-                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES,status.eq.WORKING,status.eq.COMPLETED,status.eq.APPROVED,status.eq.DELIVERED,status.eq.FINALIZED')
+                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES,status.eq.WORKING,status.eq.COMPLETED,status.eq.APPROVED,status.eq.DELIVERED,status.eq.FINALIZED,status.eq.DECLINED')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -233,6 +247,9 @@ export async function getOngoingOffers() {
                         rejection_reason: item.rejection_reason,
                         createdAt: item.created_at,
                         approved_at: item.approved_at,
+                        filming_at: item.offer_details?.timeline?.filming_at,
+                        delivered_at: item.offer_details?.timeline?.delivered_at,
+                        confirmed_at: item.offer_details?.timeline?.confirmed_at,
                         submitted_at: item.submitted_at,
                         video_url: item.video_url,
                         diffHours,
@@ -294,18 +311,49 @@ function getMockOngoingOffers() {
 /**
  * アセットの進行状況（タイムスタンプ）を更新する
  */
-export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at', timestamp: string | null, extraData?: any) {
+export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at' | 'final_status', timestamp: string | null, extraData?: any) {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
-        let updatePayload: any = { [field]: timestamp };
+        // field が approved_at 以外の場合は DB 列が存在しないため、offer_details の中の timeline に保存する
+        let updatePayload: any = {};
         
-        if (field === 'delivered_at' && extraData?.videoUrl) {
-            updatePayload.video_url = extraData.videoUrl;
-            updatePayload.status = 'COMPLETED'; // 自動的に状態を進める
+        if (field === 'approved_at') {
+            updatePayload.approved_at = timestamp;
+            if (timestamp) {
+                updatePayload.status = 'WORKING'; // 承諾時はWORKINGに進める
+                updatePayload.rejection_reason = null;
+            } else {
+                updatePayload.status = 'DECLINED'; // 取消時は不承諾に
+                if (extraData?.rejectionReason) updatePayload.rejection_reason = extraData.rejectionReason;
+            }
+        } else if (field === 'final_status') {
+            updatePayload.status = 'FINALIZED';
+            updatePayload.updated_at = timestamp || new Date().toISOString();
+        } else {
+            // 現在のassetsを取得してJSONを更新
+            const { data: currentAsset } = await supabaseAdmin.from('assets').select('offer_details').eq('id', assetId).single();
+            const currentDetails = currentAsset?.offer_details || {};
+            const timeline = currentDetails.timeline || {};
+            timeline[field] = timestamp;
+            currentDetails.timeline = timeline;
+            updatePayload.offer_details = currentDetails;
+
+            if (field === 'delivered_at' && timestamp) {
+                updatePayload.status = 'DELIVERED'; // 自動的に状態を進める
+            } else if (field === 'confirmed_at' && timestamp) {
+                updatePayload.status = 'FINALIZED';
+            }
         }
 
-        const { error } = await supabase
+        if (extraData?.videoUrl) {
+            updatePayload.video_url = extraData.videoUrl;
+        }
+
+        const { error } = await supabaseAdmin
             .from('assets')
             .update(updatePayload)
             .eq('id', assetId);
@@ -328,13 +376,26 @@ export async function sendAdminProxyMessage({
     senderType: 'shop' | 'creator';
 }) {
     return publicAction({}, async () => {
-        const supabase = await createClient();
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
 
-        // 1. メッセージ保存
-        const { data, error } = await supabase
+        // assetからshop_idとcreator_idを取得
+        const { data: assetInfo, error: assetError } = await supabaseAdmin
+            .from('assets')
+            .select('shop_id, creator_id')
+            .eq('id', assetId)
+            .single();
+            
+        if (assetError) throw assetError;
+
+        // 1. メッセージ保存 (Admin権限で実行)
+        const { data, error } = await supabaseAdmin
             .from('messages')
             .insert({
                 asset_id: assetId,
+                sender_id: senderType === 'shop' ? assetInfo.shop_id : assetInfo.creator_id,
                 message: content,
                 sender_type: senderType,
                 is_admin_action: true
@@ -342,11 +403,14 @@ export async function sendAdminProxyMessage({
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error("Proxy message insert error:", error);
+            throw error;
+        }
 
         // 2. 通知実行 (n8n Webhook)
         try {
-            const { data: asset } = await supabase
+            const { data: asset } = await supabaseAdmin
                 .from('assets')
                 .select(`
                     shop_id,

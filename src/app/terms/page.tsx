@@ -12,11 +12,11 @@ export default function TermsOfService() {
                     <ArrowLeft size={16} /> トップページに戻る
                 </Link>
 
-                <h1 className="text-4xl font-black tracking-tight mb-12">INSIDERS 利用規約</h1>
+                <h1 className="text-4xl font-black tracking-tight mb-12">INSIDERS. 利用規約</h1>
 
                 <div className="space-y-10 text-slate-600 leading-relaxed font-medium">
                     <p className="text-sm">
-                        この利用規約（以下「本規約」といいます。）は、株式会社nots（以下「当社」といいます。）が提供するプラットフォームサービス「INSIDERS」（以下「本サービス」といいます。）の利用条件、および当社とユーザーとの間の権利義務関係を定めるものです。
+                        この利用規約（以下「本規約」といいます。）は、株式会社nots（以下「当社」といいます。）が提供するプラットフォームサービス「INSIDERS.」（以下「本サービス」といいます。）の利用条件、および当社とユーザーとの間の権利義務関係を定めるものです。
                     </p>
 
                     <section>
@@ -65,8 +65,8 @@ export default function TermsOfService() {
                     <section>
                         <h2 className="text-xl font-black text-slate-900 mb-4">第5条（表現手法の尊重と演出の一任・検収ルール）</h2>
                         <ol className="list-decimal pl-5 mt-2 space-y-2">
-                            <li><strong>（表現手法の尊重）</strong>広告主は、クリエイターの独自の世界観、感性、および表現手法（以下「VIBE」といいます。）を最大限尊重するものとし、原則として事前に絵コンテまたは字コンテの提出を求めることはできないものとします。演出はクリエイターに一任するものとします。</li>
-                            <li><strong>（修正の制限）</strong>SNS投稿内容および納品された動画データに対する修正依頼は、オファー送信時に広告主が指定した「必須要件・NG事項」からの明らかな逸脱、または「事実誤認」がある場合に限り、最大2回まで可能とします。クリエイターの主観的表現やクオリティに対する広告主の個人的な嗜好を理由とした修正・リテイクはできません。</li>
+                            <li><strong>（表現手法の尊重）</strong>広告主は、クリエイターの独自の世界観、感性、および表現手法を最大限尊重するものとし、原則として演出はクリエイターに一任するものとします。</li>
+                            <li><strong>（修正の制限）</strong>SNS投稿内容および納品された動画データに対する修正依頼は、オファー送信時に広告主が指定した「必須要件・NG事項」からの明らかな逸脱、または「事実誤認」がある場合に限り、最大2回まで可能とします。クリエイターの主観的表現やクオリティに対する広告主の個人的な嗜好を理由とした修正・リテイクは原則できません。</li>
                             <li><strong>（みなし検収）</strong>成果物等（SNS投稿の報告および動画データのアップロード）の完了報告後、<strong>120時間（5日間）以内</strong>に広告主から具体的な不備の指摘（修正依頼等の異議申し立て）がない場合、当該成果物等は承認（検収完了）されたものとみなします。</li>
                         </ol>
                     </section>

@@ -103,15 +103,17 @@ export default function GatewayPage() {
             </div>
 
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-12 relative z-10">
-                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 shadow-sm rounded-full px-4 py-1.5 mb-6">
-                    <Lock className="w-3 h-3 text-indigo-600" />
-                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Invite Only Access</span>
+                <div className="flex flex-col items-center">
+                    <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-100 shadow-sm rounded-full px-4 py-1.5 mb-6">
+                        <Lock className="w-3 h-3 text-indigo-600" />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Invite Only Access</span>
+                    </div>
+                    <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
+                            INSIDERS.
+                        </h1>
+                    </Link>
                 </div>
-                <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-slate-900">
-                        INSIDERS.
-                    </h1>
-                </Link>
                 <p className="text-slate-500 text-sm md:text-base max-w-md mx-auto leading-relaxed font-medium">
                     招待コードを入力すると、3名分の無料オファー枠を使って、すぐにサービスをご利用いただけます。
                 </p>
@@ -273,7 +275,7 @@ export default function GatewayPage() {
                             className="group w-full py-4 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl flex items-center justify-center gap-2 font-bold text-slate-700 hover:text-indigo-600 transition-all duration-200 shadow-sm"
                         >
                             <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
-                            リクエストを送る（フォームへ遷移）
+                            リクエストを送る
                         </a>
 
                         {/* 区切り線とプラン購入セクション */}

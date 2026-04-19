@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
 import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage } from '@/app/actions/admin';
 import { triggerN8nWebhook } from '@/app/actions/creator';
-import { Info, MessageCircle, Send, Plus, X } from 'lucide-react';
 
 // Define the Creator Interface
 interface CreatorData {
@@ -78,32 +77,25 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         setLoading(true);
         const now = new Date().toISOString();
         
-        const supabase = createClient();
-        if (field === 'approved_at') {
-            await supabase
-                .from('assets')
-                .update({ 
-                    approved_at: approved ? now : null,
-                    status: approved ? 'WORKING' : 'DECLINED',
-                    rejection_reason: approved ? null : rejectionReason
-                })
-                .eq('id', assetId);
-        } else if (field === 'final_status' || field === 'confirmed_at') {
-             await supabase
-                .from('assets')
-                .update({ status: 'FINALIZED', updated_at: now })
-                .eq('id', assetId);
-        } else if (field === 'delivered_at') {
-            await updateAssetTimestamp(assetId, field as any, now, { videoUrl });
-        } else {
-            await updateAssetTimestamp(assetId, field as any, now);
+        try {
+            await updateAssetTimestamp(
+                assetId, 
+                field as any, 
+                field === 'approved_at' && !approved ? null : now, 
+                { rejectionReason, videoUrl }
+            );
+        } catch(e) {
+            console.error(e);
+            alert("更新に失敗しました");
+            setLoading(false);
+            return;
         }
         
         setValue(field === 'approved_at' && !approved ? null : now);
         if (field === 'approved_at') {
             setLocalStatus(approved ? 'WORKING' : 'DECLINED');
         } else if (field === 'delivered_at') {
-            setLocalStatus('COMPLETED');
+            setLocalStatus('DELIVERED');
         } else if (field === 'final_status' || field === 'confirmed_at') {
             setLocalStatus('FINALIZED');
         }
@@ -278,18 +270,17 @@ const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: str
     const [loading, setLoading] = useState(false);
     const supabase = createClient();
 
-    const fetchMessages = async () => {
-        const { data } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('asset_id', assetId)
-            .order('created_at', { ascending: true });
-        if (data) setMessages(data);
+    const fetchMessagesData = async () => {
+        const { fetchMessages } = await import('@/app/actions/chat');
+        const res = await fetchMessages(assetId);
+        if (res.success && res.data) {
+            setMessages(res.data);
+        }
     };
 
     useEffect(() => {
         if (isOpen) {
-            fetchMessages();
+            fetchMessagesData();
             const channel = supabase
                 .channel(`asset-chat-${assetId}`)
                 .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `asset_id=eq.${assetId}` }, (payload) => {
@@ -309,7 +300,7 @@ const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: str
         const res = await sendAdminProxyMessage({ assetId, content: input, senderType });
         if (res.success) {
             setInput("");
-            fetchMessages();
+            fetchMessagesData();
         }
         setLoading(false);
     };
@@ -1246,7 +1237,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {ongoingOffers.map((offer) => {
+                                    {ongoingOffers.filter(o => o.status !== 'DECLINED').map((offer) => {
                                         let rowStyle = "hover:bg-indigo-50/50 transition cursor-pointer";
                                         const isExpanded = expandedOfferId === offer.id;
                                         if (offer.alertLevel === 'CRITICAL') {
@@ -1267,7 +1258,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col gap-1">
                                                             <span className="font-bold text-xs">
-                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' : 'オファー中'}
+                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' 
+                                                                : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み' 
+                                                                : offer.status === 'DELIVERED' ? '納品済み'
+                                                                : offer.status === 'FINALIZED' ? '完了'
+                                                                : 'オファー中'}
                                                             </span>
                                                             {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
                                                             {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
@@ -1300,9 +1295,23 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                 <div className="p-8 border-t border-indigo-100 shadow-inner">
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                                                                         {/* Offer Details (Chips UI) */}
-                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden">
-                                                                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                                                        <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden group/offer">
+                                                                            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-opacity group-hover/offer:opacity-0">
                                                                                 <Save size={40} className="text-indigo-600" />
+                                                                            </div>
+                                                                            <div className="absolute top-0 right-0 p-3 opacity-100 transition-opacity flex gap-2">
+                                                                                <button 
+                                                                                    onClick={() => {
+                                                                                        const details = offer.offerDetails || {};
+                                                                                        const text = `【オファー条件】\nプラン: ${details.plan === 'paid' ? '有償' : 'バーター（無償）'}\n${details.plan === 'paid' ? `報酬: ¥${Number(details.amount).toLocaleString()}\n` : ''}撮影時間: ${details.shootingTime || '指定なし'}\nスタッフ出演: ${details.staffAppearance || '指定なし'}\nNG項目: ${details.ngItems || 'なし'}\n提供内容: ${offer.barterDetails || details.barterDetails || 'なし'}`;
+                                                                                        navigator.clipboard.writeText(text);
+                                                                                        alert('オファー条件をコピーしました');
+                                                                                    }}
+                                                                                    className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 p-2 rounded-xl transition-all shadow-sm border border-indigo-200"
+                                                                                    title="DM用にコピー"
+                                                                                >
+                                                                                    <Copy size={16} />
+                                                                                </button>
                                                                             </div>
                                                                             <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                                                 <Info size={12} /> Offer Conditions
@@ -1343,14 +1352,24 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                 )}
                                                                             </div>
 
-                                                                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-2">Barter Requirements / NG Items</p>
-                                                                                <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner flex flex-col gap-2">
-                                                                                    <div>{offer.barterDetails || offer.offerDetails?.barterDetails || "提供内容の記載なし"}</div>
-                                                                                    {offer.offerDetails?.ngItems && (
-                                                                                        <div className="text-[10px] text-red-500 font-bold border-t border-red-100 pt-2 mt-1">NG: {offer.offerDetails.ngItems}</div>
-                                                                                    )}
+                                                                            <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Barter / Offer Details</p>
+                                                                                    <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner">
+                                                                                        {offer.barterDetails || offer.offerDetails?.barterDetails || "提供内容の記載なし"}
+                                                                                    </div>
                                                                                 </div>
+                                                                                {offer.offerDetails?.invitationMessage && (
+                                                                                    <div className="flex flex-col gap-1">
+                                                                                        <p className="text-[10px] font-black text-slate-400 uppercase">Invitation Message</p>
+                                                                                        <div className="text-[10px] font-bold text-slate-500 leading-relaxed bg-slate-50/50 p-3 rounded-lg border border-slate-100 italic">
+                                                                                            "{offer.offerDetails.invitationMessage}"
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+                                                                                {offer.offerDetails?.ngItems && (
+                                                                                    <p className="text-[10px] text-red-500 font-bold px-2 py-1 bg-red-50 rounded border border-red-100 w-fit">NG: {offer.offerDetails.ngItems}</p>
+                                                                                )}
                                                                             </div>
                                                                         </div>
 

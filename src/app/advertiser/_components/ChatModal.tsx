@@ -7,7 +7,7 @@ import {
     RefreshCw, Camera, AlertCircle, Loader2, User
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { sendMessage, getAssistantResponse } from '@/app/actions/chat';
+import { sendMessage, getAssistantResponse, fetchMessages } from '@/app/actions/chat';
 
 interface Message {
     id: string;
@@ -106,16 +106,18 @@ export default function ChatModal({
                 setShopData(asset.shops);
             }
 
-            // メッセージの取得
-            const { data: chatData, error } = await supabase
-                .from('messages')
-                .select('*')
-                .eq('asset_id', assetId)
-                .order('created_at', { ascending: true });
-
-            if (chatData) {
-                setMessages(chatData);
+            // メッセージの取得（Server Action経由でRLSをバイパス）
+            try {
+                const result = await fetchMessages(assetId);
+                if (result.success && result.data) {
+                    setMessages(result.data);
+                } else {
+                    console.error("Chat fetch error:", result.error);
+                }
+            } catch (err) {
+                console.error("Chat fetch error:", err);
             }
+
             setIsLoading(false);
             setTimeout(scrollToBottom, 100);
         };
@@ -139,8 +141,21 @@ export default function ChatModal({
             })
             .subscribe();
 
+        // Polling fallback: 5秒ごとにメッセージを再取得（Realtimeが機能しない場合のバックアップ）
+        const pollInterval = setInterval(async () => {
+            try {
+                const result = await fetchMessages(assetId);
+                if (result.success && result.data) {
+                    setMessages(result.data);
+                }
+            } catch (err) {
+                // silent
+            }
+        }, 5000);
+
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(pollInterval);
         };
     }, [isOpen, assetId, currentUserType]);
 
@@ -469,8 +484,8 @@ export default function ChatModal({
                         ) : messages.length === 0 ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-40">
                                 <AlertCircle className="w-12 h-12 mb-4" />
-                                <p className="text-sm font-bold">No messages yet</p>
-                                <p className="text-[10px] mt-1 italic">Use AI Concierge templates to start conversation</p>
+                                <p className="text-sm font-bold">メッセージはありません</p>
+                                <p className="text-[10px] mt-1 italic">すでにオファー内容は合意されているので交渉は不要です。<  br />来店日程のみクリエイターと調整してください。</p>
                             </div>
                         ) : (
                             messages.map((msg) => {

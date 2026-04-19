@@ -383,7 +383,7 @@ export default function CreatorJoinLandingPage() {
                                         </div>
                                     </div>
                                     <div className="mt-1 w-full py-4 bg-black text-white rounded-2xl text-[10px] font-bold flex items-center justify-center gap-2 shadow-xl">
-                                        <Send className="w-3.5 h-3.5" /> 招待状を送る
+                                        <Send className="w-3.5 h-3.5" /> オファーを送る
                                     </div>
                                 </div>
 
