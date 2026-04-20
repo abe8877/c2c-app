@@ -10,12 +10,13 @@ import {
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
     Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target,
-    SettingsIcon, Video, Loader2
+    SettingsIcon, Video, Loader2,
+    Smartphone
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
 import { analyzeAssetInsight } from "@/app/actions/analyze-asset-insight";
-import { analyzeShopVibe } from "@/app/actions/analyze-shop-vibe";
+import { analyzeShopVibe, saveShopVibeTags } from "@/app/actions/analyze-shop-vibe";
 import { offerCreator } from '@/app/actions/offer-creator';
 import { translateText } from '@/app/actions/translate';
 import { createClient } from '@/utils/supabase/client';
@@ -744,6 +745,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
 
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram Reels']);
     const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
     const [barterDetails, setBarterDetails] = useState('');
     const [invitationMessage, setInvitationMessage] = useState('');
@@ -765,6 +767,10 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
 
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+    };
+
+    const togglePlatform = (platform: string) => {
+        setSelectedPlatforms(prev => prev.includes(platform) ? prev.filter(p => p !== platform) : [...prev, platform]);
     };
 
     const handleTranslate = async (text: string, field: 'barter' | 'message' | 'ng') => {
@@ -904,6 +910,23 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
+                                    <Smartphone className="w-4 h-4" /> 希望する投稿媒体（ショート動画のみ）
+                                </label>
+
+                                <div className="flex flex-wrap gap-2.5">
+                                    {['TikTok', 'Instagramリール', 'YouTubeショート', 'クリエイターに任せる・相談したい'].map(platform => (
+                                        <button
+                                            key={platform}
+                                            onClick={() => togglePlatform(platform)}
+                                            className={`px-4 py-2 rounded-full text-[10px] font-bold border transition-all duration-200 ${selectedPlatforms.includes(platform) ? 'bg-black text-white border-black shadow-md scale-105' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'}`}
+                                        >
+                                            {platform}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
@@ -1123,9 +1146,14 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         alert('確認事項への同意が必要です。');
                                         return;
                                     }
+                                    if (selectedPlatforms.length === 0) {
+                                        alert('希望する投稿媒体を1つ以上選択してください。');
+                                        return;
+                                    }
                                     onSend({
                                         plan,
                                         amount,
+                                        selectedPlatforms,
                                         selectedTags,
                                         barterDetails,
                                         invitationMessage,
@@ -1181,15 +1209,6 @@ const PaywallModal = ({ isOpen, onClose, companyId = 'guest', companyEmail = '',
                                 <>
                                     <a
                                         href={`https://buy.stripe.com/bJe00l5128Q1dEB64g1wY00?client_reference_id=${companyId}&prefilled_email=${encodeURIComponent(companyEmail)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => {
-                                            // Mocking unlock on click since this is a demo
-                                            setTimeout(() => {
-                                                onUnlock();
-                                                onClose();
-                                            }, 2000);
-                                        }}
                                         className="w-full flex items-center justify-center gap-2 bg-black text-white font-black text-sm py-4 rounded-xl shadow-xl hover:bg-stone-800 hover:scale-[1.02] transition-all active:scale-95"
                                     >
                                         <DollarSign className="w-4 h-4" /> クレジットカードで決済
@@ -1593,6 +1612,10 @@ export default function VibeCatalogue({
                     if (Array.isArray(clusters) && clusters.length > 0) {
                         setShopVibeClusters(clusters);
                     }
+                    // Sync to DB if clientTag is available
+                    if (clientTag) {
+                        saveShopVibeTags(clientTag, result.tags, clusters && clusters.length > 0 ? clusters : DEMO_CLUSTERS);
+                    }
                     setFilterGenre(selectedGenre); // カタログ表示も同期
                     setSearchGenre(selectedGenre); // 検索時のカテゴリを保持
                     setStep('vibe_check');
@@ -1988,9 +2011,7 @@ export default function VibeCatalogue({
                                                     )}
                                                 </AnimatePresence>
                                             </div>
-                                            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 mt-3 text-center">
-                                                ※短尺URL（Googleマップの共有から取得できるURL）<br className="desktop:inline hidden" />は避け、フルURLを入力してください
-                                            </p>
+                                            <div className="mt-2"></div>
                                         </div>
 
 
@@ -2044,7 +2065,7 @@ export default function VibeCatalogue({
                                         <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                 <div className="order-2 sm:order-1">
-                                                    <h2 className="text-5xl sm:text-5xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
+                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
                                                     {initialGenre && (

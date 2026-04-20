@@ -9,8 +9,31 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { headers } from 'next/headers';
 
-export async function analyzeShopVibe(url: string, genre?: string) {
+// 短縮URLのリダイレクトを追跡してフルURLを取得する関数
+async function expandUrl(originalUrl: string): Promise<string> {
     try {
+        if (!originalUrl.startsWith('http')) return originalUrl;
+
+        // HEADリクエストでリダイレクトを追跡（ボディはダウンロードしないので高速）
+        const response = await fetch(originalUrl, {
+            method: 'HEAD',
+            redirect: 'follow',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
+
+        // リダイレクト後の最終的なフルURLを返す
+        return response.url || originalUrl;
+    } catch (error) {
+        console.warn('URLの展開に失敗しました。元のURLを使用します:', error);
+        return originalUrl;
+    }
+}
+
+export async function analyzeShopVibe(inputUrl: string, genre?: string) {
+    try {
+        const url = await expandUrl(inputUrl);
         const supabase = await createClient();
 
         // 1. IPベースのレートリミット（KVが設定されている場合のみ実行）
