@@ -1149,7 +1149,7 @@ export default function InsidersLP() {
                                     {[
                                         { title: "インバウンドの終着点に看板を設置", desc: "動画の熱が高まっているうちに「指名買い」を促し、OTAで他店と比較される前に予約へ誘導。" },
                                         { title: "動画資産のフル活用", desc: "好反応なショート動画を使い捨てずに、Googleマップで24時間動く集客資産として最大限活用。" },
-                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGoogleマップに掲載可能です（※改変・広告利用は不可）。" }
+                                        { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGoogleマップに掲載可能（※改変・広告利用は不可）。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -1268,9 +1268,6 @@ export default function InsidersLP() {
                         「買い切り集客」からの脱却<br />
                         <span className="text-indigo-600">インバウンド来店ループへ</span>
                     </h2>
-                    <p className="text-slate-500 mb-20 max-w-2xl mx-auto text-sm sm:text-sm font-bold leading-relaxed">
-                        ただ動画を投稿して、Googleマップに埋め込むだけではありません。<br className="hidden sm:block" />これはあなたのお店を「24時間外国人を呼び込むデジタル対応店舗」へと進化させるための第一歩です。
-                    </p>
 
                     <div className="relative">
                         {/* Single Horizontal Line (Centered through icons) */}
@@ -1282,33 +1279,29 @@ export default function InsidersLP() {
                                     icon: <PlayCircle className="w-8 h-8" />,
                                     bg: 'bg-indigo-600',
                                     color: 'text-indigo-600',
-                                    title: '1. SNSの「おすすめタブ」を狙い撃ち',
+                                    title: '1. SNSのおすすめタブを狙い撃ち',
                                     badge: 'Reach',
-                                    desc: 'クリエイターによる動画投稿が、フォロー枠を超えて潜在顧客へ確実にリーチ。'
                                 },
                                 {
                                     icon: <Users className="w-8 h-8" />,
                                     bg: 'bg-violet-600',
                                     color: 'text-violet-600',
-                                    title: '2. OTAを通さず「指名買い」',
+                                    title: '2. OTAを通さず指名検索',
                                     badge: 'Action',
-                                    desc: '動画で「体験」を疑似体験させることで、高額な予約サイトを経由しない直予約を実現。'
                                 },
                                 {
                                     icon: <MapPin className="w-8 h-8" />,
                                     bg: 'bg-emerald-600',
                                     color: 'text-emerald-600',
-                                    title: '3. Googleマップを「動画看板」に',
+                                    title: '3. Googleマップに動画看板を設置',
                                     badge: 'Asset',
-                                    desc: '口コミ欄に動画が増えることで、検索結果でのクリック率と来店転換率を劇的に向上。'
                                 },
                                 {
                                     icon: <TrendingUp className="w-8 h-8" />,
                                     bg: 'bg-rose-600',
                                     color: 'text-rose-600',
-                                    title: '4. 手数料ゼロの「集客自動化」',
+                                    title: '4. 口コミが次のお客様を呼び込む',
                                     badge: 'Growth',
-                                    desc: '良質なコンテンツが自走し、広告費ゼロ・手数料ゼロの持続可能な集客ループが完成。'
                                 },
                             ].map((step, idx) => (
                                 <motion.div
@@ -1326,32 +1319,17 @@ export default function InsidersLP() {
                                         <div className="w-full">
                                             <div className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">{step.badge}</div>
                                             <h3 className="text-xl font-black text-slate-900 mb-4 tracking-tighter leading-tight text-center">{step.title}</h3>
-                                            <p className="text-xs sm:text-sm text-slate-500 font-bold leading-relaxed max-w-[200px] mx-auto text-center">
-                                                {step.desc}
-                                            </p>
                                         </div>
                                     </div>
                                 </motion.div>
                             ))}
                         </div>
-
-                        {/* Final Loop Indication */}
-                        <div className="mt-16 flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center shadow-2xl animate-bounce">
-                                <Repeat className="w-6 h-6 text-indigo-400" />
-                            </div>
-                            <div className="text-sm font-black text-slate-900 tracking-widest flex items-center gap-3">
-                                <div className="w-8 h-px bg-slate-200" />
-                                評判が更なる来店を呼ぶ<br />「インバウンド来店ループ」へ
-                                <div className="w-8 h-px bg-slate-200" />
-                            </div>
-                        </div>
                     </div>
 
                     {/* ROI Usecases */}
                     <div className="mt-20 max-w-5xl mx-auto">
-                        <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-center text-slate-900 mb-10 tracking-tight">
-                            このループが回れば、<br className="sm:hidden" />月額4万円は<span className="text-indigo-600">一瞬でペイ</span>します。
+                        <h3 className="text-xl sm:text-2xl lg:text-2xl font-black text-center text-slate-900 mb-10 tracking-tight">
+                            【業界・商材別】<br className="sm:hidden" /><span className="text-indigo-600">成果シミュレーション</span>
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Card 1 */}
@@ -1361,7 +1339,7 @@ export default function InsidersLP() {
                                 </div>
                                 <h4 className="font-black text-slate-900 mb-3 text-[15px]">美容室・ヘッドスパの場合</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-rose-500">「2〜3組」</span>の直予約で回収完了。<br/>ホットペッパー等の掲載料と比べ、圧倒的な利益率を実現します。
+                                    月に<span className="font-black text-rose-500">「2〜3組」</span>の直予約で回収完了。<br />ホットペッパー等の掲載料と比べ、圧倒的な利益率を実現します。
                                 </p>
                             </div>
 
@@ -1372,7 +1350,7 @@ export default function InsidersLP() {
                                 </div>
                                 <h4 className="font-black text-slate-900 mb-3 text-[15px]">体験・アクティビティの場合</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-sky-500">「4組」</span>の直予約で回収完了。<br/>Klook等に支払う20%の高額な手数料が完全にゼロになります。
+                                    月に<span className="font-black text-sky-500">「4組」</span>の直予約で回収完了。<br />Klook等に支払う20%の高額な手数料が完全にゼロになります。
                                 </p>
                             </div>
 
@@ -1383,7 +1361,7 @@ export default function InsidersLP() {
                                 </div>
                                 <h4 className="font-black text-slate-900 mb-3 text-[15px]">宿泊施設・Ryokanの場合</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-indigo-500">「1組（連泊）」</span>の直予約で回収完了。<br/>Booking.com等に頼らず、利益をそのまま自社に残せます。
+                                    月に<span className="font-black text-indigo-500">「1組（連泊）」</span>の直予約で回収完了。<br />Booking.com等に頼らず、利益をそのまま自社に残せます。
                                 </p>
                             </div>
                         </div>
