@@ -695,7 +695,7 @@ export default function InsidersLP() {
                                 旅の目的地はアルゴリズムに“決めさせられている”
                             </h2>
                             <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-10 leading-[1.2]">
-                                SNSは現代の旅行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”に進化した</span>
+                                現代の旅行動を支配している<br /><span className="text-indigo-600">SNS=“AIガイドブック”を狙え</span>
                             </h2>
                             <div className="text-slate-500 text-base md:text-lg leading-relaxed space-y-6 font-medium">
                                 <p>
@@ -713,7 +713,7 @@ export default function InsidersLP() {
                                     {
                                         step: "STEP 1",
                                         tag: "旅マエ",
-                                        desc: "SNSのおすすめタブで直感的に発見",
+                                        desc: "SNSのおすすめタブで発見して保存",
                                         icon: <PlayCircle className="w-6 h-6 text-indigo-600" />,
                                         visual: (
                                             <div className="relative w-full h-48 bg-slate-50 rounded-[2.5rem] overflow-hidden flex items-center justify-center gap-6 shadow-inner border border-slate-100">
