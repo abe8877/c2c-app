@@ -216,8 +216,8 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
             >
                 {/* Left Sidebar: Progress Navigation */}
                 <div className="md:w-64 bg-stone-900 text-stone-300 shrink-0 p-4 md:p-6 flex flex-col">
-                    <div className="flex items-center justify-between mb-2 md:mb-8">
-                        <h2 className="text-white font-black text-lg md:text-xl tracking-tight">Profile Settings</h2>
+                    <div className="flex items-center justify-between mb-2 md:mb-2">
+                        <h2 className="text-white font-black text-lg md:text-xl tracking-tight">プロフィール設定</h2>
                         <button onClick={onClose} className="md:hidden text-stone-400 hover:text-white transition">
                             <X className="w-6 h-6" />
                         </button>
@@ -290,7 +290,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                         <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                                             <MapPin className="w-6 h-6 text-red-500" /> アクセス・営業情報
                                         </h3>
-                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、チャットでの情報共有が簡単にできるようになります。</p>
                                     </div>
 
                                     <div className="space-y-6">
@@ -308,7 +308,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                             <label className="text-sm font-bold text-gray-700 block mb-2">住所（日本語可）</label>
                                             <input type="text" value={formData.address_en} onChange={e => updateField('address_en', e.target.value)} placeholder="例: 1-2-3 Shibuya, Shibuya-ku, Tokyo" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-medium" />
                                         </div>
-                                        {renderAITextField("アクセス情報（英語）", "access_info_en", "例: 渋谷駅ハチコウ口から徒歩3分")}
+                                        {renderAITextField("アクセス情報（英語）", "access_info_en", "例: 渋谷駅ハチ公前から徒歩3分")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-2">Google Map URL</label>
@@ -324,7 +324,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                         <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                                             <Utensils className="w-6 h-6 text-orange-500" /> メニュー情報
                                         </h3>
-                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、チャットでの情報共有が簡単にできるようになります。</p>
                                     </div>
 
                                     <div className="space-y-6">
@@ -357,7 +357,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                         <h3 className="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
                                             <Camera className="w-6 h-6 text-purple-500" /> 撮影ルール・要望
                                         </h3>
-                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、クリエイターへの依頼時に簡単に情報共有ができるようになります。</p>
+                                        <p className="text-[10px] text-gray-500 font-bold">※必須項目ではありませんが、チャットでの情報共有が簡単にできるようになります。</p>
                                     </div>
 
                                     <div className="space-y-6">
@@ -380,7 +380,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">希望する撮影時間帯</label>
                                                 <select value={formData.preferred_shoot_time} onChange={e => updateField('preferred_shoot_time', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
-                                                    <option>Lunch</option><option>Dinner</option><option>Anytime</option><option>Off-peak Hours（閑散時間）</option>
+                                                    <option>いつでもOK</option><option>日中</option><option>夕方以降</option>
                                                 </select>
                                             </div>
                                             <div>
@@ -390,7 +390,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                                 </select>
                                             </div>
                                         </div>
-                                        {renderAITextField("特別ルール・注意事項（英語）", "shoot_rules_en", "例: 他のお客様の顔が映らないよう配慮をお願いします", true)}
+                                        {renderAITextField("撮影条件・注意事項（英語）", "shoot_rules_en", "例: 他のお客様の顔が映らないよう配慮をお願いします", true)}
                                     </div>
                                 </motion.div>
                             )}

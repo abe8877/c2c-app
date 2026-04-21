@@ -563,7 +563,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
         <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 py-12">
             <div className="text-center mb-12">
                 <div className="inline-flex p-4 bg-green-100 rounded-full text-green-700 mb-6 shadow-sm"><CheckCircle size={40} strokeWidth={3} /></div>
-                <h2 className="text-4xl font-black tracking-tighter mb-3 uppercase">Analysis Complete</h2>
+                <h2 className="text-3xl font-black tracking-tighter mb-3 uppercase">Analysis Complete</h2>
                 <p className="text-stone-500 font-medium text-sm">分析の結果、貴店の魅力は以下のように定義されました。</p>
             </div>
             <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-stone-100 mb-8 ring-1 ring-stone-200/50">
@@ -891,7 +891,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                                             <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
                                                             <div className="space-y-1">
                                                                 <div className="text-[11px] font-black text-indigo-600 tracking-tight leading-none">{creator.pricing_guide}</div>
-                                                                <p className="text-[8px] text-indigo-400 font-bold leading-tight">直近の動画パフォーマンスに基づいて、随時変動します。<br />この金額を下回るオファーでも受諾される可能性がございます。</p>
+                                                                <p className="text-[10px] text-indigo-400 leading-relaxed font-medium">直近の動画成果に基づく参考価格です。貴店の魅力的な体験や報酬を上乗せすることで、市場価値を下回るオファーでも受諾される可能性が十分にあります。</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -905,7 +905,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         <div>
                                             <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
                                             <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
-                                                こちらのクリエイターは人気のため、<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
+                                                こちらのクリエイターは<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
                                             </p>
                                         </div>
                                     </div>
@@ -913,7 +913,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Smartphone className="w-4 h-4" /> 希望する投稿媒体（ショート動画のみ）
+                                    <Smartphone className="w-4 h-4" /> 希望する投稿媒体（ショート動画限定）
                                 </label>
 
                                 <div className="flex flex-wrap gap-2.5">
@@ -930,11 +930,11 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             </div>
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Camera className="w-4 h-4" /> 撮影で盛り込んでほしい要素
+                                    <Camera className="w-4 h-4" /> 動画に盛り込んでほしい要素
                                 </label>
 
                                 <div className="flex flex-wrap gap-2.5">
-                                    {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', 'アクセス情報', '利用シーン'].map(tag => (
+                                    {['看板メニュー', '店内の雰囲気', 'スタッフの接客', '外観・看板', 'アクセス情報', '利用シーン提案'].map(tag => (
                                         <button
                                             key={tag}
                                             onClick={() => toggleTag(tag)}
@@ -949,19 +949,19 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             {/* Section: Shooting Conditions & NG Items (Ported from ChatModal) */}
                             <div className="space-y-4 pt-4 border-t border-gray-100">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Clock className="w-4 h-4" /> 撮影条件 & NG事項
+                                    <Clock className="w-4 h-4" /> 撮影条件・注意事項（英語）
                                 </label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">希望撮影時間</p>
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">希望の時間帯（後で調整可）</p>
                                         <select
                                             value={shootingTime}
                                             onChange={(e) => setShootingTime(e.target.value)}
                                             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-bold outline-none focus:ring-2 focus:ring-black"
                                         >
-                                            <option value="Flexible">Flexible</option>
-                                            <option value="Lunch">Lunch</option>
-                                            <option value="Dinner">Dinner</option>
+                                            <option value="Flexible">いつでもOK</option>
+                                            <option value="Lunch">日中</option>
+                                            <option value="Dinner">夕方以降</option>
                                         </select>
                                     </div>
                                     <div className="space-y-1.5">
@@ -973,7 +973,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         >
                                             <option value="OK">OK</option>
                                             <option value="NG">NG</option>
-                                            <option value="Ask Creator">Ask Creator</option>
+                                            <option value="Ask Creator">応相談</option>
                                         </select>
                                     </div>
                                 </div>
@@ -990,12 +990,12 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         />
                                         <div className="md:absolute md:bottom-3 md:right-3 mt-2 md:mt-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex justify-end">
                                             <button
-                                                onClick={() => handleTranslate(barterDetails, 'barter')}
-                                                disabled={isTranslating === 'barter'}
+                                                onClick={() => handleTranslate(ngItems, 'ng')}
+                                                disabled={isTranslating === 'ng'}
                                                 className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all shadow-sm
-                                                ${isTranslating === 'barter' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
+                                                ${isTranslating === 'ng' ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50'}`}
                                             >
-                                                {isTranslating === 'barter' ? (
+                                                {isTranslating === 'ng' ? (
                                                     <>
                                                         <RefreshCw size={10} className="animate-spin" /> 翻訳中...
                                                     </>
@@ -1091,7 +1091,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
 
                             {/* Section: Consent Checkboxes */}
                             <div className="space-y-3 pt-6 border-t border-gray-100">
-                                <label className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2">
+                                <label className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
                                     <CheckCircle2 className="w-4 h-4 text-green-500" /> オファー・制作に関する確認事項
                                 </label>
                                 <div className="space-y-3">
@@ -1103,8 +1103,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
                                         />
                                         <div className="space-y-0.5">
-                                            <p className="text-[11px] font-black text-gray-900 leading-tight">表現手法の一任・修正に関する規定</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">動画での表現手法（編集・演出等）はクリエイターに一任することに同意します。納品後の修正依頼は「事前の合意内容（上記オファー）と異なる場合」または「事実誤認」に限り最大2回までとします。</p>
+                                            <p className="text-[11px] font-bold text-gray-900 leading-tight">表現手法の一任・修正に関する規定</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">動画での表現手法（編集・演出等）は原則クリエイターに一任することに同意します。納品後の修正依頼は「事前の合意内容（上記オファー）と異なる場合」または「事実誤認（お店情報の誤り等）」に限り最大2回までとします。</p>
                                         </div>
                                     </label>
                                     <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
@@ -1115,8 +1115,8 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
                                         />
                                         <div className="space-y-0.5">
-                                            <p className="text-[11px] font-black text-gray-900 leading-tight">直接交渉の禁止</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">進行はすべて弊社サービスを介して行い、クリエイターとの直接連絡やプラットフォーム外での直接取引を行わないことに同意します。</p>
+                                            <p className="text-[11px] font-bold text-gray-900 leading-tight">直接交渉の禁止</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">案件の進行はすべて弊社サービスを介して行い、クリエイターとの直接連絡やプラットフォーム外での直接取引を行わないことに同意します。</p>
                                         </div>
                                     </label>
                                     <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
@@ -1127,7 +1127,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                             className="mt-1 w-4 h-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer"
                                         />
                                         <div className="space-y-0.5">
-                                            <p className="text-[11px] font-black text-gray-900 leading-tight">キャンセル規定</p>
+                                            <p className="text-[11px] font-bold text-gray-900 leading-tight">キャンセル規定</p>
                                             <p className="text-[9px] text-gray-500 font-medium leading-relaxed">マッチング成立後は速やかに決済（デポジット）を行い、その後の広告主都合によるキャンセルはできないことに同意します。※クリエイター都合によるキャンセル・納品不備があった場合は返金されます。</p>
                                         </div>
                                     </label>
@@ -1205,21 +1205,21 @@ const PaywallModal = ({ isOpen, onClose, companyId = 'guest', companyEmail = '',
                         </p>
 
                         <div className="w-full space-y-3 mb-6">
+                            <a
+                                href={`https://buy.stripe.com/bJe00l5128Q1dEB64g1wY00?client_reference_id=${companyId}&prefilled_email=${encodeURIComponent(companyEmail)}`}
+                                className="w-full flex items-center justify-center gap-2 bg-black text-white font-black text-sm py-4 rounded-xl shadow-xl hover:bg-stone-800 hover:scale-[1.02] transition-all active:scale-95"
+                            >
+                                <DollarSign className="w-4 h-4" /> クレジットカードで決済
+                            </a>
+
+                            {/* 請求書払いセクション（一時停止中）
                             {!showInvoiceForm ? (
-                                <>
-                                    <a
-                                        href={`https://buy.stripe.com/bJe00l5128Q1dEB64g1wY00?client_reference_id=${companyId}&prefilled_email=${encodeURIComponent(companyEmail)}`}
-                                        className="w-full flex items-center justify-center gap-2 bg-black text-white font-black text-sm py-4 rounded-xl shadow-xl hover:bg-stone-800 hover:scale-[1.02] transition-all active:scale-95"
-                                    >
-                                        <DollarSign className="w-4 h-4" /> クレジットカードで決済
-                                    </a>
-                                    {/* --　<button
-                                        onClick={() => setShowInvoiceForm(true)}
-                                        className="w-full flex items-center justify-center gap-2 bg-white text-black border-2 border-stone-200 font-black text-sm py-4 rounded-xl hover:border-black hover:bg-stone-50 transition-all active:scale-95"
-                                    >
-                                        <Layers className="w-4 h-4" /> 請求書払いを申し込む
-                                    </button> */}
-                                </>
+                                <button
+                                    onClick={() => setShowInvoiceForm(true)}
+                                    className="w-full flex items-center justify-center gap-2 bg-white text-black border-2 border-stone-200 font-black text-sm py-4 rounded-xl hover:border-black hover:bg-stone-50 transition-all active:scale-95"
+                                >
+                                    <FileText className="w-4 h-4" /> 請求書払いで申込む
+                                </button>
                             ) : (
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                                     <p className="text-[11px] font-black text-slate-800 text-left">請求書を送付するメールアドレスを指定して下さい：</p>
@@ -1246,6 +1246,7 @@ const PaywallModal = ({ isOpen, onClose, companyId = 'guest', companyEmail = '',
                                     </button>
                                 </motion.div>
                             )}
+                            */}
                         </div>
 
                         <p className="text-[10px] text-stone-400 font-bold bg-stone-50 px-4 py-2 rounded-lg inline-block border border-stone-100 ring-1 ring-inset ring-stone-900/5">
@@ -1943,7 +1944,7 @@ export default function VibeCatalogue({
                                             </span>
                                         </div>
                                         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-4 italic duration-700 px-2 sm:px-0">
-                                            Find your best<br />Inbound Creators!
+                                            Find your best<br />Inbound Ambassador!
                                         </h1>
                                         <p className="text-slate-500 font-bold max-w-[280px] sm:max-w-xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200 px-4">
                                             貴店のGoogleマップまたはInstagramのURLを入力してください。<br className="hidden sm:block" />INSIDERS.が保有する1000組以上のデータベースから、貴社にピッタリのインバウンドクリエイターを即座にご紹介します。
@@ -2037,7 +2038,7 @@ export default function VibeCatalogue({
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="text-[11px] text-slate-400 font-bold mt-6 tracking-widest uppercase">Trusted by 1,000+ <br />top creators worldwide</p>
+                                            <p className="text-[11px] text-slate-400 font-bold mt-6 tracking-widest uppercase">1,000+ Vetted<br />Ambassadors Worldwide</p>
                                         </div>
                                     </div>
 
@@ -2065,7 +2066,7 @@ export default function VibeCatalogue({
                                         <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                 <div className="order-2 sm:order-1">
-                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Creator Catalog</h2>
+                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Ambassador Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
                                                     {initialGenre && (
@@ -2080,8 +2081,8 @@ export default function VibeCatalogue({
                                                     )}
                                                 </div>
                                             </div>
-                                            <p className="text-gray-900 text-sm sm:text-md font-medium">貴店と好相性のクリエイター：<span className="font-bold text-gray-900">{searchGenreCount || (filterGenre === searchGenre ? filteredCreators.length : 0) || '...'}名（{(searchGenre || initialGenre || '全カテゴリ').toUpperCase()}）</span></p>
-                                            <p className="text-[12px] sm:text-[12px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なクリエイターがいますので、ぜひオファーをご検討下さい。</p>
+                                            <p className="text-gray-900 text-sm sm:text-md font-medium">貴店と好相性のアンバサダー：<span className="font-bold text-gray-900">{searchGenreCount || (filterGenre === searchGenre ? filteredCreators.length : 0) || '...'}名（{(searchGenre || initialGenre || '全カテゴリ').toUpperCase()}）</span></p>
+                                            <p className="text-[12px] sm:text-[12px] text-stone-400 mt-1">選択したカテゴリ以外にも魅力的なアンバサダーがいますので、ぜひオファーをご検討下さい。</p>
                                         </div>
 
                                         {/* SORT UI */}
@@ -2095,8 +2096,8 @@ export default function VibeCatalogue({
                                                 <option value="vibe">おすすめ順</option>
                                                 <option value="followers_desc">フォロワーが多い順</option>
                                                 <option value="followers_asc">フォロワーが少ない順</option>
-                                                <option value="price_desc">推奨金額が高い順</option>
-                                                <option value="price_asc">推奨金額が低い順</option>
+                                                <option value="price_desc">市場価値が高い順</option>
+                                                <option value="price_asc">市場価値が低い順</option>
                                             </select>
                                         </div>
                                     </div>
@@ -2612,8 +2613,8 @@ export default function VibeCatalogue({
 
             <FloatingActionBar
                 items={[
-                    { name: 'Search', link: 'search', icon: <Search className="w-4 h-4" />, onClick: () => setActiveTab("search") },
-                    { name: 'Creators', link: 'creators', icon: <Users className="w-4 h-4" />, onClick: () => setActiveTab("search") }, // Assuming Creators is part of search result
+                    { name: 'Search', link: 'search', icon: <Search className="w-4 h-4" />, onClick: () => { setActiveTab("search"); setStep("input"); } },
+                    { name: 'Creators', link: 'creators', icon: <Users className="w-4 h-4" />, onClick: () => { setActiveTab("search"); if (step === 'input') setStep('vibe_check'); else setStep('result'); } },
                     { name: 'Asset Hub', link: 'assets', icon: <Layers className="w-4 h-4" />, onClick: () => setActiveTab("assets") },
                 ]}
                 hintedLink={assetHubHint ? 'assets' : undefined}

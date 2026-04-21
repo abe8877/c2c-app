@@ -9,7 +9,8 @@ import {
     Database, MessageSquare, LayoutGrid, PlayCircle,
     Shield, MapPin, Globe, Repeat, Users, TrendingUp, TrendingDown,
     ArrowUpRight, Menu, X, RefreshCw, Clock, ShieldAlert, Heart, Bookmark, Pointer,
-    Star, MessageCircle, Coffee, Target, Zap
+    Star, MessageCircle, Coffee, Target, Zap, Plus,
+    HeartHandshake
 } from 'lucide-react';
 
 const elenaIcon = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80";
@@ -605,7 +606,7 @@ export default function InsidersLP() {
                             {/* 上部ラベル */}
                             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-black mb-6 animate-fade-in">
                                 <Sparkles className="w-4 h-4" />
-                                <span>インバウンドクリエイター特化型プラットフォーム</span>
+                                <span>インバウンドアンバサダー特化型プラットフォーム</span>
                             </div>
 
                             <h1 className="text-4xl sm:text-4xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6 lg:mb-8 leading-[1.0] lg:leading-[1.1] max-w-[900px]">
@@ -624,7 +625,7 @@ export default function InsidersLP() {
                                 {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
                                 <div className="grid grid-cols-3 gap-3 px-2 mb-10 mt-10">
                                     {[
-                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
+                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化ショート動画アンバサダー群</> },
                                         { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>マージンゼロで<br />直接オファーし放題</> },
                                         { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "交渉レス", sub: <>投稿した動画を<br />マップで二次利用</> },
                                     ].map((badge, idx) => (
@@ -646,7 +647,7 @@ export default function InsidersLP() {
                             {/* 3つの実績/スペックバッジ (Desktop Only) */}
                             <div className="hidden lg:flex items-center gap-12 mb-12">
                                 {[
-                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化<br />精査済みクリエイター</> },
+                                    { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1000組+", sub: <>ショート動画特化<br />インバウンドアンバサダー</> },
                                     { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "定額制", sub: <>マージンゼロで<br />直接オファーし放題</> },
                                     { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "交渉レス", sub: <>投稿した動画を<br />マップで二次利用</> },
                                 ].map((badge, idx) => (
@@ -691,10 +692,10 @@ export default function InsidersLP() {
                     <div className="flex flex-col lg:flex-row gap-16 items-center mb-32">
                         <div className="flex-1 text-center lg:text-left">
                             <h2 className="text-sm md:text-xl font-black text-slate-900 mb-5 leading-[1.2]">
-                                旅の目的地はアルゴリズムに“決めさせられている？”
+                                旅の目的地はアルゴリズムに“決めさせられている”
                             </h2>
                             <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-10 leading-[1.2]">
-                                SNSは現代の旅行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”である</span>
+                                SNSは現代の旅行動を支配する<br /><span className="text-indigo-600">“AIガイドブック”に進化した</span>
                             </h2>
                             <div className="text-slate-500 text-base md:text-lg leading-relaxed space-y-6 font-medium">
                                 <p>
@@ -931,7 +932,7 @@ export default function InsidersLP() {
                     <div id="problems" className="pt-10 sm:pt-20 border-t border-slate-100 scroll-mt-24">
                         <div className="text-center mb-10 sm:mb-16">
                             <h2 className="text-xl sm:text-4xl font-black tracking-tight text-slate-900 leading-[1.5] lg:leading-[1.5] max-w-4xl mx-auto mb-2 sm:mb-4">
-                                比較サイトでの消耗戦は不要。<br />
+                                予算・対応コストの余計な消耗は不要。<br />
                                 <span className="text-indigo-600">インバウンド集客はもっとズルくていい</span>
                             </h2>
                         </div>
@@ -954,7 +955,7 @@ export default function InsidersLP() {
                                     icon: <Globe className="w-8 h-8" />,
                                     color: 'indigo',
                                     title: <>英語力を諦め、<br />ネイティブの熱量に頼る</>,
-                                    desc: '不慣れな外国語での発信で現場を疲弊させる必要はありません。言葉の壁の突破とお店の魅力の翻訳は、その国のトレンドを知り尽くしたクリエイターに任せるのが一番の近道です。'
+                                    desc: '不慣れな外国語での発信で現場を疲弊させる必要はありません。言葉の壁の突破とお店の魅力の翻訳は、その国のトレンドを知り尽くしたアンバサダーに任せるのが一番の近道です。'
                                 }
                             ].map((pain, idx) => (
                                 <div key={idx} className="bg-slate-50 p-7 sm:p-9 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
@@ -1004,14 +1005,14 @@ export default function InsidersLP() {
                             <div className="bg-slate-50 rounded-[3rem] p-8 sm:p-16 border border-slate-100">
                                 <div className="text-center mb-12">
                                     <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                        <Sparkles className="w-5 h-5 font-black" /> Point 01. クリエイターへの直通パス
+                                        <Sparkles className="w-5 h-5 font-black" /> Point 01. アンバサダーへの直通パス
                                     </div>
                                     <h3 className="text-xl sm:text-4xl font-black text-slate-900 mb-6">
-                                        インバウンドクリエイターに定額で直接オファーし放題！
+                                        インバウンドアンバサダーに定額で直接オファーし放題！
                                     </h3>
                                     <p className="text-slate-500 text-sm leading-relaxed font-bold">
-                                        INSIDERS.は、厳選されたインバウンドクリエイターへ直接アプローチを行える『独自の依頼ルート』です。<br className="hidden sm:block" />
-                                        一般の英語DMのように埋もれることなく、貴店の魅力を確実にクリエイターへ届けるオファーを何度でも送信できます。
+                                        INSIDERS.は、厳選されたインバウンドアンバサダーへ直接アプローチを行える『独自の依頼ルート』です。<br className="hidden sm:block" />
+                                        一般の英語DMのように埋もれることなく、貴店の魅力を確実にアンバサダーへ届けるオファーを何度でも送信できます。
                                     </p>
                                 </div>
 
@@ -1035,13 +1036,13 @@ export default function InsidersLP() {
                                             {[
                                                 { item: "費用", standard: "30~50万円のパッケージ", insiders: <>月額4万円でオファーし放題<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">（マージンゼロの直取引）</span></> },
                                                 { item: "フォロワー単価", standard: "約3円", insiders: <>単価の規定はなく、<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">好きな条件でオファー可能</span></> },
-                                                { item: "クリエイターの性質", standard: <>在日の外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「静的なリスト」</span></>, insiders: <>SNSでのパフォーマンスに基づいた<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">常時更新型の「動的なリスト」</span></> },
+                                                { item: "リストの性質", standard: <>在日の外国人中心<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">「静的なリスト」</span></>, insiders: <>SNSでのパフォーマンスに基づいた<br className="sm:hidden" /><span className="block mt-1 sm:inline sm:mt-0">常時更新型の「動的なリスト」</span></> },
                                             ].map((row, idx) => (
                                                 <tr key={idx}>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-black text-slate-900">{row.item}</td>
                                                     <td className="p-6 bg-white border-b border-r border-slate-100 text-xs sm:text-sm font-bold text-slate-400 text-center">{row.standard}</td>
                                                     <td className={`p-6 border-b text-xs sm:text-sm font-black text-center bg-indigo-50 text-indigo-700 border-indigo-100`}>
-                                                        {row.item === "クリエイターの性質" ? (
+                                                        {row.item === "リストの性質" ? (
                                                             <>
                                                                 SNSでのパフォーマンスに基づいた<br className="sm:hidden" />
                                                                 常時更新型の「動的なリスト」
@@ -1060,16 +1061,16 @@ export default function InsidersLP() {
                         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                    <Database className="w-5 h-5 font-black" /> Point 02. ハイレベルなクリエイター網
+                                    <Database className="w-5 h-5 font-black" /> Point 02. ハイレベルなネットワーキング
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
-                                    1,000組以上の厳選された<br />クリエイターデータベース
+                                    1,000組以上の厳選された<br />アンバサダー候補をご用意
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "デジタル技術×目視による高い品質", desc: "訪日を検討している外国人のSNSアルゴリズムを分析し、良質なクリエイターだけを丁寧に厳選。" },
-                                        { title: "最適なクリエイターとのマッチング", desc: "GoogleマップやSNSのURLを入れるだけで、貴店と好相性のインバウンドクリエイターを推薦。" },
-                                        { title: "データベースの常時アップデート", desc: "世界中に点在するクリエイターを見つけ出し、直近のSNSパフォーマンスを随時反映させます。" }
+                                        { title: "デジタル技術×目視による高い品質", desc: "訪日を検討している外国人のSNSアルゴリズムを分析し、良質なアンバサダーだけを丁寧に厳選。" },
+                                        { title: "最適なアンバサダーとのマッチング", desc: "GoogleマップやSNSのURLを入れるだけで、貴店と好相性のアンバサダーを推薦。" },
+                                        { title: "データベースの常時アップデート", desc: "世界中に点在するアンバサダー候補を見つけ出し、オファー可能な状態でDBに随時追加します。" }
                                     ].map((item, idx) => (
                                         <li key={idx} className="flex gap-4">
                                             <div className="shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -1090,7 +1091,7 @@ export default function InsidersLP() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <div className="flex flex-wrap gap-2">
-                                            <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">1,000組以上のネイティブクリエイター</span>
+                                            <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">貴店の魅力を語る1,000組以上のアンバサダー候補</span>
                                             <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/30">訪日検討者から高いエンゲージメント</span>
                                         </div>
                                     </div>
@@ -1109,7 +1110,7 @@ export default function InsidersLP() {
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "自動翻訳機能", desc: "日本語で入力するだけで、英語で依頼に関する要望をクリエイターに伝えることができます。" },
+                                        { title: "自動翻訳機能", desc: "日本語で入力するだけで、英語で依頼に関する要望をアンバサダーに伝えることができます。" },
                                         { title: "充実したオファーテンプレート", desc: "日程調整や撮影条件の面倒な交渉も、テンプレートから選ぶだけで簡単にクリア。" },
                                         { title: "現場の負担ゼロ", desc: "撮影指示はWEBで完結。通常業務の手を止めることなく、スムーズに動画撮影が完了します。" }
                                     ].map((item, idx) => (
@@ -1143,11 +1144,11 @@ export default function InsidersLP() {
                                     <LayoutGrid className="w-5 h-5 font-black" /> Point 04. 動画コンテンツを集客資産にする
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
-                                    Googleマップを「24時間集客する動画看板」へ昇華
+                                    Googleマップを「24時間集客する動画看板」へ進化
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "インバウンドの終着点に看板を設置", desc: "動画の熱が高まっているうちに「指名買い」を促し、OTAで他店と比較される前に予約へ誘導。" },
+                                        { title: "インバウンドの終着点に看板を設置", desc: "熱が高まっているうちに「指名買い」を促し、OTAで他店と比較される前に予約へ誘導。" },
                                         { title: "動画資産のフル活用", desc: "好反応なショート動画を使い捨てずに、Googleマップで24時間動く集客資産として最大限活用。" },
                                         { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGoogleマップに掲載可能（※改変・広告利用は不可）。" }
                                     ].map((item, idx) => (
@@ -1264,7 +1265,7 @@ export default function InsidersLP() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(79,70,229,0.05),transparent_50%)]" />
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h2 className="text-2xl md:text-4xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight mb-6 text-slate-900 leading-normal">
                         「買い切り集客」からの脱却<br />
                         <span className="text-indigo-600">インバウンド来店ループへ</span>
                     </h2>
@@ -1279,21 +1280,21 @@ export default function InsidersLP() {
                                     icon: <PlayCircle className="w-8 h-8" />,
                                     bg: 'bg-indigo-600',
                                     color: 'text-indigo-600',
-                                    title: '1. SNSのおすすめタブを狙い撃ち',
+                                    title: '1. SNSのおすすめタブをジャック',
                                     badge: 'Reach',
                                 },
                                 {
-                                    icon: <Users className="w-8 h-8" />,
+                                    icon: <HeartHandshake className="w-8 h-8" />,
                                     bg: 'bg-violet-600',
                                     color: 'text-violet-600',
-                                    title: '2. OTAを通さず指名検索',
+                                    title: '2. OTAを通さずに指名来店が発生',
                                     badge: 'Action',
                                 },
                                 {
                                     icon: <MapPin className="w-8 h-8" />,
                                     bg: 'bg-emerald-600',
                                     color: 'text-emerald-600',
-                                    title: '3. Googleマップに動画看板を設置',
+                                    title: '3. Googleマップが動画看板になる',
                                     badge: 'Asset',
                                 },
                                 {
@@ -1329,28 +1330,34 @@ export default function InsidersLP() {
                     {/* ROI Usecases */}
                     <div className="mt-20 max-w-5xl mx-auto">
                         <h3 className="text-xl sm:text-2xl lg:text-2xl font-black text-center text-slate-900 mb-10 tracking-tight">
-                            【業界・商材別】<br className="sm:hidden" /><span className="text-indigo-600">成果シミュレーション</span>
+                            インバウンドと好相性な業界・商品<br /><span className="text-indigo-600">-PR実施シミュレーション-</span>
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Card 1 */}
-                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-indigo-100/20 hover:shadow-indigo-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
-                                    💄
+                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-teal-100/20 hover:shadow-teal-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
+                                <div className="w-12 h-12 bg-teal-50 border border-teal-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
+                                    🍵
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">美容室・ヘッドスパの場合</h4>
+                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">1. 飲食店・体験サービス</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-rose-500">「2〜3組」</span>の直予約で回収完了。<br />ホットペッパー等の掲載料と比べ、圧倒的な利益率を実現します。
+                                    <span className="font-black text-teal-500">看板メニューや独自の日本体験を紹介</span>
+                                </p>
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
+                                    単価5千円の場合、依頼アンバサダー5組<br />→来店約20名で月額コストを回収。
                                 </p>
                             </div>
 
                             {/* Card 2 */}
                             <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-indigo-100/20 hover:shadow-indigo-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-sky-50 border border-sky-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
-                                    🏔
+                                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
+                                    💆
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">体験・アクティビティの場合</h4>
+                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">2. 美容系（サロン・エステ等）</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-sky-500">「4組」</span>の直予約で回収完了。<br />Klook等に支払う20%の高額な手数料が完全にゼロになります。
+                                    <span className="font-black text-rose-500">日本ならではの高品質な美容体験を紹介</span>
+                                </p>
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
+                                    単価1万円の場合、依頼アンバサダー3組<br />→来店約8名で月額コストを回収。
                                 </p>
                             </div>
 
@@ -1359,9 +1366,12 @@ export default function InsidersLP() {
                                 <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
                                     🏨
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">宿泊施設・Ryokanの場合</h4>
+                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">3. 宿泊施設</h4>
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    月に<span className="font-black text-indigo-500">「1組（連泊）」</span>の直予約で回収完了。<br />Booking.com等に頼らず、利益をそのまま自社に残せます。
+                                    <span className="font-black text-indigo-500">アクセス性や周辺情報をセットで紹介</span>
+                                </p>
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
+                                    単価3万円の場合、依頼アンバサダー1~2組<br />→来店約3名で月額コストを回収。
                                 </p>
                             </div>
                         </div>
@@ -1399,7 +1409,7 @@ export default function InsidersLP() {
                         <ul className="text-left w-fit mx-auto space-y-5 mb-12 text-slate-600 font-bold">
                             <li className="flex items-start gap-3">
                                 <div className="mt-1 w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center shrink-0"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /></div>
-                                <span>クリエイターへのオファー無制限</span>
+                                <span>アンバサダーへのオファー無制限</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <div className="mt-1 w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center shrink-0"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /></div>
@@ -1421,11 +1431,11 @@ export default function InsidersLP() {
                                 <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" /> 早期アクセス特典（承認制）
                             </div>
                             <div className="text-slate-900 font-black text-md mb-4 leading-tight">
-                                3名分のオファー枠がもらえるトライアルプランで、<br />無料ですぐにサービスをご利用いただけます！
+                                3名分のオファー枠が付いたトライアルプランで、<br className="hidden sm:block" />無料ですぐにINSIDERS.をご利用可能！
                             </div>
                             <p className="text-[11px] text-slate-500 font-bold leading-relaxed space-y-1">
-                                <span className="block opacity-60">※クリエイター検索やオファーなど、サービスの機能全てが無料でご利用いただけます。</span>
-                                <span className="block opacity-60">※クリエイターへの商品提供や有償オファーをする場合は実費でのご負担となります。</span>
+                                <span className="block opacity-60">※アンバサダー検索やオファーなど、サービスの機能全てが無料でご利用いただけます。</span>
+                                <span className="block opacity-60">※アンバサダーへの商品提供や有償オファーをする場合は実費でのご負担となります。</span>
                             </p>
                         </div>
 
@@ -1439,27 +1449,52 @@ export default function InsidersLP() {
                     </div>
 
                     {/* =========================================
-                      8. UPSELL TEASER (BUZZ OVER) - Low Prominence with Hover
-                  ========================================= */}
-                    <div
-                        onClick={(e) => {
-                            if (window.innerWidth < 1024) {
-                                e.currentTarget.classList.toggle('opacity-100');
-                                e.currentTarget.classList.toggle('opacity-30');
-                            }
-                        }}
-                        className="text-center pt-8 border-t border-slate-100 max-w-3xl mx-auto opacity-30 hover:opacity-100 transition-opacity duration-700 group cursor-pointer lg:cursor-default"
-                    >
-                        <h4 className="text-xl font-black text-slate-900 mb-3 grayscale group-hover:grayscale-0 transition-all">もっと来店効率を高めたいなら…</h4>
-                        <p className="text-[12px] text-slate-500 mb-6 leading-relaxed max-w-sm mx-auto">
-                            INSIDERS.で集客に成功した後、「予約導線やGoogleマップの対応が追いつかない」というご相談をいただいています。
-                            より広範囲での集客支援が必要でしたら、スマートBPOサービスをご検討ください。
-                        </p>
-                        <a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors text-sm bg-indigo-50 px-5 py-3 rounded-2xl border border-indigo-100/50 shadow-sm active:scale-95">
-                            インバウンド集客専門のスマートBPO<br className="sm:hidden" />「BUZZ OVER」の詳細を見る <ArrowUpRight className="w-4 h-4" />
-                        </a>
-                    </div>
+                      8. FAQ SECTION (Newly added)
+                    ========================================== */}
+                    <div id="faq" className="mt-24 pt-20 border-t border-slate-100 max-w-4xl mx-auto px-4">
+                        <div className="mb-12 text-center lg:text-left">
+                            <h3 className="text-3xl font-black text-slate-900 mb-2">よくあるご質問</h3>
+                            <span className="text-indigo-600 font-black tracking-widest text-lg uppercase italic">FAQ</span>
+                        </div>
 
+                        <div className="space-y-4">
+                            {[
+                                {
+                                    q: "アンバサダーへの報酬は発生しますか？",
+                                    a: "原則、アンバサダーへの報酬は提供する商品以外には発生しません。商品提供に加えて追加報酬を上乗せすることで、より市場価値が高いアンバサダーにもオファーが承諾されやすくなる可能性があります。"
+                                },
+                                {
+                                    q: "英語が全く話せませんが、本当に大丈夫でしょうか？",
+                                    a: "はい、問題ありません。システム内に搭載された「AI自動翻訳チャット」と「専用テンプレート」を利用することで、日程調整から撮影内容の指示まで、全て日本語入力で完結します。"
+                                },
+                                {
+                                    q: "写真や長尺動画のPRも依頼できますか？",
+                                    a: "INSIDERS.は「縦型のショート動画（TikTok、Instagramリール、YouTubeショート等）」に特化したプラットフォームとなっています。言語の壁を超えて拡散されやすいという点で、ショート動画フォーマットがインバウンド集客に適していると考えています。"
+                                },
+                                {
+                                    q: "集客後のオペレーション（予約導線・MEO対策等）のサポートを依頼することはできますか？",
+                                    a: (
+                                        <>
+                                            はい。弊社はインバウンド集客専門のスマートBPO<a href="https://buzzover.jp" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline font-black mx-1 hover:text-indigo-800">「BUZZ OVER」</a>も運営しており、予約導線の整備やMEO対策の代行も可能です。お気軽にご相談ください。
+                                        </>
+                                    )
+                                }
+                            ].map((item, idx) => (
+                                <details key={idx} className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-xl open:border-indigo-100 transition-all duration-300">
+                                    <summary className="flex items-center justify-between p-6 cursor-pointer list-none font-bold text-slate-900 group-open:text-indigo-600">
+                                        <span className="flex items-center gap-3">
+                                            <span className="text-indigo-300 group-open:text-indigo-600 transition-colors">Q.</span>
+                                            {item.q}
+                                        </span>
+                                        <Plus className="w-5 h-5 text-slate-400 group-open:rotate-45 transition-transform" />
+                                    </summary>
+                                    <div className="px-6 pb-6 text-sm text-slate-600 leading-relaxed font-medium">
+                                        {item.a}
+                                    </div>
+                                </details>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </section >
 
@@ -1491,11 +1526,13 @@ export default function InsidersLP() {
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
                         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
                             <div className="text-xl font-black tracking-tighter text-slate-900">INSIDERS.</div>
-                            <div className="text-sm font-black text-slate-900">あなたのお店をインバウンドの目的地に。</div>
+                            <div className="text-[10px] sm:text-sm font-black text-slate-900">
+                                あなたのお店を<br className="sm:hidden" />インバウンドの目的地に。
+                            </div>
                         </div>
 
                         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
-                            <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3">
+                            <div className="grid grid-cols-2 md:flex md:flex-wrap justify-items-center md:justify-center items-center gap-x-4 sm:gap-x-8 gap-y-4 md:gap-x-6 md:gap-y-3">
                                 <a href="/privacy" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms-sp" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">特定商取引法に基づく表記 <ArrowUpRight className="w-3 h-3" /></a>

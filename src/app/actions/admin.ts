@@ -336,7 +336,20 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
         } else {
             // 現在のassetsを取得してJSONを更新
             const { data: currentAsset } = await supabaseAdmin.from('assets').select('offer_details').eq('id', assetId).single();
-            const currentDetails = currentAsset?.offer_details || {};
+            
+            let currentDetails = currentAsset?.offer_details;
+            if (typeof currentDetails === 'string') {
+                try { 
+                    currentDetails = JSON.parse(currentDetails); 
+                } catch(e) { 
+                    console.error("JSON Parse Error for offer_details:", e);
+                    currentDetails = {}; 
+                }
+            }
+            if (!currentDetails || typeof currentDetails !== 'object') {
+                currentDetails = {};
+            }
+
             const timeline = currentDetails.timeline || {};
             timeline[field] = timestamp;
             currentDetails.timeline = timeline;

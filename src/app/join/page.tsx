@@ -333,11 +333,11 @@ export default function CreatorJoinLandingPage() {
                                     </div>
                                 </div>
 
-                                {/* Screen 2: Creator Catalog */}
+                                {/* Screen 2: Ambassador Catalog */}
                                 <div className="p-5 bg-slate-50/50 border-b border-slate-100">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] font-black text-slate-900">CREATOR CATALOG</span>
+                                            <span className="text-[11px] font-black text-slate-900">アンバサダーカタログ</span>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">

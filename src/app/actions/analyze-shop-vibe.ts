@@ -14,8 +14,8 @@ async function expandUrl(originalUrl: string): Promise<string> {
     try {
         if (!originalUrl.startsWith('http')) return originalUrl;
 
-        // HEADリクエストでリダイレクトを追跡（ボディはダウンロードしないので高速）
-        const response = await fetch(originalUrl, {
+        // まずはHEADリクエストで高速にチェック
+        let response = await fetch(originalUrl, {
             method: 'HEAD',
             redirect: 'follow',
             headers: {
@@ -23,7 +23,17 @@ async function expandUrl(originalUrl: string): Promise<string> {
             }
         });
 
-        // リダイレクト後の最終的なフルURLを返す
+        // HEADでうまくいかない場合やURLが変わらない場合はGETで試行
+        if (!response.ok || response.url === originalUrl) {
+            response = await fetch(originalUrl, {
+                method: 'GET',
+                redirect: 'follow',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+            });
+        }
+
         return response.url || originalUrl;
     } catch (error) {
         console.warn('URLの展開に失敗しました。元のURLを使用します:', error);

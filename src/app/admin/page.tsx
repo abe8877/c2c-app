@@ -76,21 +76,21 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
 
         setLoading(true);
         const now = new Date().toISOString();
-        
+
         try {
             await updateAssetTimestamp(
-                assetId, 
-                field as any, 
-                field === 'approved_at' && !approved ? null : now, 
+                assetId,
+                field as any,
+                field === 'approved_at' && !approved ? null : now,
                 { rejectionReason, videoUrl }
             );
-        } catch(e) {
+        } catch (e) {
             console.error(e);
             alert("更新に失敗しました");
             setLoading(false);
             return;
         }
-        
+
         setValue(field === 'approved_at' && !approved ? null : now);
         if (field === 'approved_at') {
             setLocalStatus(approved ? 'WORKING' : 'DECLINED');
@@ -122,8 +122,8 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 <button
                     onClick={() => setShowApproveModal(true)}
                     disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${isDeclined 
-                        ? "bg-red-50 border-red-200 text-red-700" 
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${isDeclined
+                        ? "bg-red-50 border-red-200 text-red-700"
                         : (value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm")}`}
                 >
                     <div className="flex flex-col items-start">
@@ -138,12 +138,12 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
                             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
                                 <button onClick={() => setShowApproveModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
-                                
+
                                 <div className="text-center space-y-2 mb-8">
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Offer Approval Management</h4>
                                     <p className="text-[10px] font-bold text-slate-400">オファーの承認状態を選択してください</p>
                                 </div>
-                                
+
                                 <div className="space-y-6">
                                     <button onClick={() => handleUpdate(true)} className="w-full py-4 bg-emerald-500 text-white rounded-2xl text-[12px] font-black hover:bg-emerald-600 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
                                         <CheckCircle2 size={18} /> APPROVE (承認)
@@ -152,15 +152,15 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                     <div className="pt-6 border-t border-slate-100 space-y-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">不承認の理由 (必須)</label>
-                                            <textarea 
+                                            <textarea
                                                 placeholder="例: オファー金額が不十分、日程が合わない 等"
                                                 value={rejectionReason}
                                                 onChange={(e) => setRejectionReason(e.target.value)}
                                                 className="w-full h-28 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-bold outline-none focus:ring-2 focus:ring-red-500 text-slate-600 resize-none transition-all focus:bg-white"
                                             />
                                         </div>
-                                        <button 
-                                            onClick={() => handleUpdate(false)} 
+                                        <button
+                                            onClick={() => handleUpdate(false)}
                                             disabled={!rejectionReason.trim()}
                                             className="w-full py-4 bg-slate-100 text-slate-400 disabled:opacity-50 enabled:bg-red-50 enabled:text-red-500 enabled:hover:bg-red-100 rounded-2xl text-[12px] font-black transition-all flex items-center justify-center gap-2"
                                         >
@@ -182,8 +182,8 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 <button
                     onClick={() => setShowDeliveryModal(true)}
                     disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                         : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
                 >
                     <div className="flex flex-col items-start">
@@ -198,16 +198,16 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
                             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
                                 <button onClick={() => setShowDeliveryModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
-                                
+
                                 <div className="text-center space-y-2 mb-8">
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Deliver Asset</h4>
                                     <p className="text-[10px] font-bold text-slate-400">納品した動画へのリンク等を添付してください</p>
                                 </div>
-                                
+
                                 <div className="space-y-6">
                                     <div className="space-y-2 text-left">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">動画URL (TikTok, Google Drive等) 必須</label>
-                                        <input 
+                                        <input
                                             type="url"
                                             placeholder="https://..."
                                             value={videoUrl}
@@ -216,8 +216,8 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                         />
                                     </div>
 
-                                    <button 
-                                        onClick={() => handleUpdate(true)} 
+                                    <button
+                                        onClick={() => handleUpdate(true)}
                                         disabled={!videoUrl.trim() || loading}
                                         className="w-full py-4 bg-indigo-500 text-white disabled:opacity-50 enabled:hover:bg-indigo-600 rounded-2xl text-[12px] font-black transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                                     >
@@ -236,8 +236,8 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         <button
             onClick={() => handleUpdate()}
             disabled={loading}
-            className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value 
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700" 
+            className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                 : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
         >
             <div className="flex flex-col items-start">
@@ -250,7 +250,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />
             )}
             {value && (
-                <div 
+                <div
                     onClick={handleReset}
                     className="absolute -top-2 -right-2 bg-white text-slate-400 rounded-full p-0.5 border border-slate-100 opacity-0 group-hover/btn:opacity-100 hover:text-red-500 shadow-sm z-10"
                 >
@@ -1258,11 +1258,11 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col gap-1">
                                                             <span className="font-bold text-xs">
-                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中' 
-                                                                : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み' 
-                                                                : offer.status === 'DELIVERED' ? '納品済み'
-                                                                : offer.status === 'FINALIZED' ? '完了'
-                                                                : 'オファー中'}
+                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中'
+                                                                    : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み'
+                                                                        : offer.status === 'DELIVERED' ? '納品済み'
+                                                                            : offer.status === 'FINALIZED' ? '完了'
+                                                                                : 'オファー中'}
                                                             </span>
                                                             {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
                                                             {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
@@ -1296,81 +1296,88 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                                                                         {/* Offer Details (Chips UI) */}
                                                                         <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-sm relative overflow-hidden group/offer">
-                                                                            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-opacity group-hover/offer:opacity-0">
-                                                                                <Save size={40} className="text-indigo-600" />
-                                                                            </div>
-                                                                            <div className="absolute top-0 right-0 p-3 opacity-100 transition-opacity flex gap-2">
-                                                                                <button 
-                                                                                    onClick={() => {
-                                                                                        const details = offer.offerDetails || {};
-                                                                                        const text = `【オファー条件】\nプラン: ${details.plan === 'paid' ? '有償' : 'バーター（無償）'}\n${details.plan === 'paid' ? `報酬: ¥${Number(details.amount).toLocaleString()}\n` : ''}撮影時間: ${details.shootingTime || '指定なし'}\nスタッフ出演: ${details.staffAppearance || '指定なし'}\nNG項目: ${details.ngItems || 'なし'}\n提供内容: ${offer.barterDetails || details.barterDetails || 'なし'}`;
-                                                                                        navigator.clipboard.writeText(text);
-                                                                                        alert('オファー条件をコピーしました');
-                                                                                    }}
-                                                                                    className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 p-2 rounded-xl transition-all shadow-sm border border-indigo-200"
-                                                                                    title="DM用にコピー"
-                                                                                >
-                                                                                    <Copy size={16} />
-                                                                                </button>
-                                                                            </div>
-                                                                            <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                                                                <Info size={12} /> Offer Conditions
-                                                                            </h5>
-                                                                            
-                                                                            {/* Offer Conditions Chips */}
-                                                                            <div className="flex flex-wrap gap-2">
-                                                                                <div className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-100 flex items-center gap-2 shadow-sm">
-                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Plan</span>
-                                                                                    <span className="text-xs font-black uppercase">{offer.offerDetails?.plan || "barter"}</span>
-                                                                                </div>
-                                                                                {offer.offerDetails?.plan === 'paid' && offer.offerDetails?.amount && (
-                                                                                    <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Reward</span>
-                                                                                        <span className="text-xs font-black">¥{Number(offer.offerDetails.amount).toLocaleString()}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {offer.offerDetails?.shootingTime && (
-                                                                                    <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Time</span>
-                                                                                        <span className="text-xs font-black">{offer.offerDetails.shootingTime}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {offer.offerDetails?.staffAppearance && (
-                                                                                    <div className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Staff</span>
-                                                                                        <span className="text-xs font-black">{offer.offerDetails.staffAppearance}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {offer.offerDetails?.selectedTags && offer.offerDetails.selectedTags.length > 0 && (
-                                                                                    <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-2 shadow-sm">
-                                                                                        <span className="text-[10px] font-black uppercase opacity-50">Tags</span>
-                                                                                        <span className="text-[10px] font-black">{offer.offerDetails.selectedTags.join(', ')}</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                {(!offer.offerDetails || Object.keys(offer.offerDetails).length === 0) && (
-                                                                                    <span className="text-slate-300 text-[10px] font-bold italic">No structured details available</span>
-                                                                                )}
-                                                                            </div>
+                                                                            {(() => {
+                                                                                let details = offer.offerDetails || {};
+                                                                                if (typeof details === 'string') {
+                                                                                    try { details = JSON.parse(details); } catch (e) { details = {}; }
+                                                                                }
 
-                                                                            <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
-                                                                                <div className="flex flex-col gap-1">
-                                                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Barter / Offer Details</p>
-                                                                                    <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner">
-                                                                                        {offer.barterDetails || offer.offerDetails?.barterDetails || "提供内容の記載なし"}
-                                                                                    </div>
-                                                                                </div>
-                                                                                {offer.offerDetails?.invitationMessage && (
-                                                                                    <div className="flex flex-col gap-1">
-                                                                                        <p className="text-[10px] font-black text-slate-400 uppercase">Invitation Message</p>
-                                                                                        <div className="text-[10px] font-bold text-slate-500 leading-relaxed bg-slate-50/50 p-3 rounded-lg border border-slate-100 italic">
-                                                                                            "{offer.offerDetails.invitationMessage}"
+                                                                                return (
+                                                                                    <>
+                                                                                        <div className="absolute top-0 right-0 p-3 opacity-100 transition-opacity flex gap-2">
+                                                                                            <button
+                                                                                                onClick={() => {
+                                                                                                    const text = `【オファー条件】\nプラン: ${details.plan === 'paid' ? '有償' : 'バーター（無償）'}\n${details.plan === 'paid' ? `報酬: ¥${Number(details.amount).toLocaleString()}\n` : ''}撮影時間: ${details.shootingTime || '指定なし'}\nスタッフ出演: ${details.staffAppearance || '指定なし'}\nNG項目: ${details.ngItems || 'なし'}\nタグ: ${details.selectedTags?.join(', ') || 'なし'}\n提供内容: ${offer.barterDetails || details.barterDetails || 'なし'}\n招待メッセージ: ${details.invitationMessage || 'なし'}`;
+                                                                                                    navigator.clipboard.writeText(text);
+                                                                                                    alert('オファー条件をコピーしました');
+                                                                                                }}
+                                                                                                className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 p-2 rounded-xl transition-all shadow-sm border border-indigo-200"
+                                                                                                title="DM用にコピー"
+                                                                                            >
+                                                                                                <Copy size={16} />
+                                                                                            </button>
                                                                                         </div>
-                                                                                    </div>
-                                                                                )}
-                                                                                {offer.offerDetails?.ngItems && (
-                                                                                    <p className="text-[10px] text-red-500 font-bold px-2 py-1 bg-red-50 rounded border border-red-100 w-fit">NG: {offer.offerDetails.ngItems}</p>
-                                                                                )}
-                                                                            </div>
+                                                                                        <h5 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                                                                            <Info size={12} /> Offer Conditions
+                                                                                        </h5>
+
+                                                                                        {/* Offer Conditions Chips */}
+                                                                                        <div className="flex flex-wrap gap-2">
+                                                                                            <div className="bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-100 flex items-center gap-2 shadow-sm">
+                                                                                                <span className="text-[10px] font-black uppercase opacity-50">Plan</span>
+                                                                                                <span className="text-xs font-black uppercase">{details.plan || "barter"}</span>
+                                                                                            </div>
+                                                                                            {details.plan === 'paid' && details.amount && (
+                                                                                                <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-2 shadow-sm">
+                                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Reward</span>
+                                                                                                    <span className="text-xs font-black">¥{Number(details.amount).toLocaleString()}</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {details.shootingTime && (
+                                                                                                <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-2 shadow-sm">
+                                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Time</span>
+                                                                                                    <span className="text-xs font-black">{details.shootingTime}</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {details.staffAppearance && (
+                                                                                                <div className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-2 shadow-sm">
+                                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Staff</span>
+                                                                                                    <span className="text-xs font-black">{details.staffAppearance}</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {details.selectedTags && details.selectedTags.length > 0 && (
+                                                                                                <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-2 shadow-sm">
+                                                                                                    <span className="text-[10px] font-black uppercase opacity-50">Tags</span>
+                                                                                                    <span className="text-[10px] font-black">{details.selectedTags.join(', ')}</span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {(!details || Object.keys(details).length === 0) && (
+                                                                                                <span className="text-slate-300 text-[10px] font-bold italic">No structured details available</span>
+                                                                                            )}
+                                                                                        </div>
+
+                                                                                        <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
+                                                                                            <div className="flex flex-col gap-1">
+                                                                                                <p className="text-[10px] font-black text-slate-400 uppercase">提供内容</p>
+                                                                                                <div className="text-xs font-bold text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-inner">
+                                                                                                    {offer.barterDetails || details.barterDetails || "提供内容の記載なし"}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            {details.invitationMessage && (
+                                                                                                <div className="flex flex-col gap-1">
+                                                                                                    <p className="text-[10px] font-black text-slate-400 uppercase">招待メッセージ</p>
+                                                                                                    <div className="text-[10px] font-bold text-slate-500 leading-relaxed bg-slate-50/50 p-3 rounded-lg border border-slate-100 italic">
+                                                                                                        "{details.invitationMessage}"
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {details.ngItems && (
+                                                                                                <p className="text-[10px] text-red-500 font-bold px-2 py-1 bg-red-50 rounded border border-red-100 w-fit">NG: {details.ngItems}</p>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </>
+                                                                                );
+                                                                            })()}
                                                                         </div>
 
                                                                         {/* Status Management & Chat */}
@@ -1383,7 +1390,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                     <AdminChatModal assetId={offer.id} advertiserName={offer.advertiser} creatorName={offer.creator} />
                                                                                 </div>
                                                                             </div>
-                                                                            
+
                                                                             <div className="space-y-3">
                                                                                 {offer.status === 'DECLINED' && offer.rejection_reason && (
                                                                                     <div className="bg-red-50 border border-red-100 p-3 rounded-xl mb-3 flex items-start gap-2">
@@ -1392,46 +1399,46 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                     </div>
                                                                                 )}
                                                                                 <div className="grid grid-cols-2 gap-3">
-                                                                                    <TimelineButton 
-                                                                                        label="オファー承認" 
-                                                                                        assetId={offer.id} 
-                                                                                        field="approved_at" 
+                                                                                    <TimelineButton
+                                                                                        label="オファー承認"
+                                                                                        assetId={offer.id}
+                                                                                        field="approved_at"
                                                                                         currentValue={offer.approved_at}
                                                                                         currentStatus={offer.status}
-                                                                                        onUpdate={fetchData} 
+                                                                                        onUpdate={fetchData}
                                                                                     />
-                                                                                    <TimelineButton 
-                                                                                        label="撮影完了" 
-                                                                                        assetId={offer.id} 
-                                                                                        field="filming_at" 
-                                                                                        currentValue={offer.filming_at} 
+                                                                                    <TimelineButton
+                                                                                        label="撮影完了"
+                                                                                        assetId={offer.id}
+                                                                                        field="filming_at"
+                                                                                        currentValue={offer.filming_at}
                                                                                         currentStatus={offer.status}
-                                                                                        onUpdate={fetchData} 
+                                                                                        onUpdate={fetchData}
                                                                                     />
-                                                                                    <TimelineButton 
-                                                                                        label="納品完了" 
-                                                                                        assetId={offer.id} 
-                                                                                        field="delivered_at" 
-                                                                                        currentValue={offer.delivered_at} 
+                                                                                    <TimelineButton
+                                                                                        label="納品完了"
+                                                                                        assetId={offer.id}
+                                                                                        field="delivered_at"
+                                                                                        currentValue={offer.delivered_at}
                                                                                         currentStatus={offer.status}
-                                                                                        onUpdate={fetchData} 
+                                                                                        onUpdate={fetchData}
                                                                                     />
-                                                                                    <TimelineButton 
-                                                                                        label="最終承認" 
-                                                                                        assetId={offer.id} 
-                                                                                        field="confirmed_at" 
-                                                                                        currentValue={offer.confirmed_at} 
+                                                                                    <TimelineButton
+                                                                                        label="最終承認"
+                                                                                        assetId={offer.id}
+                                                                                        field="confirmed_at"
+                                                                                        currentValue={offer.confirmed_at}
                                                                                         currentStatus={offer.status}
-                                                                                        onUpdate={fetchData} 
+                                                                                        onUpdate={fetchData}
                                                                                     />
                                                                                 </div>
                                                                                 <div className="grid grid-cols-1 gap-2">
-                                                                                    <TimelineButton 
-                                                                                        label="完了フラグ (COMPLETEDへ)" 
-                                                                                        assetId={offer.id} 
+                                                                                    <TimelineButton
+                                                                                        label="完了フラグ (COMPLETEDへ)"
+                                                                                        assetId={offer.id}
                                                                                         field="final_status" // 特別なフラグとして扱うか検討
                                                                                         currentValue={offer.status === 'COMPLETED' ? new Date().toISOString() : null}
-                                                                                        onUpdate={fetchData} 
+                                                                                        onUpdate={fetchData}
                                                                                     />
                                                                                 </div>
                                                                                 <p className="text-[9px] text-slate-400 font-bold bg-slate-50 p-2 rounded border border-slate-100 flex items-center gap-2">

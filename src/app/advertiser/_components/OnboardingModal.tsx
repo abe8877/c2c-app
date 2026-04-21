@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, MessageSquare, Video, X, ArrowRight } from 'lucide-react';
+import { Sparkles, AtSign, UserPlus, Smile, Target, X, ArrowRight, Search, LetterText, HeartHandshake, Smartphone, TrendingUp } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function OnboardingModal({
@@ -13,6 +13,7 @@ export default function OnboardingModal({
     onControlledClose?: () => void;
 }) {
     const [internalOpen, setInternalOpen] = useState(false);
+    const [activeStep, setActiveStep] = useState(1);
     const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
     const [userId, setUserId] = useState<string | null>(null);
 
@@ -20,13 +21,10 @@ export default function OnboardingModal({
 
     useEffect(() => {
         const checkOnboardingStatus = async () => {
-            // 既にコントロールされている（手動で開かれた）場合は自動チェックをスキップ
-            if (controlledOpen !== undefined) return;
+            if (controlledOpen === undefined) {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
 
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (user) {
-                setUserId(user.id);
                 const { data: shop } = await supabase
                     .from('shops')
                     .select('has_seen_onboarding')
@@ -57,28 +55,28 @@ export default function OnboardingModal({
 
     const steps = [
         {
-            icon: <Sparkles className="w-5 h-5 text-amber-500" />,
-            title: "1. 店舗分析 & マッチング",
-            desc: "店舗情報のURLを入力するだけで、貴店と相性の良いインバウンドクリエイターを素早くご提示します。",
-            color: "bg-amber-50 border-amber-100"
+            icon: <Search className="w-6 h-6 text-indigo-600" />,
+            title: "1. 最適な「アンバサダー」とマッチング",
+            desc: "まずは貴店のGoogleマップやインスタグラムのURLを入力してみてください。1,000組以上のリストから「あなたのお店に訪日客を連れてくるため」の最適なアンバサダーを厳選して提案します。",
+            color: "bg-indigo-50"
         },
         {
-            icon: <Send className="w-5 h-5 text-blue-500" />,
-            title: "2. オファー送信",
-            desc: "気になるクリエイターを選択して、案件オファーを送信して下さい。翻訳機能やテンプレを使って簡単に条件交渉が可能です。",
-            color: "bg-blue-50 border-blue-100"
+            icon: <HeartHandshake className="w-6 h-6 text-blue-600" />,
+            title: "2. お気に入りの3名にオファーを送信",
+            desc: "動画をチェックして世界観の合うアンバサダーにオファーを送ってみましょう。より多くのアンバサダーに依頼することで集客効果の安定化が期待できます。",
+            color: "bg-blue-50"
         },
         {
-            icon: <MessageSquare className="w-5 h-5 text-teal-500" />,
-            title: "3. 来店日程の確定・撮影実施",
-            desc: "マッチング成立後チャットが開通するので、来店日程等をご調整ください（トラブル防止の為、メッセージの内容は運営が確認できます）。※ステマ防止のPR表記、商用利用可能な音源の指定、Googleマップのタグ付け等は、専属コンシェルジュが全案件で徹底ディレクションいたしますのでご安心ください。",
-            color: "bg-teal-50 border-teal-100"
+            icon: <Smartphone className="w-6 h-6 text-teal-600" />,
+            title: "3. 簡単なやり取りで案件進行",
+            desc: "オファーが受諾されたら来店日程を決めて、後は待つだけ。アンバサダーが来店して撮影を行い、動画投稿直前まで進めてくれます（連絡事項があればチャットも送信可能）。",
+            color: "bg-teal-50"
         },
         {
-            icon: <Video className="w-5 h-5 text-purple-500" />,
-            title: "4. 動画納品から依頼完了まで",
-            desc: "動画の制作状況は「Asset Hub」から確認できます。納品された動画を確認して承認すると依頼が完了し、動画データのダウンロードや投稿された動画のチェックができるようになります。",
-            color: "bg-purple-50 border-purple-100"
+            icon: <TrendingUp className="w-6 h-6 text-purple-600" />,
+            title: "4. 「動画看板」としてフル活用",
+            desc: "納品された動画を承諾すると、アンバサダーのSNSに投稿され依頼が完了します。動画はGoogleマップにも掲載可能。SNS〜マップの来店経路に動画看板を設置して、インバウンドのお客様を増やしましょう。",
+            color: "bg-purple-50"
         }
     ];
 
@@ -90,84 +88,101 @@ export default function OnboardingModal({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-stone-900/80 backdrop-blur-xl"
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
                         onClick={handleClose}
                     />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 40 }}
-                        className="bg-white sm:rounded-[2.5rem] shadow-[0_32px_64px_rgba(0,0,0,0.3)] w-full max-w-2xl relative z-10 overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[95vh]"
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="bg-white w-full h-full sm:h-auto sm:max-w-2xl sm:rounded-[3rem] relative z-10 shadow-2xl flex flex-col overflow-hidden"
                     >
-                        {/* Premium Header with Background Pattern */}
-                        <div className="bg-[#1A1A1A] px-10 pt-12 pb-10 text-white relative overflow-hidden shrink-0">
-                            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                                <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:24px_24px] rotate-12" />
-                            </div>
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/20 blur-[100px] rounded-full -mr-20 -mt-20" />
+                        <button onClick={handleClose} className="absolute top-8 right-8 p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-20">
+                            <X size={20} />
+                        </button>
 
-                            <button onClick={handleClose} className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-full transition-all border border-white/10 z-20">
-                                <X className="w-6 h-6" />
-                            </button>
-
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="relative z-10"
-                            >
-                                <div className="text-teal-400 text-[10px] font-black uppercase tracking-[0.3em] mb-3 flex items-center gap-2">
-                                    <Sparkles className="w-4 h-4" /> Start Your Journey
+                        {/* Header Section */}
+                        <div className="px-8 pt-12 pb-6 text-center">
+                            <div className="flex items-center justify-center gap-3 mb-10">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest transition-all duration-300">
+                                    Step {activeStep} of {steps.length}
+                                </span>
+                                <div className="flex gap-1.5 items-center">
+                                    {steps.map((_, i) => {
+                                        const stepNum = i + 1;
+                                        return (
+                                            <div
+                                                key={i}
+                                                className={`h-1.5 rounded-full transition-all duration-500 ease-out ${stepNum === activeStep ? 'w-8 bg-indigo-600' : 'w-1.5 bg-slate-200'
+                                                    }`}
+                                            />
+                                        );
+                                    })}
                                 </div>
-                                <h2 className="text-4xl font-black mb-3 tracking-tight leading-none">
-                                    Welcome to INSIDERS.
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className="text-indigo-600 font-bold text-sm tracking-tight">Welcome to INSIDERS.</h3>
+                                <h2 className="text-xl font-bold text-slate-900 leading-[1.3]">
+                                    貴店の魅力を伝えるアンバサダーが<br />
+                                    世界中のスマホに動画看板を掲載し<br />
+                                    インバウンド来店を創出します！
                                 </h2>
-                            </motion.div>
+                            </div>
                         </div>
 
-                        {/* Content (Steps) with Improved Layout */}
-                        <div className="px-10 py-10 overflow-y-auto flex-1 space-y-8 scrollbar-hide">
-                            <div className="flex items-center gap-4">
-                                <div className="h-[2px] bg-stone-100 flex-1" />
-                                <span className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em] whitespace-nowrap">サービス利用の流れ</span>
-                                <div className="h-[2px] bg-stone-100 flex-1" />
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-4">
-                                {steps.map((step, idx) => (
+                        {/* Steps List */}
+                        <div className="px-8 py-4 overflow-y-auto flex-1 space-y-6">
+                            {steps.map((step, idx) => {
+                                const stepNum = idx + 1;
+                                const isActive = stepNum === activeStep;
+                                return (
                                     <motion.div
                                         key={idx}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 + idx * 0.1 }}
-                                        className={`group relative p-6 rounded-[2rem] border transition-all duration-300 hover:shadow-2xl hover:translate-y-[-4px] ${step.color} cursor-default`}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{
+                                            opacity: isActive ? 1 : 0.25,
+                                            x: 0,
+                                            scale: isActive ? 1 : 0.98
+                                        }}
+                                        transition={{
+                                            delay: isActive ? 0 : 0.2 + idx * 0.1,
+                                            duration: 0.4,
+                                            ease: "easeOut"
+                                        }}
+                                        onClick={() => setActiveStep(stepNum)}
+                                        className="flex gap-5 group cursor-pointer transition-all duration-300"
                                     >
-                                        <div className="w-14 h-14 bg-white rounded-2xl shadow-xl shadow-slate-200/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                                            {step.icon}
+                                        <div className="shrink-0 flex flex-col items-center">
+                                            <div className={`w-14 h-14 aspect-square rounded-2xl ${step.color} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                                                {step.icon}
+                                            </div>
+                                            {idx < steps.length - 1 && (
+                                                <div className="w-px h-full bg-slate-100 my-2" />
+                                            )}
                                         </div>
-                                        <div>
-                                            <h3 className="font-black text-stone-900 text-lg mb-2 tracking-tight">{step.title}</h3>
-                                            <p className="text-xs text-stone-500 font-bold leading-relaxed">{step.desc}</p>
-                                        </div>
-                                        <div className="absolute top-6 right-6 text-[40px] font-black text-black/5 leading-none select-none">
-                                            {idx + 1}
+                                        <div className="pb-4 pt-1">
+                                            <h4 className="font-black text-slate-900 text-[15px] mb-1.5 leading-snug transition-colors group-hover:text-indigo-600">
+                                                {step.title}
+                                            </h4>
+                                            <p className="text-[11px] text-slate-500 font-bold leading-relaxed">{step.desc}</p>
                                         </div>
                                     </motion.div>
-                                ))}
-                            </div>
+                                );
+                            })}
                         </div>
 
-                        {/* High-Impact Footer Action */}
-                        <div className="p-10 border-t border-stone-100 bg-white shrink-0">
+                        {/* Footer Action */}
+                        <div className="p-8 pb-10">
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={handleClose}
-                                className="w-full bg-teal-600 text-white font-black text-center text-[15px] sm:text-md py-6 rounded-[2rem] shadow-[0_20px_40px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:shadow-[0_24px_48px_rgba(13,148,136,0.4)] transition-all flex items-center justify-center gap-4 group"
+                                className="w-full bg-indigo-600 text-white font-black text-center text-[15px] py-5 rounded-2xl shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3"
                             >
-                                クリエイターマッチングを開始する
-                                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                                アンバサダーマッチングを開始
+                                <ArrowRight className="w-5 h-5" />
                             </motion.button>
                         </div>
                     </motion.div>
