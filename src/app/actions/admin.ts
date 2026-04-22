@@ -208,6 +208,11 @@ export async function getOngoingOffers() {
                     id,
                     created_at,
                     approved_at,
+                    visit_at,
+                    delivery_at,
+                    finalized,
+                    published_url,
+                    view_count,
                     submitted_at,
                     video_url,
                     status,
@@ -247,9 +252,11 @@ export async function getOngoingOffers() {
                         rejection_reason: item.rejection_reason,
                         createdAt: item.created_at,
                         approved_at: item.approved_at,
-                        filming_at: item.offer_details?.timeline?.filming_at,
-                        delivered_at: item.offer_details?.timeline?.delivered_at,
-                        confirmed_at: item.offer_details?.timeline?.confirmed_at,
+                        visit_at: item.visit_at,
+                        delivery_at: item.delivery_at,
+                        finalized: item.finalized,
+                        published_url: item.published_url,
+                        view_count: item.view_count,
                         submitted_at: item.submitted_at,
                         video_url: item.video_url,
                         diffHours,
@@ -318,48 +325,43 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // field が approved_at 以外の場合は DB 列が存在しないため、offer_details の中の timeline に保存する
         let updatePayload: any = {};
         
         if (field === 'approved_at') {
             updatePayload.approved_at = timestamp;
             if (timestamp) {
-                updatePayload.status = 'WORKING'; // 承諾時はWORKINGに進める
+                updatePayload.status = 'WORKING';
                 updatePayload.rejection_reason = null;
             } else {
-                updatePayload.status = 'DECLINED'; // 取消時は不承諾に
+                updatePayload.status = 'DECLINED';
                 if (extraData?.rejectionReason) updatePayload.rejection_reason = extraData.rejectionReason;
             }
         } else if (field === 'final_status') {
+            updatePayload.finalized = true;
             updatePayload.status = 'FINALIZED';
             updatePayload.updated_at = timestamp || new Date().toISOString();
-        } else {
-            // 現在のassetsを取得してJSONを更新
+        } else if (field === 'filming_at') {
+            updatePayload.visit_at = timestamp;
+        } else if (field === 'delivered_at') {
+            updatePayload.delivery_at = timestamp;
+            if (timestamp) updatePayload.status = 'DELIVERED';
+        } else if (field === 'confirmed_at') {
+            updatePayload.finalized = true;
+            if (timestamp) updatePayload.status = 'FINALIZED';
+
+            // タイムラインにも一応残す
             const { data: currentAsset } = await supabaseAdmin.from('assets').select('offer_details').eq('id', assetId).single();
-            
-            let currentDetails = currentAsset?.offer_details;
-            if (typeof currentDetails === 'string') {
-                try { 
-                    currentDetails = JSON.parse(currentDetails); 
-                } catch(e) { 
-                    console.error("JSON Parse Error for offer_details:", e);
-                    currentDetails = {}; 
-                }
-            }
-            if (!currentDetails || typeof currentDetails !== 'object') {
-                currentDetails = {};
-            }
-
-            const timeline = currentDetails.timeline || {};
+            const currentDetails = currentAsset?.offer_details || {};
+            const timeline = (currentDetails as any).timeline || {};
             timeline[field] = timestamp;
-            currentDetails.timeline = timeline;
-            updatePayload.offer_details = currentDetails;
-
-            if (field === 'delivered_at' && timestamp) {
-                updatePayload.status = 'DELIVERED'; // 自動的に状態を進める
-            } else if (field === 'confirmed_at' && timestamp) {
-                updatePayload.status = 'FINALIZED';
+            
+            // 投稿済みURLが渡された場合は保存する
+            if (extraData?.postUrl) {
+                (currentDetails as any).post_url = extraData.postUrl;
             }
+
+            (currentDetails as any).timeline = timeline;
+            updatePayload.offer_details = currentDetails;
         }
 
         if (extraData?.videoUrl) {

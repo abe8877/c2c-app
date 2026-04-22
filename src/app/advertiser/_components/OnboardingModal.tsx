@@ -39,6 +39,13 @@ export default function OnboardingModal({
         checkOnboardingStatus();
     }, [supabase, controlledOpen]);
 
+    // モーダルが閉じられたときにステップをリセットする
+    useEffect(() => {
+        if (!isOpen) {
+            setActiveStep(1);
+        }
+    }, [isOpen]);
+
     const handleClose = async () => {
         if (controlledOpen !== undefined) {
             onControlledClose?.();
@@ -142,13 +149,13 @@ export default function OnboardingModal({
                                         key={idx}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{
-                                            opacity: isActive ? 1 : 0.25,
+                                            opacity: isActive ? 1 : 0.4,
+                                            filter: isActive ? 'grayscale(0)' : 'grayscale(1)',
                                             x: 0,
                                             scale: isActive ? 1 : 0.98
                                         }}
                                         transition={{
-                                            delay: isActive ? 0 : 0.2 + idx * 0.1,
-                                            duration: 0.4,
+                                            duration: 0.3,
                                             ease: "easeOut"
                                         }}
                                         onClick={() => setActiveStep(stepNum)}

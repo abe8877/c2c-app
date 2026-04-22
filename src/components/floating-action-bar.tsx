@@ -10,11 +10,13 @@ export const FloatingActionBar = ({
     className,
     hintedLink,
     hintMessage,
+    activeLink,
 }: {
     items: { name: string; link: string; icon?: React.ReactNode, onClick?: () => void }[];
     className?: string;
     hintedLink?: string;
     hintMessage?: string;
+    activeLink?: string;
 }) => {
     return (
         <div
@@ -51,15 +53,16 @@ export const FloatingActionBar = ({
                         <>
                             <span className={cn(
                                 "text-white/70 group-hover:text-white transition-colors text-[11px] sm:text-sm font-bold flex items-center gap-1 sm:gap-2 whitespace-nowrap",
-                                isHinted && "text-white"
+                                (activeLink === item.link || isHinted) && "text-white"
                             )}>
                                 {item.icon}
                                 <span>{item.name}</span>
                             </span>
-                            {/* ホバー時の下線アニメーション */}
+                            {/* ホバー時またはアクティブ時の下線アニメーション */}
                             <span className={cn(
-                                "absolute -bottom-1 left-0 w-0 h-[2px] bg-indigo-500 transition-all group-hover:w-full",
-                                isHinted && "w-full bg-yellow-400 h-[3px]"
+                                "absolute -bottom-1 left-1/2 -translate-x-1/2 h-[3px] bg-indigo-500 transition-all rounded-full",
+                                activeLink === item.link ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100",
+                                isHinted && "bg-yellow-400"
                             )} />
                         </>
                     );

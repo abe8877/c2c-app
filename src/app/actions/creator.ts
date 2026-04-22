@@ -44,11 +44,23 @@ export async function approveAsset(assetId: string) {
 export async function finalizeAsset(assetId: string) {
     const supabase = await createClient();
     
+    // offer_detailsのtimeline.confirmed_atを更新
+    const { data: currentAsset, error: fetchError } = await supabase.from('assets').select('offer_details').eq('id', assetId).single();
+    if (fetchError || !currentAsset) throw new Error("対象のアセットが見つかりませんでした。");
+    
+    let currentDetails = currentAsset.offer_details || {};
+    if (typeof currentDetails === 'string') try { currentDetails = JSON.parse(currentDetails); } catch { currentDetails = {}; }
+    
+    const timeline = currentDetails.timeline || {};
+    timeline.confirmed_at = new Date().toISOString();
+    currentDetails.timeline = timeline;
+
     const { error } = await supabase
         .from('assets')
         .update({ 
-            status: 'FINALIZED', 
-            confirmed_at: new Date().toISOString()
+            finalized: true,
+            status: 'FINALIZED',
+            offer_details: currentDetails
         })
         .eq('id', assetId);
 
@@ -57,7 +69,45 @@ export async function finalizeAsset(assetId: string) {
         throw new Error(error.message);
     }
     
-    return { success: true, assetId, newStatus: 'FINALIZED' };
+    return { success: true, assetId };
+}
+
+export async function requestAssetRevision(assetId: string, message: string) {
+    const supabase = await createClient();
+    
+    const { data: currentAsset, error: fetchError } = await supabase.from('assets').select('offer_details, shop_id, creator_id').eq('id', assetId).single();
+    if (fetchError || !currentAsset) throw new Error("対象のアセットが見つかりませんでした。");
+
+    let currentDetails = currentAsset.offer_details || {};
+    if (typeof currentDetails === 'string') try { currentDetails = JSON.parse(currentDetails); } catch { currentDetails = {}; }
+    
+    const timeline = currentDetails.timeline || {};
+    const revisionCount = (timeline.revision_count || 0) + 1;
+    timeline.revision_count = revisionCount;
+    timeline.last_revision_request = new Date().toISOString();
+    currentDetails.timeline = timeline;
+
+    // ステータスを WORKING (または REVISION_REQUESTED) に戻す
+    const { error } = await supabase
+        .from('assets')
+        .update({ 
+            status: 'WORKING',
+            offer_details: currentDetails
+        })
+        .eq('id', assetId);
+
+    if (error) throw new Error(error.message);
+
+    // チャットにメッセージを自動投稿
+    await supabase.from('messages').insert({
+        asset_id: assetId,
+        sender_id: currentAsset.shop_id,
+        sender_type: 'shop',
+        message: `【修正依頼 (#${revisionCount}/2)】\n${message}`,
+        is_admin_action: false
+    });
+
+    return { success: true, revisionCount };
 }
 
 export async function updateCreatorPortfolio(creatorId: string, videoUrl: string) {

@@ -155,9 +155,9 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                         {(step === 0 || step === 1) && (
                             <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center h-full px-6 text-center">
                                 <div className="text-[9px] text-emerald-600 font-black mb-3 border border-emerald-200 bg-emerald-50 px-4 py-1.5 rounded-full flex items-center gap-1.5">
-                                    <Sparkles className="w-3 h-3" /> 1,000+ Trusted Creators
+                                    <Sparkles className="w-3 h-3" /> 1,000+ Trusted Ambassadors
                                 </div>
-                                <h3 className="text-xl font-black mb-8 text-slate-900 leading-tight italic tracking-tighter">Find your best<br />Inbound Creators</h3>
+                                <h3 className="text-xl font-black mb-8 text-slate-900 leading-tight italic tracking-tighter">Find your best<br />Inbound Ambassadors</h3>
                                 <div className="w-full bg-white border border-slate-200 rounded-2xl flex items-center p-1.5 shadow-sm h-12">
                                     <div className="text-[10px] font-black px-3 border-r border-slate-100 flex items-center gap-1.5">🍣</div>
                                     <div className="text-[9px] text-slate-400 px-3 flex-1 text-left flex items-center gap-2 overflow-hidden">
@@ -182,7 +182,7 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                                     <Sparkles className="w-6 h-6 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                                 </div>
                                 <div className="text-base font-black mb-3 text-slate-900 tracking-tighter uppercase">分析中...</div>
-                                <div className="text-[10px] text-slate-400 font-bold leading-relaxed text-center">お店の魅力を言語化し、<br />最適なクリエイターを選定中です</div>
+                                <div className="text-[10px] text-slate-400 font-bold leading-relaxed text-center">お店の魅力を言語化し、<br />最適なアンバサダーを選定中です</div>
                             </motion.div>
                         )}
 
@@ -192,7 +192,7 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                                     <CheckCircle2 className="w-8 h-8" />
                                 </div>
                                 <div className="text-2xl font-black mb-2 text-slate-900 tracking-tighter italic">READY!</div>
-                                <p className="text-[10px] text-slate-400 font-bold mb-8">21名の最適なクリエイターを特定しました</p>
+                                <p className="text-[10px] text-slate-400 font-bold mb-8">21名の最適なアンバサダーを特定しました</p>
                                 <div className="bg-white rounded-[2rem] shadow-xl p-6 w-full border border-slate-50 relative">
                                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-[8px] font-black px-4 py-1 rounded-full shadow-lg">AI MATCHED</div>
                                     <div className="flex flex-wrap justify-center gap-2 mb-8 pt-3">
@@ -216,10 +216,10 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                             <motion.div key="catalog" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full bg-white relative">
                                 <div className="p-5 pb-3 border-b border-slate-50 sticky top-0 z-20 bg-white">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tighter">Creator Selection</span>
+                                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tighter">アンバサダーカタログ</span>
                                         <div className="bg-yellow-400 text-black text-[7px] font-black px-2 py-0.5 rounded-sm animate-pulse">BEST MATCH</div>
                                     </div>
-                                    <div className="text-[9px] text-slate-400 font-bold italic text-left">Top-tier global influencers</div>
+                                    <div className="text-[9px] text-slate-400 font-bold italic text-left">Top-tier Ambassadors</div>
                                 </div>
                                 <div className="flex-1 p-3 grid grid-cols-3 gap-2 overflow-hidden bg-slate-50/50">
                                     {[...Array(12)].map((_, i) => (
@@ -282,7 +282,7 @@ function HeroDualMockups({ isMiniFlow = false }: { isMiniFlow?: boolean }) {
                                         className="absolute inset-0 bg-black/80 backdrop-blur-md z-[80] flex flex-col p-6 text-left"
                                     >
                                         <div className="flex items-center justify-between mb-8">
-                                            <div className="text-white text-xs font-black italic tracking-widest">OFFER CREATION</div>
+                                            <div className="text-white text-xs font-black italic tracking-widest">オファーを作成</div>
                                             <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/40"><Check className="w-3 h-3" /></div>
                                         </div>
                                         <h4 className="text-white text-lg font-black mb-6 italic leading-tight">Elena_Tokyo さんを招待</h4>
@@ -625,7 +625,7 @@ export default function InsidersLP() {
                                 {/* 3つの実績/スペックバッジ (Mobile: Below Title) */}
                                 <div className="grid grid-cols-3 gap-3 px-2 mb-10 mt-10">
                                     {[
-                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化ショート動画アンバサダー群</> },
+                                        { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化ショート動画アンバサダー</> },
                                         { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>マージンゼロで<br />直接オファーし放題</> },
                                         { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "交渉レス", sub: <>投稿した動画を<br />マップで二次利用</> },
                                     ].map((badge, idx) => (
@@ -649,7 +649,7 @@ export default function InsidersLP() {
                                 {[
                                     { icon: <Users className="w-6 h-6 text-indigo-600" />, value: "1000組+", sub: <>ショート動画特化<br />インバウンドアンバサダー</> },
                                     { icon: <Sparkles className="w-6 h-6 text-amber-600" />, value: "定額制", sub: <>マージンゼロで<br />直接オファーし放題</> },
-                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "交渉レス", sub: <>投稿した動画を<br />マップで二次利用</> },
+                                    { icon: <RefreshCw className="w-6 h-6 text-emerald-600" />, value: "簡単実施", sub: <>英語や面倒な交渉不要<br />WEB完結で簡単依頼</> },
                                 ].map((badge, idx) => (
                                     <div key={idx} className="flex flex-col items-center lg:items-center transition-all group text-center">
                                         <div className="flex items-center gap-3 mb-2 transition-transform group-hover:scale-110">
@@ -942,20 +942,20 @@ export default function InsidersLP() {
                                 {
                                     icon: <Target className="w-8 h-8" />,
                                     color: 'amber',
-                                    title: <>日本人を捨てて、<br />訪日客のスマホだけを狙う</>,
-                                    desc: 'マスに向けたビラ配りのようなPRは不要です。今まさに日本旅行を計画している外国人のSNSのおすすめタブ（一等地）にだけピンポイントで看板を出すのが最も効率的です。'
+                                    title: <>日本人にはスルーされてもいい、<br />訪日客のSNSの一等地だけを狙う</>,
+                                    desc: 'マスに向けたビラ配りのようなPRは不要です。今まさに日本旅行を計画している外国人のSNSのおすすめタブにだけピンポイントで看板を出すのが最も効率的です。'
                                 },
                                 {
                                     icon: <Zap className="w-8 h-8" />,
                                     color: 'rose',
                                     title: <>比較サイトから逃げ、<br />マップ上で勝負する</>,
-                                    desc: 'OTAの検索結果で、価格や評価を競合と争うのはやめましょう。Googleマップという行動の終着点に直接「動画の看板」を立てることで、比較されることなく「指名買い」されます。'
+                                    desc: 'OTAで価格や評価を競合と争うのはやめましょう。Googleマップという彼らが来店前に必ず訪れる場所に動画看板を立てることで、比較されることなく「指名来店」が生まれます。'
                                 },
                                 {
                                     icon: <Globe className="w-8 h-8" />,
                                     color: 'indigo',
                                     title: <>英語力を諦め、<br />ネイティブの熱量に頼る</>,
-                                    desc: '不慣れな外国語での発信で現場を疲弊させる必要はありません。言葉の壁の突破とお店の魅力の翻訳は、その国のトレンドを知り尽くしたアンバサダーに任せるのが一番の近道です。'
+                                    desc: '不慣れな英語での発信で現場を疲弊させる必要はありません。お店の魅力を翻訳するのは、その国のトレンドを知り尽くしたアンバサダーに任せるのが一番の近道です。'
                                 }
                             ].map((pain, idx) => (
                                 <div key={idx} className="bg-slate-50 p-7 sm:p-9 rounded-[2.5rem] border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-500 group flex flex-col items-center text-center">
@@ -994,8 +994,8 @@ export default function InsidersLP() {
                 <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
                     <div className="text-center max-w-3xl mx-auto mb-20 sm:mb-32">
                         <h2 className="text-xl sm:text-4xl font-black text-slate-900 tracking-tight leading-[1.5]">
-                            <span className="text-indigo-600">インバウンド動画看板を構築する</span><br />
-                            『INSIDERS.』4つの独自システム
+                            <span className="text-indigo-600">インバウンド集客を成功に導く</span><br />
+                            『INSIDERS.』4つのサービス特徴
                         </h2>
                     </div>
 
@@ -1005,14 +1005,14 @@ export default function InsidersLP() {
                             <div className="bg-slate-50 rounded-[3rem] p-8 sm:p-16 border border-slate-100">
                                 <div className="text-center mb-12">
                                     <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                        <Sparkles className="w-5 h-5 font-black" /> Point 01. アンバサダーへの直通パス
+                                        <Sparkles className="w-5 h-5 font-black" /> 01. アンバサダーへの直通パス
                                     </div>
                                     <h3 className="text-xl sm:text-4xl font-black text-slate-900 mb-6">
                                         インバウンドアンバサダーに定額で直接オファーし放題！
                                     </h3>
                                     <p className="text-slate-500 text-sm leading-relaxed font-bold">
                                         INSIDERS.は、厳選されたインバウンドアンバサダーへ直接アプローチを行える『独自の依頼ルート』です。<br className="hidden sm:block" />
-                                        一般の英語DMのように埋もれることなく、貴店の魅力を確実にアンバサダーへ届けるオファーを何度でも送信できます。
+                                        一般の英語DMのように埋もれることなく、貴店の魅力を確実にアンバサダーへ届けるオファーを定額で何度でも送信できます。
                                     </p>
                                 </div>
 
@@ -1061,7 +1061,7 @@ export default function InsidersLP() {
                         <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-indigo-600 font-bold text-sm mb-4">
-                                    <Database className="w-5 h-5 font-black" /> Point 02. ハイレベルなネットワーキング
+                                    <Database className="w-5 h-5 font-black" /> 02. ハイレベルなネットワーキング
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     1,000組以上の厳選された<br />アンバサダー候補をご用意
@@ -1091,8 +1091,8 @@ export default function InsidersLP() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                                     <div className="absolute bottom-6 left-6 right-6">
                                         <div className="flex flex-wrap gap-2">
-                                            <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">貴店の魅力を語る1,000組以上のアンバサダー候補</span>
-                                            <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/30">訪日検討者から高いエンゲージメント</span>
+                                            <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">貴店の魅力を語る1,000組以上のアンバサダー</span>
+                                            <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/30">訪日検討者から高い評価を獲得</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1103,7 +1103,7 @@ export default function InsidersLP() {
                         <div id="viral-wave" className="flex flex-col lg:flex-row-reverse items-center justify-center gap-4 sm:gap-6 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 scroll-mt-24">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-violet-600 font-bold text-sm mb-4">
-                                    <MessageSquare className="w-5 h-5 font-black" /> Point 03.  オファー力を最大化するシステム
+                                    <MessageSquare className="w-5 h-5 font-black" /> 03.  オファー力を最大化するサポート
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     AIアシスタント機能で<br />キャパいらず簡単オファー
@@ -1141,14 +1141,14 @@ export default function InsidersLP() {
                         <div id="landmark" className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 max-w-6xl mx-auto px-6 sm:px-0 pb-10 sm:pb-20">
                             <div className="flex-1 lg:max-w-[480px] text-left">
                                 <div className="inline-flex items-center gap-2 text-emerald-600 font-bold text-sm mb-4">
-                                    <LayoutGrid className="w-5 h-5 font-black" /> Point 04. 動画コンテンツを集客資産にする
+                                    <LayoutGrid className="w-5 h-5 font-black" /> 04. 動画コンテンツを集客資産へ
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-slate-900 mb-8 tracking-tight leading-tight">
                                     Googleマップを「24時間集客する動画看板」へ進化
                                 </h3>
                                 <ul className="space-y-6">
                                     {[
-                                        { title: "インバウンドの終着点に看板を設置", desc: "熱が高まっているうちに「指名買い」を促し、OTAで他店と比較される前に予約へ誘導。" },
+                                        { title: "インバウンドの通り道に看板を設置", desc: "動画で高まった熱を逃さずに、OTAで他店と比較される前に予約へ誘導。" },
                                         { title: "動画資産のフル活用", desc: "好反応なショート動画を使い捨てずに、Googleマップで24時間動く集客資産として最大限活用。" },
                                         { title: "二次利用権利クリア", desc: "納品された動画は、追加費用なしでGoogleマップに掲載可能（※改変・広告利用は不可）。" }
                                     ].map((item, idx) => (
@@ -1348,7 +1348,7 @@ export default function InsidersLP() {
                             </div>
 
                             {/* Card 2 */}
-                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-indigo-100/20 hover:shadow-indigo-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
+                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-rose-100/20 hover:shadow-rose-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
                                 <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
                                     💆
                                 </div>
@@ -1531,8 +1531,8 @@ export default function InsidersLP() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">
-                            <div className="grid grid-cols-2 md:flex md:flex-wrap justify-items-center md:justify-center items-center gap-x-4 sm:gap-x-8 gap-y-4 md:gap-x-6 md:gap-y-3">
+                        <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8 ml-auto mr-auto lg:ml-0 lg:mr-0">
+                            <div className="grid grid-cols-2 md:flex md:flex-wrap justify-items-center md:justify-center items-center gap-x-8 gap-y-4 md:gap-x-8 md:gap-y-3 mx-auto">
                                 <a href="/privacy" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">プライバシーポリシー <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">利用規約 <ArrowUpRight className="w-3 h-3" /></a>
                                 <a href="/terms-sp" className="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 whitespace-nowrap">特定商取引法に基づく表記 <ArrowUpRight className="w-3 h-3" /></a>

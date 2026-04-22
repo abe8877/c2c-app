@@ -6,12 +6,15 @@ import ChatModal from "./ChatModal";
 import {
     Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers,
     CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users,
-    AlertCircle, Camera, Bell, User, Gift, DollarSign, X, AlertTriangle,
+    AlertCircle, Camera, Bell, User, Gift, Diamond, X, AlertTriangle,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
     Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
     Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target,
     SettingsIcon, Video, Loader2,
-    Smartphone
+    Smartphone, DollarSign,
+    DiamondIcon,
+    Sparkle,
+    Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -31,12 +34,17 @@ export interface Asset {
     client_tag: string;
     creator_id: string;
     status: string;
-    video_url?: string;
+    video_url: string;
     created_at?: string;
     updated_at?: string;
     approved_at?: string;
     filming_at?: string;
     delivered_at?: string;
+    visit_at?: string;
+    delivery_at?: string;
+    finalized?: boolean;
+    published_url?: string;
+    view_count?: number;
     creator?: {
         name: string;
         tiktok_handle?: string;
@@ -340,20 +348,20 @@ const CreatorCard = ({
                     {/* FOLLOWERS - Unified Glass Box UI */}
                     <div className="flex items-center gap-1.5 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
                         <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
-                        <span className="truncate">{creator.followers} followers</span>
+                        <span className="truncate">{creator.followers} フォロワー</span>
                     </div>
 
                     {/* AUDIENCE - Vertical stack, Unified Glass Box UI */}
                     <div className="flex items-center gap-1.5 text-white/90 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
                         <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
-                        <span className="truncate">AUDIENCE: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}</span>
+                        <span className="truncate">主な視聴者層: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}</span>
                     </div>
 
                     {/* PRICING GUIDE - Multi-line supported */}
                     {creator.pricing_guide && (
                         <div className="flex items-start gap-1.5 text-white text-[9px] sm:text-[10px] font-black tracking-tight px-2 py-1.5 bg-indigo-500/30 backdrop-blur-md rounded border border-indigo-400/30 w-fit max-w-full shadow-[0_0_10px_rgba(99,102,241,0.2)]">
-                            <DollarSign className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
-                            <span className="leading-tight">{creator.pricing_guide}</span>
+                            <Sparkle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
+                            <span className="leading-tight">{creator.pricing_guide.replace("推奨オファー", "市場価値")}</span>
                         </div>
                     )}
                 </div>
@@ -567,7 +575,8 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
                 <p className="text-stone-500 font-medium text-sm">分析の結果、貴店の魅力は以下のように定義されました。</p>
             </div>
             <div className="bg-white p-10 rounded-[40px] shadow-2xl border border-stone-100 mb-8 ring-1 ring-stone-200/50">
-                <h3 className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-8 text-center">Detected Vibe Tags</h3>
+                <h3 className="text-[16px] font-black text-stone-800 uppercase tracking-[0em] mb-2 text-center">貴店の魅力タグ</h3>
+                <p className="text-stone-400 font-medium text-xs mb-8 text-center">※分析結果は不正確な場合があります。<br className="sm:hidden" />イメージと異なるものがあれば除外下さい。</p>
                 <div className="flex flex-wrap gap-4 justify-center">
                     {tags.map((tag: string, i: number) => (
                         <div
@@ -586,7 +595,7 @@ function VibeCheckScreen({ onConfirm, tags, onRemoveTag, count = 16, selectedGen
                     {tags.length === 0 && <p className="text-stone-300 italic">タグがありません</p>}
                 </div>
                 <div className="mt-12 pt-12 border-t border-stone-100 text-center space-y-15">
-                    <p className="text-xs sm:text-sm font-bold text-stone-400 flex flex-col sm:flex-row items-center justify-center gap-2">貴店と好相性のクリエイター：<span className="text-xl sm:text-4xl text-black font-black underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
+                    <p className="text-xs sm:text-sm font-bold text-stone-400 flex flex-col sm:flex-row items-center justify-center gap-2">貴店と好相性のアンバサダー：<span className="text-xl sm:text-4xl text-black font-black underline underline-offset-8 decoration-yellow-400 decoration-4">{count}名（{selectedGenre || initialGenre || '全ジャンル'}）</span></p>
                     <button onClick={onConfirm} className="w-full sm:w-auto px-8 sm:px-14 py-4 sm:py-5 bg-black text-white rounded-full font-black text-sm sm:text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.2)] active:scale-95 group">
                         <span className="truncate">マッチング候補を見る</span> <ArrowRight size={20} className="shrink-0 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -888,9 +897,9 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                                 {creator?.pricing_guide && (
                                                     <div className="pt-2 animate-in fade-in slide-in-from-top-1 duration-500">
                                                         <div className="flex items-start gap-2 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
-                                                            <Sparkles className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                                                            <Sparkle className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
                                                             <div className="space-y-1">
-                                                                <div className="text-[11px] font-black text-indigo-600 tracking-tight leading-none">{creator.pricing_guide}</div>
+                                                                <div className="text-[11px] font-black text-indigo-600 tracking-tight leading-none">{creator.pricing_guide.replace("推奨オファー", "市場価値")}</div>
                                                                 <p className="text-[10px] text-indigo-400 leading-relaxed font-medium">直近の動画成果に基づく参考価格です。貴店の魅力的な体験や報酬を上乗せすることで、市場価値を下回るオファーでも受諾される可能性が十分にあります。</p>
                                                             </div>
                                                         </div>
@@ -903,9 +912,9 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 {isHighDemand && (
                                     <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
                                         <div>
-                                            <p className="font-black text-amber-900 text-sm mb-1">👑 人気クリエイターへのオファー</p>
+                                            <p className="font-black text-amber-900 text-sm mb-1">👑 人気アンバサダーへのオファー</p>
                                             <p className="text-[10px] text-amber-800 leading-relaxed font-medium">
-                                                こちらのクリエイターは<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
+                                                こちらのアンバサダーは人気のため、<span className="font-black">報酬付きオファー</span>を推奨します。無報酬の場合、オファー承諾率が著しく低下する可能性があります。
                                             </p>
                                         </div>
                                     </div>
@@ -917,7 +926,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                 </label>
 
                                 <div className="flex flex-wrap gap-2.5">
-                                    {['TikTok', 'Instagramリール', 'YouTubeショート', 'クリエイターに任せる・相談したい'].map(platform => (
+                                    {['TikTok', 'Instagramリール', 'YouTubeショート', 'アンバサダーに任せる・相談したい'].map(platform => (
                                         <button
                                             key={platform}
                                             onClick={() => togglePlatform(platform)}
@@ -1013,7 +1022,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                             {/* Section: Barter Details */}
                             <div className="space-y-3">
                                 <label className="text-sm font-bold text-gray-500 flex items-center gap-2">
-                                    <Gift className="w-4 h-4" /> クリエイターへの提供内容（英語）
+                                    <Gift className="w-4 h-4" /> アンバサダーへの提供内容（英語）
                                     <span className="text-red-500 text-xs">*</span>
                                 </label>
 
@@ -1085,7 +1094,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-gray-400 flex items-center gap-1">
-                                    ※このままでも送信可能ですが、このクリエイターに依頼したい理由を具体的に記載するとオファーが受諾されやすくなります。
+                                    ※このままでも送信可能ですが、このアンバサダーに依頼したい理由を具体的に記載するとオファーが受諾されやすくなります。
                                 </p>
                             </div>
 
@@ -1521,6 +1530,7 @@ export default function VibeCatalogue({
     const [showDetails, setShowDetails] = useState<string | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [celebrationAssetId, setCelebrationAssetId] = useState<string | null>(null);
+    const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
@@ -2246,7 +2256,7 @@ export default function VibeCatalogue({
                             </div>
 
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">オファーと交渉状況</h3>
+                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">オファーの進行状況</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'DECLINED', 'WORKING', 'COMPLETED', 'APPROVED', 'DELIVERED', 'FINALIZED'].includes(a.status || '')).map((asset) => {
                                         const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
@@ -2266,9 +2276,9 @@ export default function VibeCatalogue({
                                                 description: isDeclined && (asset as any).rejection_reason ? `理由: ${(asset as any).rejection_reason}` : undefined
                                             },
                                             ...(isDeclined ? [] : [
-                                                { label: '撮影完了', date: (asset as any).offer_details?.timeline?.filming_at, active: !!(asset as any).offer_details?.timeline?.filming_at, icon: <Camera size={10} /> },
-                                                { label: '納品完了', date: (asset as any).offer_details?.timeline?.delivered_at || (asset.status === 'DELIVERED' ? asset.updated_at : undefined), active: asset.status === 'DELIVERED' || asset.status === 'FINALIZED' || !!(asset as any).offer_details?.timeline?.delivered_at, icon: <Video size={10} /> },
-                                                { label: '最終承認', date: asset.status === 'FINALIZED' ? asset.updated_at : (asset as any).offer_details?.timeline?.confirmed_at, active: asset.status === 'FINALIZED' || !!(asset as any).offer_details?.timeline?.confirmed_at, icon: <CheckCircle size={10} /> },
+                                                { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
+                                                { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
+                                                { label: '最終承認', date: asset.finalized ? asset.updated_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
                                             ]),
                                         ];
 
@@ -2303,7 +2313,6 @@ export default function VibeCatalogue({
                                                         <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
                                                     </div>
 
-                                                    {/* Inline AI Insight */}
                                                     {asset.creator && assetInsights[asset.creator_id || (asset.creator as any).id] && (
                                                         <motion.div
                                                             initial={{ opacity: 0, height: 0 }}
@@ -2317,13 +2326,8 @@ export default function VibeCatalogue({
                                                         </motion.div>
                                                     )}
 
-                                                    {/* Detailed Status (Timeline) */}
                                                     {isTimelineOpen && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto' }}
-                                                            className="space-y-4 py-4 border-t border-stone-50 mt-2"
-                                                        >
+                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
                                                             <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
                                                             <div className="space-y-4 relative">
                                                                 <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
@@ -2351,20 +2355,14 @@ export default function VibeCatalogue({
                                                         </motion.div>
                                                     )}
 
-                                                    {/* Offer Improvement Suggestions (for declined assets) */}
                                                     {isImproveOpen && isDeclined && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto' }}
-                                                            className="space-y-4 py-4 border-t border-stone-50 mt-2"
-                                                        >
+                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
                                                             <div className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl">
-                                                                <Sparkles className="absolute -top-1 -right-1 text-yellow-400 opacity-20" size={40} />
-                                                                <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー改善案</h4>
+                                                                <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー受諾率を向上させるには</h4>
                                                                 <ul className="text-[11px] font-bold leading-relaxed space-y-2 relative z-10 text-indigo-100 list-disc pl-4">
-                                                                    <li>報酬として提供するメニューをより豪華なものにするか、同伴者も無料にすることで応募率が上がります。</li>
-                                                                    <li>撮影可能な時間帯を「営業時間外のみ」から「ピーク時以外」などに緩めると、日程調整がつけやすくなります。</li>
-                                                                    <li>クリエイターの過去の「和モダンな世界観」を評価している点を直接メッセージで伝えると、モチベーションアップに繋がります。</li>
+                                                                    <li>「提供するサービス」の見直し：<br />オファーするアンバサダーが関心を持ちそうな内容にしてみて下さい。報酬なし→1万円にしたり、同伴者も無料にする等の工夫も有効です。</li>
+                                                                    <li>「招待メッセージ」の見直し：<br />アンバサダーは報酬面以上に、オファーの本気度を重視しています。誰にでもオファーしているのではなく、なぜあなたに依頼したいのかを伝えることで、オファー受諾率が大きく向上します。</li>
+                                                                    <li>「過去の成功事例」の共有：<br />以前に動画PRを実施したことがあれば、その事例を共有するとアンバサダーも制作イメージが湧き、スムーズにオファーが受諾される可能性があります。</li>
                                                                 </ul>
                                                             </div>
                                                         </motion.div>
@@ -2388,6 +2386,7 @@ export default function VibeCatalogue({
                                                     </div>
                                                 </div>
                                             </div>
+
                                         );
                                     })}
                                     {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED'].includes(a.status || '')).length === 0 && (
@@ -2407,104 +2406,141 @@ export default function VibeCatalogue({
                             <div className="space-y-8">
                                 <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">獲得した動画一覧</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                    {/* Real / Interactive completed videos */}
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
                                         .filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED')
-                                        .map((asset) => (
-                                            <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col">
-                                                <div className="aspect-[9/16] bg-stone-200 relative">
-                                                    {asset.video_url ? (
-                                                        <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-                                                            <User className="w-10 h-10 text-stone-300" />
-                                                        </div>
-                                                    )}
-                                                    {(asset.status === 'DELIVERED' || asset.status === 'COMPLETED') ? (
-                                                        <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
-                                                            <Clock className="w-2.5 h-2.5" /> 承認待ち
-                                                        </div>
-                                                    ) : (
-                                                        <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
-                                                            <CheckCircle className="w-2.5 h-2.5" /> 承認済み
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="p-4 text-left flex-1 flex flex-col justify-between">
-                                                    <div className="mb-2">
-                                                        <p className="text-[10px] font-black text-stone-400 uppercase mb-1">{asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024.03.15'}</p>
-                                                        <h4 className="text-xs font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
-                                                    </div>
-                                                    {(asset.status === 'DELIVERED' || asset.status === 'COMPLETED') && (
-                                                        <div className="space-y-3">
-                                                            <div className="relative pt-4 pb-2 border-t border-stone-100">
-                                                                <div className="flex justify-between items-center mb-2">
-                                                                    <div className="flex items-center gap-1.5">
-                                                                        <Clock className="w-3 h-3 text-blue-500" />
-                                                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Auto-Approve</span>
+                                        .map((asset) => {
+                                            const isConfirmed = !!asset.finalized;
+                                            const isFullyFinalized = !!asset.finalized;
+                                            const assetTimeline = (asset as any).offer_details?.timeline || {};
+                                            const revisionCount = assetTimeline.revision_count || 0;
+
+                                            return (
+                                                <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col relative">
+                                                    <div className="aspect-[9/16] bg-stone-200 relative">
+                                                        {asset.video_url ? (
+                                                            <div className="w-full h-full relative group/video">
+                                                                <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-0 group-hover/video:opacity-100 transition-opacity gap-2 p-4">
+                                                                    <button
+                                                                        onClick={() => setPreviewVideoUrl(asset.video_url)}
+                                                                        className="w-full bg-stone-900/90 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-xl"
+                                                                    >
+                                                                        <Eye size={14} className="text-yellow-400" />
+                                                                        動画内容を確認する
+                                                                    </button>
+                                                                    {asset.published_url && (
+                                                                        <button
+                                                                            onClick={() => setPreviewVideoUrl(asset.published_url ?? null)}
+                                                                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-colors shadow-xl"
+                                                                        >
+                                                                            <Video size={14} className="text-white" />
+                                                                            投稿された動画を見る
+                                                                        </button>
+                                                                    )}
+                                                                    <div className="mt-2 text-[10px] font-black text-white/80 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md border border-white/10 uppercase tracking-tighter">
+                                                                        📊 {asset.view_count ? `${Number(asset.view_count).toLocaleString()} views` : '数値計測中'}
+                                                                        <p>（随時更新されますが、お急ぎの場合はSNSで直接ご覧下さい）</p>
                                                                     </div>
-                                                                    {(() => {
-                                                                        const deliveredAt = (asset as any).offer_details?.timeline?.delivered_at || asset.updated_at;
-                                                                        const hoursElapsed = deliveredAt ? Math.max(0, (new Date().getTime() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60)) : 0;
-                                                                        const hoursRemaining = Math.max(0, 120 - hoursElapsed);
-                                                                        return <span className="text-[10px] font-bold text-stone-400">{Math.floor(hoursRemaining)}h (approx) remaining</span>
-                                                                    })()}
                                                                 </div>
-                                                                <div className="w-full bg-stone-100 h-1 rounded-full overflow-hidden">
-                                                                    {(() => {
-                                                                        const deliveredAt = (asset as any).offer_details?.timeline?.delivered_at || asset.updated_at;
-                                                                        const hoursElapsed = deliveredAt ? Math.max(0, (new Date().getTime() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60)) : 0;
-                                                                        const progress = Math.min(100, (hoursElapsed / 120) * 100);
-                                                                        return (
-                                                                            <motion.div
-                                                                                initial={{ width: 0 }}
-                                                                                animate={{ width: `${progress}%` }}
-                                                                                className="h-full bg-blue-500"
-                                                                            />
-                                                                        );
-                                                                    })()}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                                <User className="w-10 h-10 text-stone-300" />
+                                                            </div>
+                                                        )}
+                                                        {(!isConfirmed && !isFullyFinalized) ? (
+                                                            <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                                <Clock className="w-2.5 h-2.5" /> 承認待ち
+                                                            </div>
+                                                        ) : (
+                                                            <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                                <CheckCircle className="w-2.5 h-2.5" /> 承認済み
+                                                            </div>
+                                                        )}
+                                                        {revisionCount > 0 && (
+                                                            <div className="absolute top-3 right-3 bg-amber-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase z-10">
+                                                                修正 #{revisionCount}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="p-4 text-left flex-1 flex flex-col justify-between">
+                                                        <div className="mb-2">
+                                                            <p className="text-[10px] font-black text-stone-400 uppercase mb-1">依頼開始日: {asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2026.01.01'}</p>
+                                                            <h4 className="text-md font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
+                                                        </div>
+
+                                                        {(!isConfirmed && !isFullyFinalized) ? (
+                                                            <div className="space-y-2">
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const { finalizeAsset } = await import('@/app/actions/creator');
+                                                                            await finalizeAsset(asset.id);
+                                                                            setCelebrationAssetId(asset.id);
+                                                                            setTimeout(() => setCelebrationAssetId(null), 5000);
+                                                                            fetchAssets();
+                                                                        }}
+                                                                        className="flex-1 py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg"
+                                                                    >
+                                                                        承認する
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (revisionCount >= 2) {
+                                                                                alert("修正依頼は2回まで可能です。詳細は運営にお問い合わせください。");
+                                                                                return;
+                                                                            }
+                                                                            const msg = prompt("修正依頼の内容を入力してください（クリエイターに送信されます）");
+                                                                            if (msg) {
+                                                                                import('@/app/actions/creator').then(m => m.requestAssetRevision(asset.id, msg)).then(() => {
+                                                                                    alert("修正依頼を送信しました。");
+                                                                                    fetchAssets();
+                                                                                });
+                                                                            }
+                                                                        }}
+                                                                        className={`flex-1 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 border-2 ${revisionCount >= 2 ? 'opacity-50 cursor-not-allowed bg-stone-50 border-stone-100 text-stone-300' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                                                                    >
+                                                                        修正依頼 ({2 - revisionCount})
+                                                                    </button>
                                                                 </div>
-                                                                <p className="text-[8px] text-zinc-400 mt-2 leading-tight">
+                                                                <p className="text-[8px] text-zinc-400 leading-tight">
                                                                     提出から120時間（5日）以内にアクションがない場合、自動で承認されます。
                                                                 </p>
                                                             </div>
-                                                            <button
-                                                                onClick={async () => {
-                                                                    const { finalizeAsset } = await import('@/app/actions/creator');
-                                                                    await finalizeAsset(asset.id);
-                                                                    setCelebrationAssetId(asset.id);
-                                                                    setTimeout(() => setCelebrationAssetId(null), 5000);
-                                                                }}
-                                                                className="w-full py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg group relative overflow-hidden"
-                                                            >
-                                                                <CheckCircle className="w-3.5 h-3.5 text-teal-400 group-hover:scale-125 transition-transform" /> 納品を承認する
-                                                            </button>
-                                                            <AnimatePresence>
-                                                                {celebrationAssetId === asset.id && (
-                                                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                                                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mb-3">
-                                                                            <Sparkles className="w-6 h-6 text-white" />
-                                                                        </motion.div>
-                                                                        <p className="text-white font-black text-xs uppercase italic tracking-tighter">Approved! 🎉</p>
-                                                                    </motion.div>
+                                                        ) : (
+                                                            <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
+                                                                <div className="flex items-center justify-between text-[9px] font-bold text-stone-400 uppercase tracking-widest px-1">
+                                                                    <span>Asset Status</span>
+                                                                    <span className="text-teal-600">{isFullyFinalized ? 'Active Asset ✅' : '承認済み（URL共有待ち）'}</span>
+                                                                </div>
+                                                                <button
+                                                                    disabled={!isFullyFinalized}
+                                                                    className={`w-full py-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase ${isFullyFinalized ? 'bg-stone-100 hover:bg-stone-200 text-black' : 'bg-stone-50 text-stone-300 cursor-not-allowed'}`}
+                                                                >
+                                                                    <Map className="w-3.5 h-3.5" /> {isFullyFinalized ? 'Deploy to Maps' : 'Lock (運営による共有待ち)'}
+                                                                </button>
+                                                                {isFullyFinalized && (
+                                                                    <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase mt-1">
+                                                                        <UploadCloud className="w-3.5 h-3.5" /> Download Asset
+                                                                    </button>
                                                                 )}
-                                                            </AnimatePresence>
-                                                        </div>
-                                                    )}
-                                                    {(asset.status === 'APPROVED' || asset.status === 'FINALIZED') && (
-                                                        <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
-                                                            <div className="flex items-center justify-between text-[9px] font-bold text-stone-400 uppercase tracking-widest px-1">
-                                                                <span>Asset Status</span>
-                                                                <span className="text-teal-600">Active Asset ✅</span>
                                                             </div>
-                                                            <button className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-black rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase">
-                                                                <Map className="w-3.5 h-3.5" /> Deploy to Maps
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                        <AnimatePresence>
+                                                            {celebrationAssetId === asset.id && (
+                                                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mb-3">
+                                                                        <Sparkles className="w-6 h-6 text-white" />
+                                                                    </motion.div>
+                                                                    <p className="text-white font-black text-xs uppercase italic tracking-tighter">動画が承認されました！🎉</p>
+                                                                    <p className="text-white font-black text-xs uppercase italic tracking-tighter">動画が投稿されると本依頼は完了となります。クリエイターの投稿対応をお待ちください。</p>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
 
                                     {/* Empty states for completed videos */}
                                     {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED').length === 0 && (
@@ -2617,6 +2653,7 @@ export default function VibeCatalogue({
                     { name: 'Creators', link: 'creators', icon: <Users className="w-4 h-4" />, onClick: () => { setActiveTab("search"); if (step === 'input') setStep('vibe_check'); else setStep('result'); } },
                     { name: 'Asset Hub', link: 'assets', icon: <Layers className="w-4 h-4" />, onClick: () => setActiveTab("assets") },
                 ]}
+                activeLink={activeTab === 'search' ? (step === 'input' ? 'search' : 'creators') : 'assets'}
                 hintedLink={assetHubHint ? 'assets' : undefined}
                 hintMessage={assetHubHint || undefined}
             />

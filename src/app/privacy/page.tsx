@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
                     <ArrowLeft size={16} /> トップページに戻る
                 </Link>
 
-                <h1 className="text-4xl font-black tracking-tight mb-12">プライバシーポリシー</h1>
+                <h1 className="text-3xl font-black tracking-tight mb-12">プライバシーポリシー</h1>
 
                 <div className="space-y-10 text-slate-600 leading-relaxed font-medium">
 
@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
                     </p>
 
                     <section>
-                        <h2 className="text-xl font-black text-slate-900 mb-4">1. 取得する情報</h2>
+                        <h2 className="text-sm font-black text-slate-900 mb-4">1. 取得する情報</h2>
                         <p>
                             当社は、本サービスの提供にあたり、以下の情報を取得する場合があります。
                         </p>

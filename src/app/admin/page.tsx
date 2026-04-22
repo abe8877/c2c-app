@@ -52,19 +52,23 @@ const ToggleSwitch = ({ isOn, onToggle }: { isOn: boolean; onToggle: () => void 
 );
 
 // --- Admin Timeline Button Components ---
-const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, onUpdate }: { label: string, assetId: string, field: string, currentValue: string | null, currentStatus?: string, onUpdate?: () => void }) => {
+const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, onUpdate, currentVideoUrl = "", currentPostUrl = "" }: { label: string, assetId: string, field: string, currentValue: string | null, currentStatus?: string, onUpdate?: () => void, currentVideoUrl?: string, currentPostUrl?: string }) => {
     const [loading, setLoading] = useState(false);
     const [value, setValue] = useState(currentValue);
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+    const [showFinalModal, setShowFinalModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
-    const [videoUrl, setVideoUrl] = useState("");
+    const [videoUrl, setVideoUrl] = useState(currentVideoUrl || "");
+    const [postUrl, setPostUrl] = useState(currentPostUrl || "");
     const [localStatus, setLocalStatus] = useState(currentStatus || "");
 
     useEffect(() => {
         setValue(currentValue);
         if (currentStatus) setLocalStatus(currentStatus);
-    }, [currentValue, currentStatus]);
+        if (currentVideoUrl) setVideoUrl(currentVideoUrl);
+        if (currentPostUrl) setPostUrl(currentPostUrl);
+    }, [currentValue, currentStatus, currentVideoUrl, currentPostUrl]);
 
     const handleUpdate = async (approved: boolean = true) => {
         if (loading) return;
@@ -82,7 +86,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 assetId,
                 field as any,
                 field === 'approved_at' && !approved ? null : now,
-                { rejectionReason, videoUrl }
+                { rejectionReason, videoUrl, postUrl }
             );
         } catch (e) {
             console.error(e);
@@ -102,6 +106,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         setLoading(false);
         setShowApproveModal(false);
         setShowDeliveryModal(false);
+        setShowFinalModal(false);
         if (onUpdate) onUpdate();
     };
 
@@ -200,13 +205,12 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                 <button onClick={() => setShowDeliveryModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
 
                                 <div className="text-center space-y-2 mb-8">
-                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Deliver Asset</h4>
-                                    <p className="text-[10px] font-bold text-slate-400">納品した動画へのリンク等を添付してください</p>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">動画データを納品して承認を依頼する</h4>
                                 </div>
 
                                 <div className="space-y-6">
                                     <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">動画URL (TikTok, Google Drive等) 必須</label>
+                                        <label className="text-[10px] font-bold text-slate-400 ml-1">動画データURL (Googleドライブ ※必ずDL権限をオフにする) </label>
                                         <input
                                             type="url"
                                             placeholder="https://..."
@@ -222,6 +226,72 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                         className="w-full py-4 bg-indigo-500 text-white disabled:opacity-50 enabled:hover:bg-indigo-600 rounded-2xl text-[12px] font-black transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         <CheckCircle2 size={18} /> 納品完了として報告
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </>
+        );
+    }
+
+    if (field === 'final_status') {
+        const title = "投稿済みURLの共有";
+        const subtitle = "依頼を完了するために、実際に投稿されたSNSのURLを添付してください";
+        return (
+            <>
+                <button
+                    onClick={() => setShowFinalModal(true)}
+                    disabled={loading}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+                        ? "bg-slate-900 border-slate-900 text-white shadow-xl"
+                        : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                >
+                    <div className="flex flex-col items-start">
+                        <span className="opacity-90">{label}</span>
+                        {value && <span className="text-[9px] opacity-60">完了済: {new Date(value).toLocaleString('ja-JP')}</span>}
+                    </div>
+                    {value ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Send size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                    {value && (
+                        <div
+                            onClick={handleReset}
+                            className="absolute -top-2 -right-2 bg-white text-slate-400 rounded-full p-0.5 border border-slate-100 opacity-0 group-hover/btn:opacity-100 hover:text-red-500 shadow-sm z-10"
+                        >
+                            <X size={10} />
+                        </div>
+                    )}
+                </button>
+
+                <AnimatePresence>
+                    {showFinalModal && (
+                        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
+                                <button onClick={() => setShowFinalModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+
+                                <div className="text-center space-y-2 mb-8">
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">{title}</h4>
+                                    <p className="text-[10px] font-bold text-slate-400">{subtitle}</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">投稿済みURL (Instagram/TikTok等) 必須</label>
+                                        <input
+                                            type="url"
+                                            placeholder="https://..."
+                                            value={postUrl}
+                                            onChange={(e) => setPostUrl(e.target.value)}
+                                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-[11px] font-bold outline-none focus:ring-2 focus:ring-slate-900 text-slate-600 transition-all focus:bg-white"
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleUpdate()}
+                                        disabled={!postUrl.trim() || loading}
+                                        className="w-full py-4 bg-green-500 text-white disabled:opacity-50 enabled:hover:bg-green-600 rounded-2xl text-[12px] font-black transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Check size={18} /> 共有して依頼を完了とする
                                     </button>
                                 </div>
                             </motion.div>
@@ -321,7 +391,7 @@ const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: str
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[80vh]">
                             <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none mb-1">Proxy Chat Monitoring</h3>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none mb-1">チャットログ</h3>
                                     <p className="text-[10px] font-bold text-slate-400">{advertiserName} × {creatorName}</p>
                                 </div>
                                 <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200 text-slate-400"><X size={20} /></button>
@@ -1411,7 +1481,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         label="撮影完了"
                                                                                         assetId={offer.id}
                                                                                         field="filming_at"
-                                                                                        currentValue={offer.filming_at}
+                                                                                        currentValue={offer.visit_at}
                                                                                         currentStatus={offer.status}
                                                                                         onUpdate={fetchData}
                                                                                     />
@@ -1419,31 +1489,34 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         label="納品完了"
                                                                                         assetId={offer.id}
                                                                                         field="delivered_at"
-                                                                                        currentValue={offer.delivered_at}
+                                                                                        currentValue={offer.delivery_at}
                                                                                         currentStatus={offer.status}
+                                                                                        currentVideoUrl={offer.video_url}
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                     <TimelineButton
                                                                                         label="最終承認"
                                                                                         assetId={offer.id}
                                                                                         field="confirmed_at"
-                                                                                        currentValue={offer.confirmed_at}
+                                                                                        currentValue={offer.finalized ? offer.createdAt : null}
                                                                                         currentStatus={offer.status}
+                                                                                        currentPostUrl={offer.published_url}
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                 </div>
                                                                                 <div className="grid grid-cols-1 gap-2">
                                                                                     <TimelineButton
-                                                                                        label="完了フラグ (COMPLETEDへ)"
+                                                                                        label="投稿済みURLを共有して依頼を完了する"
                                                                                         assetId={offer.id}
-                                                                                        field="final_status" // 特別なフラグとして扱うか検討
-                                                                                        currentValue={offer.status === 'COMPLETED' ? new Date().toISOString() : null}
+                                                                                        field="final_status"
+                                                                                        currentValue={offer.published_url ? offer.createdAt : null}
+                                                                                        currentPostUrl={offer.published_url}
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                 </div>
                                                                                 <p className="text-[9px] text-slate-400 font-bold bg-slate-50 p-2 rounded border border-slate-100 flex items-center gap-2">
                                                                                     <Sparkles size={10} className="text-amber-500" />
-                                                                                    ボタンを押すと現在時刻が記録され、アセットハブのタイムラインに即座に反映されます。
+                                                                                    ボタンを押すと現在時刻が記録され、アセットハブのステータスが変更されます。
                                                                                 </p>
                                                                             </div>
                                                                         </div>

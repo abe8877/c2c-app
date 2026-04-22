@@ -104,7 +104,7 @@ export function AnalysisView({ matchCount, genre, tags: initialTags }: { matchCo
 
                             <div className="mt-12 pt-10 border-t border-gray-100 text-center">
                                 <p className="text-gray-500 text-sm font-bold mb-6">
-                                    貴店と好相性のクリエイター：
+                                    貴店と好相性のアンバサダー：
                                     <span className="text-4xl text-black font-black ml-3 underline decoration-yellow-400 decoration-4 underline-offset-8">
                                         {matchCount}名
                                     </span>
