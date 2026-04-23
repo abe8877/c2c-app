@@ -627,7 +627,7 @@ export default function InsidersLP() {
                                     {[
                                         { icon: <Users className="w-5 h-5 text-indigo-600" />, value: "1000組+", sub: <>インバウンド特化ショート動画アンバサダー</> },
                                         { icon: <Sparkles className="w-5 h-5 text-amber-600" />, value: "定額制", sub: <>マージンゼロで<br />直接オファーし放題</> },
-                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "交渉レス", sub: <>投稿した動画を<br />マップで二次利用</> },
+                                        { icon: <RefreshCw className="w-5 h-5 text-emerald-600" />, value: "簡単実施", sub: <>英語や面倒な交渉不要<br />WEB完結で簡単依頼</> },
                                     ].map((badge, idx) => (
                                         <div key={idx} className="flex flex-col items-center justify-center p-2 sm:p-4 bg-transparent border-none rounded-none text-center">
                                             <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2 justify-center w-full">
