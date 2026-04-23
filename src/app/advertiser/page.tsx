@@ -116,13 +116,23 @@ export default async function AdvertiserPage() {
             stats.offeredCount = allAssets.filter(a => a.status === 'OFFERED').length;
             stats.completedCount = allAssets.filter(a => a.status === 'COMPLETED').length;
 
-            // 鮮度計算: 全資産のうち直近30日以内に作成されたものの割合 (最低30%はデモ用に表示)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const freshAssets = allAssets.filter(a => a.created_at && new Date(a.created_at) > thirtyDaysAgo).length;
-            stats.freshness = allAssets.length > 0
-                ? Math.max(30, Math.round((freshAssets / allAssets.length) * 100))
-                : 0;
+            // 鮮度計算: 投稿後1ヶ月(30日)をピークとし、その後緩やかに減衰するロジック
+            const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED'].includes(a.status));
+            if (completedAssets.length > 0) {
+                let totalFreshness = 0;
+                completedAssets.forEach(a => {
+                    const daysOld = a.created_at ? Math.floor((new Date().getTime() - new Date(a.created_at).getTime()) / (1000 * 3600 * 24)) : 0;
+                    let assetFreshness = 100;
+                    if (daysOld > 30) {
+                        // 30日以降は1日1%ずつ低下（最低限10%は残す）
+                        assetFreshness = Math.max(10, 100 - (daysOld - 30));
+                    }
+                    totalFreshness += assetFreshness;
+                });
+                stats.freshness = Math.round(totalFreshness / completedAssets.length);
+            } else {
+                stats.freshness = 0;
+            }
         }
     }
 

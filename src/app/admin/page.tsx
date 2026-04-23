@@ -1362,10 +1362,10 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                             <span className={`font-black text-xs ${offer.status === 'DECLINED' ? 'text-red-500' : ''}`}>
                                                                 {offer.status === 'DECLINED' ? 'アンマッチ'
                                                                     : offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中'
-                                                                    : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み'
-                                                                    : offer.status === 'DELIVERED' ? '納品済み'
-                                                                    : offer.status === 'FINALIZED' ? '完了'
-                                                                    : 'オファー中'}
+                                                                        : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み'
+                                                                            : offer.status === 'DELIVERED' ? '納品済み'
+                                                                                : offer.status === 'FINALIZED' ? '完了'
+                                                                                    : 'オファー中'}
                                                             </span>
                                                             {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
                                                             {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
@@ -1604,6 +1604,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                             <img
                                                                                                 src={alt.thumbnail_url || 'https://via.placeholder.com/150'}
                                                                                                 className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105"
+                                                                                                referrerPolicy="no-referrer"
                                                                                             />
                                                                                             <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
                                                                                                 <Check size={8} />
