@@ -63,26 +63,26 @@ export default function OnboardingModal({
     const steps = [
         {
             icon: <Search className="w-6 h-6 text-indigo-600" />,
-            title: "1. 最適な「アンバサダー」とマッチング",
-            desc: "まずは貴店のGoogleマップやインスタグラムのURLを入力してみてください。1,000組以上のリストから「あなたのお店に訪日客を連れてくるため」の最適なアンバサダーを厳選して提案します。",
+            title: "1. 最適なアンバサダーとマッチング",
+            desc: "まずは貴店のGoogleマップやインスタグラムのURLを入力してみてください。1,000組以上のリストから最適なアンバサダーを厳選して提案します。",
             color: "bg-indigo-50"
         },
         {
             icon: <HeartHandshake className="w-6 h-6 text-blue-600" />,
             title: "2. お気に入りの3名にオファーを送信",
-            desc: "動画をチェックして世界観の合うアンバサダーにオファーを送ってみましょう。より多くのアンバサダーに依頼することで集客効果の安定化が期待できます。",
+            desc: "動画をチェックしてアンバサダーにオファーを送ってみましょう。テンプレから簡単に送信可能ですが、依頼理由を丁寧に記入すると受諾率が高まります。",
             color: "bg-blue-50"
         },
         {
             icon: <Smartphone className="w-6 h-6 text-teal-600" />,
             title: "3. 簡単なやり取りで案件進行",
-            desc: "オファーが受諾されたら来店日程を決めて、後は待つだけ。アンバサダーが来店して撮影を行い、動画投稿直前まで進めてくれます（連絡事項があればチャットも送信可能）。",
+            desc: "オファーが受諾されたらチャットで来店日程を決めて、あとは待つだけ。アンバサダーが来店して撮影を行い、動画投稿直前までスムーズに進めてくれます。",
             color: "bg-teal-50"
         },
         {
             icon: <TrendingUp className="w-6 h-6 text-purple-600" />,
-            title: "4. 「動画看板」としてフル活用",
-            desc: "納品された動画を承諾すると、アンバサダーのSNSに投稿され依頼が完了します。動画はGoogleマップにも掲載可能。SNS〜マップの来店経路に動画看板を設置して、インバウンドのお客様を増やしましょう。",
+            title: "4. 動画看板としてフル活用",
+            desc: "納品された動画を承諾すると、アンバサダーのSNSに投稿されて依頼が完了します。Googleマップにも動画を掲載して、インバウンド来店を加速させましょう。",
             color: "bg-purple-50"
         }
     ];
@@ -131,9 +131,8 @@ export default function OnboardingModal({
 
                             <div className="space-y-4">
                                 <h3 className="text-indigo-600 font-bold text-sm tracking-tight">Welcome to INSIDERS.</h3>
-                                <h2 className="text-xl font-bold text-slate-900 leading-[1.3]">
-                                    貴店の魅力を伝えるアンバサダーが<br />
-                                    世界中のスマホに動画看板を掲載し<br />
+                                <h2 className="text-lg md:text-xl font-bold text-slate-900 leading-[1.3]">
+                                    アンバサダーが貴店の魅力を世界に発信し<br />
                                     インバウンド来店を創出します！
                                 </h2>
                             </div>

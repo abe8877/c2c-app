@@ -1342,8 +1342,8 @@ export default function InsidersLP() {
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
                                     <span className="font-black text-teal-500">看板メニューや独自の日本体験を紹介</span>
                                 </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    単価5千円の場合、依頼アンバサダー5組<br />→来店約20名で月額コストを回収。
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
+                                    単価5千円の場合、依頼アンバサダー5組<br /><span className="underline decoration-teal-500 decoration-2 underline-offset-4 font-black">来店約20名で月額コストを回収</span>
                                 </p>
                             </div>
 
@@ -1356,8 +1356,8 @@ export default function InsidersLP() {
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
                                     <span className="font-black text-rose-500">日本ならではの高品質な美容体験を紹介</span>
                                 </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    単価1万円の場合、依頼アンバサダー3組<br />→来店約8名で月額コストを回収。
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
+                                    単価1万円の場合、依頼アンバサダー3組<br /><span className="underline decoration-rose-500 decoration-2 underline-offset-4 font-black">来店約8名で月額コストを回収</span>
                                 </p>
                             </div>
 
@@ -1370,8 +1370,8 @@ export default function InsidersLP() {
                                 <p className="text-slate-600 text-sm leading-relaxed font-bold">
                                     <span className="font-black text-indigo-500">アクセス性や周辺情報をセットで紹介</span>
                                 </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    単価3万円の場合、依頼アンバサダー1~2組<br />→来店約3名で月額コストを回収。
+                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
+                                    単価3万円の場合、依頼アンバサダー1~2組<br /><span className="underline decoration-indigo-500 decoration-2 underline-offset-4 font-black">来店約3名で月額コストを回収</span>
                                 </p>
                             </div>
                         </div>
@@ -1521,7 +1521,7 @@ export default function InsidersLP() {
             </div>
 
             {/* Footer Section */}
-            <footer className="py-8 bg-white border-t border-slate-100">
+            <footer id="footer" className="py-8 bg-white border-t border-slate-100">
                 <div className="max-w-7xl mx-auto px-6 text-center lg:text-left">
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
                         <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-8">

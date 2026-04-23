@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -82,12 +82,19 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         const now = new Date().toISOString();
 
         try {
-            await updateAssetTimestamp(
-                assetId,
-                field as any,
-                field === 'approved_at' && !approved ? null : now,
-                { rejectionReason, videoUrl, postUrl }
-            );
+            if (field === 'reward_deposit') {
+                await updateAssetTimestamp(assetId, 'reward_deposit', approved ? now : null);
+                if (postUrl) {
+                    await updateAssetTimestamp(assetId, 'payment_link', null, { paymentLink: postUrl });
+                }
+            } else {
+                await updateAssetTimestamp(
+                    assetId,
+                    field as any,
+                    field === 'approved_at' && !approved ? null : now,
+                    { rejectionReason, videoUrl, postUrl }
+                );
+            }
         } catch (e) {
             console.error(e);
             alert("更新に失敗しました");
@@ -102,6 +109,8 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
             setLocalStatus('DELIVERED');
         } else if (field === 'final_status' || field === 'confirmed_at') {
             setLocalStatus('FINALIZED');
+        } else if (field === 'reward_deposit') {
+            if (approved) setLocalStatus('WORKING');
         }
         setLoading(false);
         setShowApproveModal(false);
@@ -236,6 +245,73 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         );
     }
 
+    if (field === 'reward_deposit') {
+        return (
+            <>
+                <button
+                    onClick={() => setShowApproveModal(true)}
+                    disabled={loading}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                >
+                    <div className="flex flex-col items-start">
+                        <span className="opacity-60">{label}</span>
+                        {value && <span className="text-[9px] tabular-nums">Deposited</span>}
+                    </div>
+                    {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <DollarSign size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                </button>
+
+                <AnimatePresence>
+                    {showApproveModal && (
+                        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl relative">
+                                <button onClick={() => setShowApproveModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+
+                                <div className="text-center space-y-2 mb-8">
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Reward Deposit Management</h4>
+                                    <p className="text-[10px] font-bold text-slate-400">デポジット状況を管理します</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase">Payment Link (Stripe etc.)</p>
+                                        <input
+                                            type="text"
+                                            placeholder="https://buy.stripe.com/..."
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500"
+                                            defaultValue={postUrl}
+                                            onChange={(e) => setPostUrl(e.target.value)} // Reusing postUrl state for simplicity in internal logic
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 pt-4">
+                                        <button
+                                            onClick={() => handleUpdate(true)}
+                                            className="py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-lg active:scale-95"
+                                        >
+                                            入金済みとして反映
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                await updateAssetTimestamp(assetId, 'payment_link', null, { paymentLink: postUrl });
+                                                alert("Payment Linkを保存しました");
+                                                setLoading(false);
+                                                if (onUpdate) onUpdate();
+                                            }}
+                                            className="py-4 bg-white border-2 border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all"
+                                        >
+                                            リンクのみ保存
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </>
+        );
+    }
+
     if (field === 'final_status') {
         const title = "投稿済みURLの共有";
         const subtitle = "依頼を完了するために、実際に投稿されたSNSのURLを添付してください";
@@ -332,7 +408,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
 };
 
 // --- Admin Proxy Chat Modal ---
-const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: string, advertiserName: string, creatorName: string }) => {
+const AdminChatModal = ({ assetId, advertiserName, creatorName, hasUnread = false, onOpen }: { assetId: string, advertiserName: string, creatorName: string, hasUnread?: boolean, onOpen?: () => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState("");
@@ -378,10 +454,16 @@ const AdminChatModal = ({ assetId, advertiserName, creatorName }: { assetId: str
     return (
         <>
             <button
-                onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-[11px] font-black hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+                onClick={() => {
+                    setIsOpen(true);
+                    if (onOpen) onOpen();
+                }}
+                className="relative flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-[11px] font-black hover:bg-indigo-600 transition-all shadow-md active:scale-95"
             >
                 <MessageCircle size={14} /> View Chat
+                {hasUnread && (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-md" />
+                )}
             </button>
 
             <AnimatePresence>
@@ -441,17 +523,40 @@ function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<'creators' | 'logs'>(initialTab);
     const [logTab, setLogTab] = useState<'success' | 'lost' | 'ongoing'>('ongoing');
 
+    // 統計データ管理
+    const [stats, setStats] = useState<any>(null);
+    const [lostAssets, setLostAssets] = useState<any[]>([]);
+    const [successLogs, setSuccessLogs] = useState<any[]>([]);
+    const [ongoingOffers, setOngoingOffers] = useState<any[]>([]);
+
+    // 452:
+    const [unreadAssets, setUnreadAssets] = useState<Set<string>>(new Set());
+
+    const markAsRead = (assetId: string) => {
+        setUnreadAssets(prev => {
+            const next = new Set(prev);
+            next.delete(assetId);
+            return next;
+        });
+    };
+
     // URLのパラメータ変更を検知してタブを同期
     useEffect(() => {
         const tab = searchParams.get('tab') === 'logs' ? 'logs' : 'creators';
         setActiveTab(tab);
     }, [searchParams]);
 
-    // 統計データ管理
-    const [stats, setStats] = useState<any>(null);
-    const [lostAssets, setLostAssets] = useState<any[]>([]);
-    const [successLogs, setSuccessLogs] = useState<any[]>([]);
-    const [ongoingOffers, setOngoingOffers] = useState<any[]>([]);
+    // チャット通知デモ用
+    useEffect(() => {
+        if (ongoingOffers.length > 0) {
+            // ステータスが完了に近い、または修正依頼があるものをランダムに未読化（デモ）
+            const demoUnreads = ongoingOffers
+                .filter(o => o.status === 'COMPLETED' || (o.offerDetails?.timeline?.revision_count || 0) > 0)
+                .slice(0, 1)
+                .map(o => o.id);
+            setUnreadAssets(new Set(demoUnreads));
+        }
+    }, [ongoingOffers.length]);
 
     // 編集保存の演出用
     const [isSaving, setIsSaving] = useState(false);
@@ -1212,102 +1317,31 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                             >
                                 進行中
                             </button>
+                            {/* 「成立・完了」タブは非表示に戻す */}
                             <button
                                 onClick={() => setLogTab('lost')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition ${logTab === 'lost' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 アンマッチ
                             </button>
-
                         </div>
                     </div>
 
                     {/* Logs Table */}
                     <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        {logTab === 'success' ? (
+                        {(logTab === 'ongoing' || logTab === 'lost') && (
                             <table className="w-full text-left border-collapse text-sm">
                                 <thead className="bg-slate-50 border-b border-slate-200">
                                     <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
-                                        <th className="px-6 py-4">Advertiser (Shop URL)</th>
-                                        <th className="px-6 py-4">Matched Creator</th>
-                                        <th className="px-6 py-4 text-center">Score</th>
-                                        <th className="px-6 py-4">Detected Vibes</th>
-                                        <th className="px-6 py-4 text-right">Timestamp</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {successLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-slate-50 transition">
-                                            <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
-                                            <td className="px-6 py-4 font-bold text-blue-600">{log.creator}</td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg font-black text-xs">{log.matchScore}%</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex gap-1">
-                                                    {log.vibes.map((v: string) => <span key={v} className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">{v}</span>)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.date}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : logTab === 'lost' ? (
-                            <table className="w-full text-left border-collapse text-sm">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
+                                        <th className="px-6 py-4 w-48">Status & Alert</th>
                                         <th className="px-6 py-4">Advertiser</th>
-                                        <th className="px-6 py-4">Rejected Creator</th>
-                                        <th className="px-6 py-4">Missing Vibes</th>
-                                        <th className="px-6 py-4">AI Action</th>
-                                        <th className="px-6 py-4 text-right">Timestamp</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {lostAssets.map((log) => (
-                                        <tr key={log.id} className="hover:bg-slate-50 transition">
-                                            <td className="px-6 py-4 font-bold text-slate-700">{log.advertiser}</td>
-                                            <td className="px-6 py-4 font-bold text-slate-400">{log.rejectedCreator}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex gap-1 flex-wrap">
-                                                    {log.missingVibes.map((v: string) => (
-                                                        <span key={v} className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">
-                                                            #{v}
-                                                        </span>
-                                                    ))}
-                                                    {log.missingVibes.length === 0 && <span className="text-slate-300 text-[10px]">None</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 max-w-xs transition-all">
-                                                <div className="flex items-center gap-2 group relative">
-                                                    <span className="truncate text-slate-600 italic">
-                                                        {log.aiAction}
-                                                    </span>
-                                                    <div className="opacity-0 group-hover:opacity-100 absolute left-full ml-2 z-50 p-3 bg-slate-900 text-white rounded-lg shadow-xl w-64 text-xs font-medium leading-relaxed transition-opacity">
-                                                        {log.aiAction}
-                                                    </div>
-                                                    <Info size={14} className="text-slate-300 shrink-0" />
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-slate-400 font-medium text-xs tabular-nums">{log.timestamp}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <table className="w-full text-left border-collapse text-sm">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr className="text-slate-500 text-[10px] font-bold uppercase tracking-tight">
-                                        <th className="px-6 py-4">Status & Alert</th>
-                                        <th className="px-6 py-4">Advertiser</th>
-                                        <th className="px-6 py-4">Creator</th>
+                                        <th className="px-6 py-4">Ambassador</th>
                                         <th className="px-6 py-4">Elapsed Hours</th>
                                         <th className="px-6 py-4 text-right">Offer Date</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {ongoingOffers.filter(o => o.status !== 'DECLINED').map((offer) => {
+                                    {(ongoingOffers || []).filter(o => logTab === 'lost' ? o.status === 'DECLINED' : o.status !== 'DECLINED').map((offer) => {
                                         let rowStyle = "hover:bg-indigo-50/50 transition cursor-pointer";
                                         const isExpanded = expandedOfferId === offer.id;
                                         if (offer.alertLevel === 'CRITICAL') {
@@ -1315,9 +1349,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                         } else if (offer.alertLevel === 'WARNING') {
                                             rowStyle = "bg-amber-50 hover:bg-amber-100/50 transition border-l-4 border-l-amber-500 cursor-pointer";
                                         }
-
-                                        // Mock status check
-                                        const needsAlternative = offer.alertLevel === 'CRITICAL' || offer.status === 'needs_alternative';
+                                        const hasUnread = unreadAssets.has(offer.id);
 
                                         return (
                                             <React.Fragment key={offer.id}>
@@ -1327,12 +1359,13 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 >
                                                     <td className="px-6 py-4">
                                                         <div className="flex flex-col gap-1">
-                                                            <span className="font-bold text-xs">
-                                                                {offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中'
+                                                            <span className={`font-black text-xs ${offer.status === 'DECLINED' ? 'text-red-500' : ''}`}>
+                                                                {offer.status === 'DECLINED' ? 'アンマッチ'
+                                                                    : offer.status === 'SUGGESTING_ALTERNATIVES' ? '代替提案中'
                                                                     : offer.status === 'APPROVED' || offer.status === 'WORKING' ? '承諾済み'
-                                                                        : offer.status === 'DELIVERED' ? '納品済み'
-                                                                            : offer.status === 'FINALIZED' ? '完了'
-                                                                                : 'オファー中'}
+                                                                    : offer.status === 'DELIVERED' ? '納品済み'
+                                                                    : offer.status === 'FINALIZED' ? '完了'
+                                                                    : 'オファー中'}
                                                             </span>
                                                             {offer.alertLevel === 'CRITICAL' && <span className="text-[10px] text-red-600 font-bold px-2 py-0.5 bg-red-100 rounded-full w-fit">48h超過（自動提案済）</span>}
                                                             {offer.alertLevel === 'WARNING' && <span className="text-[10px] text-amber-600 font-bold px-2 py-0.5 bg-amber-100 rounded-full w-fit">36h経過（要確認）</span>}
@@ -1347,9 +1380,14 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-3">
-                                                            <span className="text-slate-400 font-medium text-xs tabular-nums">
-                                                                {new Date(offer.createdAt).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
+                                                            <div className="relative">
+                                                                <span className="text-slate-400 font-medium text-xs tabular-nums text-center">
+                                                                    {new Date(offer.createdAt).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                                {hasUnread && (
+                                                                    <span className="absolute -top-1.5 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm animate-pulse" />
+                                                                )}
+                                                            </div>
                                                             <ChevronDown className={`text-slate-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} size={16} />
                                                         </div>
                                                     </td>
@@ -1478,6 +1516,15 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                     <TimelineButton
+                                                                                        label="報酬デポジット"
+                                                                                        assetId={offer.id}
+                                                                                        field="reward_deposit"
+                                                                                        currentValue={offer.reward_deposit ? offer.updated_at : null}
+                                                                                        currentStatus={offer.status}
+                                                                                        currentPostUrl={offer.payment_link}
+                                                                                        onUpdate={fetchData}
+                                                                                    />
+                                                                                    <TimelineButton
                                                                                         label="撮影完了"
                                                                                         assetId={offer.id}
                                                                                         field="filming_at"
@@ -1495,12 +1542,20 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                     <TimelineButton
-                                                                                        label="最終承認"
+                                                                                        label="Advertiser承認"
                                                                                         assetId={offer.id}
                                                                                         field="confirmed_at"
-                                                                                        currentValue={offer.finalized ? offer.createdAt : null}
+                                                                                        currentValue={offer.status === 'FINALIZED' ? offer.updated_at : null}
                                                                                         currentStatus={offer.status}
                                                                                         currentPostUrl={offer.published_url}
+                                                                                        onUpdate={fetchData}
+                                                                                    />
+                                                                                    <TimelineButton
+                                                                                        label="運営最終承認"
+                                                                                        assetId={offer.id}
+                                                                                        field="final_status"
+                                                                                        currentValue={offer.finalized ? offer.updated_at : null}
+                                                                                        currentStatus={offer.status}
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                 </div>
@@ -1522,57 +1577,61 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                         </div>
                                                                     </div>
 
-                                                                    <div className="flex items-center justify-between mb-6">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="bg-indigo-600 p-1.5 rounded-lg text-white">
-                                                                                <Sparkles size={16} />
-                                                                            </span>
-                                                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">
-                                                                                AI Alternative Suggestions
-                                                                            </h4>
-                                                                        </div>
-                                                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-                                                                            Based on Vibe & Genre Match
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <div className="grid grid-cols-5 gap-4">
-                                                                        {getAlternatives(offer).map((alt) => (
-                                                                            <motion.div
-                                                                                key={alt.id}
-                                                                                whileHover={{ y: -4 }}
-                                                                                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200"
-                                                                            >
-                                                                                <div className="relative mb-3">
-                                                                                    <img
-                                                                                        src={alt.thumbnail_url || 'https://via.placeholder.com/150'}
-                                                                                        className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105"
-                                                                                    />
-                                                                                    <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
-                                                                                        <Check size={8} />
-                                                                                    </div>
+                                                                    {logTab === 'lost' && (
+                                                                        <>
+                                                                            <div className="flex items-center justify-between mb-6">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="bg-indigo-600 p-1.5 rounded-lg text-white">
+                                                                                        <Sparkles size={16} />
+                                                                                    </span>
+                                                                                    <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                                                                                        AI Alternative Suggestions
+                                                                                    </h4>
                                                                                 </div>
-                                                                                <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">{alt.name}</p>
-                                                                                <p className="text-[10px] font-bold text-slate-400 mb-4">{alt.followersStr} followers</p>
+                                                                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+                                                                                    Based on Vibe & Genre Match
+                                                                                </span>
+                                                                            </div>
 
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        handlePushAlternative(offer.id, alt.id);
-                                                                                    }}
-                                                                                    className="w-full bg-slate-900 text-white text-[10px] font-black py-2 rounded-xl hover:bg-indigo-600 transition-colors shadow-sm"
-                                                                                >
-                                                                                    提案する
-                                                                                </button>
-                                                                            </motion.div>
-                                                                        ))}
-                                                                    </div>
+                                                                            <div className="grid grid-cols-5 gap-4">
+                                                                                {getAlternatives(offer).map((alt) => (
+                                                                                    <motion.div
+                                                                                        key={alt.id}
+                                                                                        whileHover={{ y: -4 }}
+                                                                                        className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200"
+                                                                                    >
+                                                                                        <div className="relative mb-3">
+                                                                                            <img
+                                                                                                src={alt.thumbnail_url || 'https://via.placeholder.com/150'}
+                                                                                                className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105"
+                                                                                            />
+                                                                                            <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
+                                                                                                <Check size={8} />
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">{alt.name}</p>
+                                                                                        <p className="text-[10px] font-bold text-slate-400 mb-4">{alt.followersStr} followers</p>
 
-                                                                    <div className="mt-8 flex justify-center border-t border-indigo-100 pt-6">
-                                                                        <p className="text-[10px] text-slate-400 font-medium italic bg-white px-4 py-1 rounded-full border border-slate-50 italic">
-                                                                            AI suggests these creators to ensure the advertiser's campaign continues without further delay.
-                                                                        </p>
-                                                                    </div>
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                handlePushAlternative(offer.id, alt.id);
+                                                                                            }}
+                                                                                            className="w-full bg-slate-900 text-white text-[10px] font-black py-2 rounded-xl hover:bg-indigo-600 transition-colors shadow-sm"
+                                                                                        >
+                                                                                            提案する
+                                                                                        </button>
+                                                                                    </motion.div>
+                                                                                ))}
+                                                                            </div>
+
+                                                                            <div className="mt-8 flex justify-center border-t border-indigo-100 pt-6">
+                                                                                <p className="text-[10px] text-slate-400 font-medium italic bg-white px-4 py-1 rounded-full border border-slate-50 italic">
+                                                                                    AI suggests these creators to ensure the advertiser's campaign continues without further delay.
+                                                                                </p>
+                                                                            </div>
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </motion.div>
                                                         </td>

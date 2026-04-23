@@ -318,7 +318,7 @@ function getMockOngoingOffers() {
 /**
  * アセットの進行状況（タイムスタンプ）を更新する
  */
-export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at' | 'final_status', timestamp: string | null, extraData?: any) {
+export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at' | 'final_status' | 'reward_deposit' | 'payment_link', timestamp: string | null, extraData?: any) {
     return publicAction({}, async () => {
         const supabaseAdmin = createAdminClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -362,6 +362,13 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
 
             (currentDetails as any).timeline = timeline;
             updatePayload.offer_details = currentDetails;
+        } else if (field === 'reward_deposit') {
+            updatePayload.reward_deposit = !!timestamp;
+            if (timestamp) {
+                updatePayload.status = 'WORKING';
+            }
+        } else if (field === 'payment_link') {
+            updatePayload.payment_link = extraData?.paymentLink;
         }
 
         if (extraData?.videoUrl) {

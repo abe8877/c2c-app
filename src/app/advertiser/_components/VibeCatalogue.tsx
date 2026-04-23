@@ -14,7 +14,10 @@ import {
     Smartphone, DollarSign,
     DiamondIcon,
     Sparkle,
-    Eye
+    Eye,
+    Zap,
+    Heart,
+    Bookmark
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -43,6 +46,12 @@ export interface Asset {
     visit_at?: string;
     delivery_at?: string;
     finalized?: boolean;
+    reward_deposit?: boolean;
+    payment_link?: string;
+    comment_count?: number;
+    like_count?: number;
+    save_count?: number;
+    share_count?: number;
     published_url?: string;
     view_count?: number;
     creator?: {
@@ -50,6 +59,7 @@ export interface Asset {
         tiktok_handle?: string;
         portfolio_video_urls?: string[];
         avatar_url?: string;
+        thumbnail_url?: string | null;
     };
 }
 
@@ -75,6 +85,7 @@ export interface Creator {
     review_status?: string;
     offer_count?: number;
     pricing_guide?: string;
+    avatar_url?: string;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -188,12 +199,19 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                             className="relative w-full aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/10 ring-1 ring-white/20"
                         >
                             {isDirectVideo ? (
-                                <video
-                                    src={currentUrl}
-                                    controls
-                                    autoPlay
-                                    className="w-full h-full object-cover"
-                                />
+                                <div className="w-full h-full relative group">
+                                    <video
+                                        src={currentUrl}
+                                        controls
+                                        autoPlay
+                                        className="w-full h-full object-cover"
+                                        controlsList="nodownload"
+                                        onContextMenu={(e) => e.preventDefault()}
+                                        playsInline
+                                    />
+                                    {/* Overlay to hinder simple right-click saved as */}
+                                    <div className="absolute inset-0 z-10 pointer-events-none select-none" />
+                                </div>
                             ) : (
                                 <iframe
                                     src={embedUrl || undefined}
@@ -262,19 +280,17 @@ const CreatorCard = ({
             </div>
 
             {/* Thumbnail */}
-            {creator.thumbnail_url && (
-                <Image
-                    src={creator.thumbnail_url}
-                    alt={creator.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    unoptimized={true}
-                    priority={priority}
-                    onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                    }}
-                />
-            )}
+            <Image
+                src={creator.thumbnail_url || creator.avatar || creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name || 'A')}&background=random`}
+                alt={creator.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                unoptimized={true}
+                priority={priority}
+                onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                }}
+            />
 
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -354,7 +370,7 @@ const CreatorCard = ({
                     {/* AUDIENCE - Vertical stack, Unified Glass Box UI */}
                     <div className="flex items-center gap-1.5 text-white/90 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
                         <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
-                        <span className="truncate">主な視聴者層: {creator.nationality || (creator.ethnicity === 'ASIA' ? 'Asia' : creator.ethnicity === 'AMERICA' ? 'North America' : creator.ethnicity === 'EUROPE' ? 'Europe' : creator.ethnicity || 'Global')}</span>
+                        <span className="truncate">主な視聴者層: {creator.nationality || creator.ethnicity || 'Global'}</span>
                     </div>
 
                     {/* PRICING GUIDE - Multi-line supported */}
@@ -1359,9 +1375,8 @@ export default function VibeCatalogue({
         let selected: Creator[] = [];
         const usedIds = new Set<string>();
 
-        // 共通のフィルタ条件: サムネイルがあり、公開中で、承認済みであること
+        // 共通のフィルタ条件: 公開中で、承認済みであること
         const basePool = initialCreators.filter(c =>
-            c.thumbnail_url &&
             c.is_public &&
             c.review_status === 'approved'
         );
@@ -1531,6 +1546,9 @@ export default function VibeCatalogue({
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [celebrationAssetId, setCelebrationAssetId] = useState<string | null>(null);
     const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
+    const [revisionRequestId, setRevisionRequestId] = useState<string | null>(null);
+    const [revisionMessage, setRevisionMessage] = useState("");
+    const [revisionSuccessId, setRevisionSuccessId] = useState<string | null>(null);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
@@ -2037,7 +2055,7 @@ export default function VibeCatalogue({
                                                         <div key={`${creator.id}-${i}`} className="inline-block w-32 md:w-40 bg-white/40 backdrop-blur-sm border border-slate-100 rounded-2xl p-3 shadow-sm opacity-60 hover:opacity-100 transition-opacity">
                                                             <div className="aspect-[3/4] rounded-xl overflow-hidden mb-2 bg-slate-100">
                                                                 <img
-                                                                    src={creator.thumbnail_url || undefined}
+                                                                    src={creator.thumbnail_url || creator.avatar || creator.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.name || 'A')}&background=random`}
                                                                     className="w-full h-full object-cover"
                                                                     loading="eager"
                                                                 />
@@ -2203,9 +2221,9 @@ export default function VibeCatalogue({
                                     className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all"
                                 >
                                     <div className="text-5xl font-black text-stone-900 group-hover:text-indigo-600 transition-colors">
-                                        <AnimatedCounter value={offeredCount} />
+                                        <AnimatedCounter value={localAssets.filter(a => a.status === 'OFFERED').length} />
                                     </div>
-                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">交渉中クリエイター</p>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">交渉中アンバサダー</p>
                                 </motion.div>
 
                                 <motion.div
@@ -2257,139 +2275,172 @@ export default function VibeCatalogue({
 
                             <div className="space-y-8">
                                 <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">オファーの進行状況</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'DECLINED', 'WORKING', 'COMPLETED', 'APPROVED', 'DELIVERED', 'FINALIZED'].includes(a.status || '')).map((asset) => {
-                                        const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
-                                        const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
-                                        const src = asset.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=3000&auto=format&fit=crop';
-                                        const isDeclined = asset.status === 'DECLINED';
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+                                    {(localAssets.length > 0 ? localAssets : initialAssets)
+                                        .filter(a => (['OFFERED', 'DECLINED', 'APPROVED', 'WORKING'].includes(a.status || '') && !a.video_url))
+                                        .map((asset) => {
+                                            const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
+                                            const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
+                                            const src = asset.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=3000&auto=format&fit=crop';
+                                            const isDeclined = asset.status === 'DECLINED';
 
-                                        // タイムラインの構築（実際のデータがない場合はフォールバック表示）
-                                        const timeline = [
-                                            { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
-                                            {
-                                                label: isDeclined ? 'オファー不承諾' : 'オファー承諾',
-                                                date: isDeclined ? asset.updated_at : asset.approved_at,
-                                                active: isDeclined || !!asset.approved_at,
-                                                icon: isDeclined ? <AlertTriangle size={10} /> : <CheckCircle size={10} />,
-                                                isError: isDeclined,
-                                                description: isDeclined && (asset as any).rejection_reason ? `理由: ${(asset as any).rejection_reason}` : undefined
-                                            },
-                                            ...(isDeclined ? [] : [
-                                                { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
-                                                { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
-                                                { label: '最終承認', date: asset.finalized ? asset.updated_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
-                                            ]),
-                                        ];
+                                            // タイムラインの構築（実際のデータがない場合はフォールバック表示）
+                                            const timeline = [
+                                                { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
+                                                {
+                                                    label: isDeclined ? 'オファー不承諾' : 'オファー承諾',
+                                                    date: isDeclined ? asset.updated_at : asset.approved_at,
+                                                    active: isDeclined || !!asset.approved_at,
+                                                    icon: isDeclined ? <AlertTriangle size={10} /> : <CheckCircle size={10} />,
+                                                    isError: isDeclined,
+                                                    description: isDeclined && (asset as any).rejection_reason ? `理由: ${(asset as any).rejection_reason}` : undefined
+                                                },
+                                                ...(isDeclined ? [] : [
+                                                    { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
+                                                    { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
+                                                    { label: '最終承認', date: asset.finalized ? asset.updated_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
+                                                ]),
+                                            ];
 
-                                        // showDetails state: null = closed, `${id}` = timeline, `${id}-improve` = improvement
-                                        const isTimelineOpen = showDetails === asset.id;
-                                        const isImproveOpen = showDetails === `${asset.id}-improve`;
-                                        const isAnyOpen = isTimelineOpen || isImproveOpen;
+                                            // showDetails state: null = closed, `${id}` = timeline, `${id}-improve` = improvement
+                                            const isTimelineOpen = showDetails === asset.id;
+                                            const isImproveOpen = showDetails === `${asset.id}-improve`;
+                                            const isAnyOpen = isTimelineOpen || isImproveOpen;
 
-                                        return (
-                                            <div key={asset.id} className={`bg-white rounded-[2.5rem] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col`}>
-                                                <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
-                                                    {src && !src.includes('unsplash.com/photo-1529626455594-4ff0802cfb7e') ? (
-                                                        <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                                                    ) : (
-                                                        <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-                                                            <User className="w-12 h-12 text-stone-300" />
-                                                        </div>
-                                                    )}
-                                                    {isDeclined ? (
-                                                        <div className="absolute top-4 right-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
-                                                            <AlertTriangle className="w-3 h-3" /> 辞退
-                                                        </div>
-                                                    ) : (
-                                                        <div className="absolute top-4 right-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
-                                                            <RefreshCw className="w-3 h-3 animate-spin-slow" /> 交渉中
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="p-8 space-y-4 text-left flex-1 flex flex-col">
-                                                    <div>
-                                                        <h3 className="font-black text-xl tracking-tight">{creatorName}</h3>
-                                                        <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
-                                                    </div>
-
-                                                    {asset.creator && assetInsights[asset.creator_id || (asset.creator as any).id] && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto' }}
-                                                            className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl"
-                                                        >
-                                                            <Sparkles className="absolute -top-1 -right-1 text-yellow-400 opacity-20" size={40} />
-                                                            <p className="text-[11px] font-bold leading-relaxed italic relative z-10 text-indigo-100">
-                                                                {assetInsights[asset.creator_id || (asset.creator as any).id]?.creatorAiHint}
-                                                            </p>
-                                                        </motion.div>
-                                                    )}
-
-                                                    {isTimelineOpen && (
-                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
-                                                            <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
-                                                            <div className="space-y-4 relative">
-                                                                <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
-                                                                {timeline.map((step, idx) => (
-                                                                    <div key={idx} className="flex gap-4 items-start relative z-10">
-                                                                        <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? (step.isError ? 'bg-red-500 border-red-500 shadow-lg shadow-red-100' : 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100') : 'bg-white border-stone-100'}`}>
-                                                                            {step.active && <div className="text-white">{step.icon}</div>}
-                                                                        </div>
-                                                                        <div className="flex-1">
-                                                                            <p className={`text-[11px] font-black ${step.active ? (step.isError ? 'text-red-500' : 'text-stone-900') : 'text-stone-300'}`}>{step.label}</p>
-                                                                            {step.active && step.date && (
-                                                                                <p className="text-[9px] font-bold font-mono text-stone-400">
-                                                                                    {new Date(step.date).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                                                </p>
-                                                                            )}
-                                                                            {step.description && (
-                                                                                <p className="text-[10px] font-bold text-red-500 mt-1 leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100">
-                                                                                    {step.description}
-                                                                                </p>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
+                                            return (
+                                                <div key={asset.id} className={`w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col`}>
+                                                    <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
+                                                        {src && !src.includes('unsplash.com/photo-1529626455594-4ff0802cfb7e') ? (
+                                                            <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                                <User className="w-12 h-12 text-stone-300" />
                                                             </div>
-                                                        </motion.div>
-                                                    )}
-
-                                                    {isImproveOpen && isDeclined && (
-                                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
-                                                            <div className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl">
-                                                                <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー受諾率を向上させるには</h4>
-                                                                <ul className="text-[11px] font-bold leading-relaxed space-y-2 relative z-10 text-indigo-100 list-disc pl-4">
-                                                                    <li>「提供するサービス」の見直し：<br />オファーするアンバサダーが関心を持ちそうな内容にしてみて下さい。報酬なし→1万円にしたり、同伴者も無料にする等の工夫も有効です。</li>
-                                                                    <li>「招待メッセージ」の見直し：<br />アンバサダーは報酬面以上に、オファーの本気度を重視しています。誰にでもオファーしているのではなく、なぜあなたに依頼したいのかを伝えることで、オファー受諾率が大きく向上します。</li>
-                                                                    <li>「過去の成功事例」の共有：<br />以前に動画PRを実施したことがあれば、その事例を共有するとアンバサダーも制作イメージが湧き、スムーズにオファーが受諾される可能性があります。</li>
-                                                                </ul>
+                                                        )}
+                                                        {isDeclined ? (
+                                                            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                                <AlertTriangle className="w-3 h-3" /> 辞退
                                                             </div>
-                                                        </motion.div>
-                                                    )}
-
-                                                    <div className="flex gap-2 mt-auto">
-                                                        <button
-                                                            onClick={() => setShowDetails(isTimelineOpen ? null : asset.id)}
-                                                            className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${isTimelineOpen ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
-                                                        >
-                                                            {isTimelineOpen ? 'Close' : 'Timeline'}
-                                                        </button>
-                                                        {isDeclined && (
-                                                            <button
-                                                                onClick={() => setShowDetails(isImproveOpen ? null : `${asset.id}-improve`)}
-                                                                className={`flex-1 text-[11px] font-black rounded-xl py-3.5 transition-all shadow-xl active:scale-95 uppercase tracking-widest ${isImproveOpen ? 'border-2 border-stone-100 hover:border-stone-200 text-slate-800 bg-white' : 'bg-stone-900 text-white hover:bg-black flex items-center justify-center gap-1'}`}
-                                                            >
-                                                                {isImproveOpen ? 'Close' : <><Sparkles className="w-3 h-3 text-yellow-400" /> 改善案</>}
-                                                            </button>
+                                                        ) : ['APPROVED', 'WORKING', 'DELIVERED'].includes(asset.status || '') ? (
+                                                            <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                                <RefreshCw className="w-3 h-3 animate-spin-slow" /> 進行中
+                                                            </div>
+                                                        ) : ['FINALIZED', 'COMPLETED'].includes(asset.status || '') ? (
+                                                            <div className="absolute top-4 left-4 z-10 bg-emerald-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                                <CheckCircle className="w-3 h-3" /> 完了
+                                                            </div>
+                                                        ) : (
+                                                            <div className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                                <RefreshCw className="w-3 h-3 animate-spin-slow" /> 交渉中
+                                                            </div>
                                                         )}
                                                     </div>
-                                                </div>
-                                            </div>
+                                                    <div className="p-8 space-y-4 text-left flex-1 flex flex-col">
+                                                        <div>
+                                                            <h3 className="font-black text-xl tracking-tight">{creatorName}</h3>
+                                                            <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
+                                                        </div>
 
-                                        );
-                                    })}
-                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED'].includes(a.status || '')).length === 0 && (
+                                                        {asset.creator && assetInsights[asset.creator_id || (asset.creator as any).id] && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl"
+                                                            >
+                                                                <Sparkles className="absolute -top-1 -right-1 text-yellow-400 opacity-20" size={40} />
+                                                                <p className="text-[11px] font-bold leading-relaxed italic relative z-10 text-indigo-100">
+                                                                    {assetInsights[asset.creator_id || (asset.creator as any).id]?.creatorAiHint}
+                                                                </p>
+                                                            </motion.div>
+                                                        )}
+
+                                                        {isTimelineOpen && (
+                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
+                                                                <div className="space-y-4 relative">
+                                                                    <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
+                                                                    {timeline.map((step, idx) => (
+                                                                        <div key={idx} className="flex gap-4 items-start relative z-10">
+                                                                            <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? (step.isError ? 'bg-red-500 border-red-500 shadow-lg shadow-red-100' : 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100') : 'bg-white border-stone-100'}`}>
+                                                                                {step.active && <div className="text-white">{step.icon}</div>}
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <p className={`text-[11px] font-black ${step.active ? (step.isError ? 'text-red-500' : 'text-stone-900') : 'text-stone-300'}`}>{step.label}</p>
+                                                                                {step.active && step.date && (
+                                                                                    <p className="text-[9px] font-bold font-mono text-stone-400">
+                                                                                        {new Date(step.date).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                                    </p>
+                                                                                )}
+                                                                                {step.description && (
+                                                                                    <p className="text-[10px] font-bold text-red-500 mt-1 leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100">
+                                                                                        {step.description}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+
+                                                        {isImproveOpen && isDeclined && (
+                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                <div className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl">
+                                                                    <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー受諾率を向上させるには</h4>
+                                                                    <ul className="text-[11px] font-bold leading-relaxed space-y-2 relative z-10 text-indigo-100 list-disc pl-4">
+                                                                        <li>「提供するサービス」の見直し：<br />オファーするアンバサダーが関心を持ちそうな内容にしてみて下さい。報酬なし→1万円にしたり、同伴者も無料にする等の工夫も有効です。</li>
+                                                                        <li>「招待メッセージ」の見直し：<br />アンバサダーは報酬面以上に、オファーの本気度を重視しています。誰にでもオファーしているのではなく、なぜあなたに依頼したいのかを伝えることで、オファー受諾率が大きく向上します。</li>
+                                                                        <li>「過去の成功事例」の共有：<br />以前に動画PRを実施したことがあれば、その事例を共有するとアンバサダーも制作イメージが湧き、スムーズにオファーが受諾される可能性があります。</li>
+                                                                    </ul>
+                                                                </div>
+                                                            </motion.div>
+                                                        )}
+
+                                                        <div className="flex flex-col gap-2 mt-auto w-full">
+                                                            {asset.status === 'APPROVED' && !asset.reward_deposit && (
+                                                                <div className="bg-red-50 border-2 border-red-500/20 rounded-[2rem] p-4 flex flex-col items-center gap-3 animate-pulse shadow-lg shadow-red-500/10">
+                                                                    <div className="flex items-center gap-2 text-red-600 font-black text-xs uppercase tracking-widest">
+                                                                        <Clock size={14} /> 支払期限: 23時間59分
+                                                                    </div>
+                                                                    <p className="text-[10px] font-bold text-red-800 text-center leading-tight">アンバサダー報酬のご入金が必要です。<br />デポジット確認後、撮影が開始されます。</p>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (asset.payment_link) {
+                                                                                window.open(asset.payment_link, '_blank');
+                                                                            } else {
+                                                                                alert("支払いリンクがまだ発行されていません。運営が発行中のため、しばらくお待ちください。");
+                                                                            }
+                                                                        }}
+                                                                        className="w-full bg-red-600 text-white py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl"
+                                                                    >
+                                                                        <Zap size={14} className="fill-current text-yellow-400" />
+                                                                        報酬をデポジットする
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex gap-2 w-full">
+                                                                <button
+                                                                    onClick={() => setShowDetails(isTimelineOpen ? null : asset.id)}
+                                                                    className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${isTimelineOpen ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
+                                                                >
+                                                                    {isTimelineOpen ? 'Close' : 'Timeline'}
+                                                                </button>
+                                                                {isDeclined && (
+                                                                    <button
+                                                                        onClick={() => setShowDetails(isImproveOpen ? null : `${asset.id}-improve`)}
+                                                                        className={`flex-1 text-[11px] font-black rounded-xl py-3.5 transition-all shadow-xl active:scale-95 uppercase tracking-widest ${isImproveOpen ? 'border-2 border-stone-100 hover:border-stone-200 text-slate-800 bg-white' : 'bg-stone-900 text-white hover:bg-black flex items-center justify-center gap-1'}`}
+                                                                    >
+                                                                        {isImproveOpen ? 'Close' : <><Sparkles className="w-3 h-3 text-yellow-400" /> 改善案</>}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            );
+                                        })}
+                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'DECLINED', 'APPROVED', 'WORKING'].includes(a.status || '') && !a.video_url).length === 0 && (
                                         <>
                                             <div className="bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-200 aspect-video flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-60">
                                                 <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Clock className="w-6 h-6" /></div>
@@ -2405,9 +2456,9 @@ export default function VibeCatalogue({
                             {/* Acquired Videos Section */}
                             <div className="space-y-8">
                                 <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">獲得した動画一覧</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
-                                        .filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED')
+                                        .filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED' || (a.status === 'WORKING' && a.video_url))
                                         .map((asset) => {
                                             const isConfirmed = !!asset.finalized;
                                             const isFullyFinalized = !!asset.finalized;
@@ -2415,45 +2466,87 @@ export default function VibeCatalogue({
                                             const revisionCount = assetTimeline.revision_count || 0;
 
                                             return (
-                                                <div key={asset.id} className="bg-white rounded-3xl border border-stone-100 overflow-hidden shadow-sm group hover:scale-[1.02] transition-all flex flex-col relative">
-                                                    <div className="aspect-[9/16] bg-stone-200 relative">
+                                                <div key={asset.id} className="w-full bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col relative max-w-sm">
+                                                    <div className="aspect-video bg-stone-100 relative overflow-hidden flex items-center justify-center">
+                                                        {/* Card Header Background: Creator Thumbnail */}
+                                                        <img
+                                                            src={asset.creator?.thumbnail_url || asset.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(asset.creator?.name || 'A')}&background=random`}
+                                                            className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110"
+                                                            alt=""
+                                                        />
+
                                                         {asset.video_url ? (
-                                                            <div className="w-full h-full relative group/video">
-                                                                <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
-                                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-0 group-hover/video:opacity-100 transition-opacity gap-2 p-4">
-                                                                    <button
-                                                                        onClick={() => setPreviewVideoUrl(asset.video_url)}
-                                                                        className="w-full bg-stone-900/90 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-xl"
-                                                                    >
-                                                                        <Eye size={14} className="text-yellow-400" />
-                                                                        動画内容を確認する
-                                                                    </button>
-                                                                    {asset.published_url && (
+                                                            <div className="w-full h-full relative group/video p-3">
+                                                                <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-black relative ring-1 ring-white/20 shadow-2xl">
+                                                                    <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} />
+                                                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-100 md:opacity-0 md:group-hover/video:opacity-100 transition-opacity gap-2 p-4">
                                                                         <button
-                                                                            onClick={() => setPreviewVideoUrl(asset.published_url ?? null)}
-                                                                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-colors shadow-xl"
+                                                                            onClick={() => setSelectedVideo({ urls: [asset.video_url!], name: asset.creator?.name || 'Ambassador' })}
+                                                                            className="max-w-[180px] w-full bg-white/90 text-black px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-xl"
                                                                         >
-                                                                            <Video size={14} className="text-white" />
-                                                                            投稿された動画を見る
+                                                                            <Eye size={14} className="text-indigo-600" />
+                                                                            動画データを確認する
                                                                         </button>
-                                                                    )}
-                                                                    <div className="mt-2 text-[10px] font-black text-white/80 bg-black/40 px-3 py-1 rounded-full backdrop-blur-md border border-white/10 uppercase tracking-tighter">
-                                                                        📊 {asset.view_count ? `${Number(asset.view_count).toLocaleString()} views` : '数値計測中'}
-                                                                        <p>（随時更新されますが、お急ぎの場合はSNSで直接ご覧下さい）</p>
+                                                                        {asset.published_url && (
+                                                                            <button
+                                                                                onClick={() => setSelectedVideo({ urls: [asset.published_url!], name: asset.creator?.name || 'Ambassador' })}
+                                                                                className="max-w-[180px] w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-colors shadow-xl"
+                                                                            >
+                                                                                <Video size={14} className="text-white" />
+                                                                                投稿された動画を見る
+                                                                            </button>
+                                                                        )}
                                                                     </div>
+                                                                    {isFullyFinalized && (
+                                                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[92%] bg-black/60 backdrop-blur-xl px-3 py-2.5 rounded-2xl border border-white/20 transition-all flex flex-col items-center group-hover/video:opacity-0">
+                                                                            <div className="w-full flex items-center justify-around">
+                                                                                <div className="flex flex-col items-center gap-0.5">
+                                                                                    <div className="flex items-center gap-1 text-white font-black text-[12px]">
+                                                                                        <Heart size={10} className="text-pink-500 fill-current" />
+                                                                                        {asset.like_count ? Number(asset.like_count).toLocaleString() : '---'}
+                                                                                    </div>
+                                                                                    <span className="text-[7px] text-white/50 font-black uppercase tracking-widest">Likes</span>
+                                                                                </div>
+                                                                                <div className="w-px h-6 bg-white/10" />
+                                                                                <div className="flex flex-col items-center gap-0.5">
+                                                                                    <div className="flex items-center gap-1 text-white font-black text-[12px]">
+                                                                                        <MessageCircle size={10} className="text-blue-400 fill-current" />
+                                                                                        {asset.comment_count ? Number(asset.comment_count).toLocaleString() : '---'}
+                                                                                    </div>
+                                                                                    <span className="text-[7px] text-white/50 font-black uppercase tracking-widest">Comments</span>
+                                                                                </div>
+                                                                                <div className="w-px h-6 bg-white/10" />
+                                                                                <div className="flex flex-col items-center gap-0.5">
+                                                                                    <div className="flex items-center gap-1 text-white font-black text-[12px]">
+                                                                                        <Bookmark size={10} className="text-yellow-400 fill-current" />
+                                                                                        {(asset.save_count || 0) + (asset.share_count || 0) > 0
+                                                                                            ? Number((asset.save_count || 0) + (asset.share_count || 0)).toLocaleString()
+                                                                                            : '---'}
+                                                                                    </div>
+                                                                                    <span className="text-[7px] text-white/50 font-black uppercase tracking-widest">Save+Share</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="w-full h-full bg-stone-100 flex items-center justify-center">
-                                                                <User className="w-10 h-10 text-stone-300" />
+                                                            <div className="w-full h-full flex items-center justify-center p-3">
+                                                                <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-stone-100 flex items-center justify-center ring-1 ring-black/5">
+                                                                    <img
+                                                                        src={asset.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(asset.creator?.name || 'A')}&background=random`}
+                                                                        className="w-full h-full object-cover"
+                                                                        alt=""
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         )}
                                                         {(!isConfirmed && !isFullyFinalized) ? (
-                                                            <div className="absolute top-3 left-3 bg-blue-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                            <div className="absolute top-5 left-5 bg-blue-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
                                                                 <Clock className="w-2.5 h-2.5" /> 承認待ち
                                                             </div>
                                                         ) : (
-                                                            <div className="absolute top-3 left-3 bg-green-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
+                                                            <div className="absolute top-5 left-5 bg-emerald-500 text-white text-[8px] font-black px-2.5 py-1 rounded-full shadow-lg uppercase flex items-center gap-1 z-10">
                                                                 <CheckCircle className="w-2.5 h-2.5" /> 承認済み
                                                             </div>
                                                         )}
@@ -2464,64 +2557,93 @@ export default function VibeCatalogue({
                                                         )}
                                                     </div>
                                                     <div className="p-4 text-left flex-1 flex flex-col justify-between">
-                                                        <div className="mb-2">
+                                                        <div className="mb-2 relative">
+                                                            {revisionSuccessId === asset.id && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: 10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    className="absolute inset-0 z-50 bg-white/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center text-center p-2 border border-emerald-100 shadow-xl"
+                                                                >
+                                                                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+                                                                        <Check className="text-emerald-600 w-4 h-4" />
+                                                                    </div>
+                                                                    <p className="text-[10px] font-black text-slate-800">修正依頼を送信しました</p>
+                                                                </motion.div>
+                                                            )}
                                                             <p className="text-[10px] font-black text-stone-400 uppercase mb-1">依頼開始日: {asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2026.01.01'}</p>
                                                             <h4 className="text-md font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
                                                         </div>
 
                                                         {(!isConfirmed && !isFullyFinalized) ? (
                                                             <div className="space-y-2">
-                                                                <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={async () => {
-                                                                            const { finalizeAsset } = await import('@/app/actions/creator');
-                                                                            await finalizeAsset(asset.id);
-                                                                            setCelebrationAssetId(asset.id);
-                                                                            setTimeout(() => setCelebrationAssetId(null), 5000);
-                                                                            fetchAssets();
-                                                                        }}
-                                                                        className="flex-1 py-2.5 bg-black hover:bg-stone-900 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg"
-                                                                    >
-                                                                        承認する
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            if (revisionCount >= 2) {
-                                                                                alert("修正依頼は2回まで可能です。詳細は運営にお問い合わせください。");
-                                                                                return;
-                                                                            }
-                                                                            const msg = prompt("修正依頼の内容を入力してください（クリエイターに送信されます）");
-                                                                            if (msg) {
-                                                                                import('@/app/actions/creator').then(m => m.requestAssetRevision(asset.id, msg)).then(() => {
-                                                                                    alert("修正依頼を送信しました。");
-                                                                                    fetchAssets();
-                                                                                });
-                                                                            }
-                                                                        }}
-                                                                        className={`flex-1 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 border-2 ${revisionCount >= 2 ? 'opacity-50 cursor-not-allowed bg-stone-50 border-stone-100 text-stone-300' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
-                                                                    >
-                                                                        修正依頼 ({2 - revisionCount})
-                                                                    </button>
+                                                                <div className="flex flex-col gap-2">
+                                                                    <div className="flex gap-2">
+                                                                        <button
+                                                                            onClick={async () => {
+                                                                                const { finalizeAsset } = await import('@/app/actions/creator');
+                                                                                await finalizeAsset(asset.id);
+                                                                                setCelebrationAssetId(asset.id);
+                                                                                setTimeout(() => setCelebrationAssetId(null), 5000);
+                                                                                fetchAssets();
+                                                                            }}
+                                                                            className="flex-1 py-3 bg-black hover:bg-stone-900 text-white rounded-xl text-[11px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg"
+                                                                        >
+                                                                            <CheckCircle size={14} /> 承認する
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                if (revisionCount >= 2) {
+                                                                                    alert("修正依頼は2回まで可能です。詳細は運営にお問い合わせください。");
+                                                                                    return;
+                                                                                }
+                                                                                setRevisionRequestId(revisionRequestId === asset.id ? null : asset.id);
+                                                                            }}
+                                                                            className={`flex-1 py-3 rounded-xl text-[11px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 border-2 ${revisionCount >= 2 ? 'opacity-50 cursor-not-allowed bg-stone-50 border-stone-100 text-stone-300' : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'}`}
+                                                                        >
+                                                                            <RefreshCw size={14} /> 修正依頼 ({2 - revisionCount})
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {revisionRequestId === asset.id && (
+                                                                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-2 p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-3">
+                                                                            <textarea
+                                                                                placeholder="修正してほしい箇所を詳しく入力してください"
+                                                                                className="w-full bg-white border border-stone-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-stone-900 outline-none min-h-[80px]"
+                                                                                value={revisionMessage}
+                                                                                onChange={(e) => setRevisionMessage(e.target.value)}
+                                                                            />
+                                                                            <div className="flex gap-2">
+                                                                                <button onClick={() => setRevisionRequestId(null)} className="flex-1 py-2 text-[10px] font-black text-stone-400 bg-white border border-stone-100 rounded-lg">キャンセル</button>
+                                                                                <button
+                                                                                    disabled={!revisionMessage}
+                                                                                    onClick={async () => {
+                                                                                        const m = await import('@/app/actions/creator');
+                                                                                        const res = await m.requestAssetRevision(asset.id, revisionMessage);
+                                                                                        if (res.success) {
+                                                                                            setRevisionSuccessId(asset.id);
+                                                                                            setTimeout(() => setRevisionSuccessId(null), 3000);
+                                                                                            setRevisionRequestId(null);
+                                                                                            setRevisionMessage("");
+                                                                                            fetchAssets();
+                                                                                        }
+                                                                                    }}
+                                                                                    className="flex-1 py-2 bg-black text-white rounded-lg text-[10px] font-black disabled:opacity-30"
+                                                                                >
+                                                                                    送信する
+                                                                                </button>
+                                                                            </div>
+                                                                        </motion.div>
+                                                                    )}
                                                                 </div>
-                                                                <p className="text-[8px] text-zinc-400 leading-tight">
-                                                                    提出から120時間（5日）以内にアクションがない場合、自動で承認されます。
+                                                                <p className="text-[10px] text-zinc-400 leading-tight mt-2">
+                                                                    ※5日以内にアクションがない場合、自動で承認されます。
                                                                 </p>
                                                             </div>
                                                         ) : (
                                                             <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
-                                                                <div className="flex items-center justify-between text-[9px] font-bold text-stone-400 uppercase tracking-widest px-1">
-                                                                    <span>Asset Status</span>
-                                                                    <span className="text-teal-600">{isFullyFinalized ? 'Active Asset ✅' : '承認済み（URL共有待ち）'}</span>
-                                                                </div>
-                                                                <button
-                                                                    disabled={!isFullyFinalized}
-                                                                    className={`w-full py-2 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase ${isFullyFinalized ? 'bg-stone-100 hover:bg-stone-200 text-black' : 'bg-stone-50 text-stone-300 cursor-not-allowed'}`}
-                                                                >
-                                                                    <Map className="w-3.5 h-3.5" /> {isFullyFinalized ? 'Deploy to Maps' : 'Lock (運営による共有待ち)'}
-                                                                </button>
                                                                 {isFullyFinalized && (
                                                                     <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase mt-1">
-                                                                        <UploadCloud className="w-3.5 h-3.5" /> Download Asset
+                                                                        <UploadCloud className="w-3.5 h-3.5" /> 動画をダウンロードする
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -2532,8 +2654,7 @@ export default function VibeCatalogue({
                                                                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-12 h-12 bg-teal-400 rounded-full flex items-center justify-center mb-3">
                                                                         <Sparkles className="w-6 h-6 text-white" />
                                                                     </motion.div>
-                                                                    <p className="text-white font-black text-xs uppercase italic tracking-tighter">動画が承認されました！🎉</p>
-                                                                    <p className="text-white font-black text-xs uppercase italic tracking-tighter">動画が投稿されると本依頼は完了となります。クリエイターの投稿対応をお待ちください。</p>
+                                                                    <p className="text-white font-black text-xs uppercase tracking-tighter">動画が納品されました！🎉</p>
                                                                 </motion.div>
                                                             )}
                                                         </AnimatePresence>
@@ -2543,7 +2664,7 @@ export default function VibeCatalogue({
                                         })}
 
                                     {/* Empty states for completed videos */}
-                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED').length === 0 && (
+                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED' || (a.status === 'WORKING' && a.video_url)).length === 0 && (
                                         <>
                                             <div className="bg-stone-50 rounded-3xl border-2 border-dashed border-stone-200 aspect-[9/16] flex flex-col items-center justify-center p-6 text-center space-y-3 opacity-60">
                                                 <div className="w-10 h-10 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Play className="w-5 h-5" /></div>

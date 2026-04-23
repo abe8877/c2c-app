@@ -8,14 +8,14 @@ export default function SpecifiedCommercialTransactions() {
     return (
         <div className="min-h-screen bg-white text-slate-900 font-sans py-20">
             <div className="max-w-3xl mx-auto px-6">
-                <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors mb-12 font-bold text-sm">
+                <Link href="/#footer" className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors mb-12 font-bold text-sm">
                     <ArrowLeft size={16} /> トップページに戻る
                 </Link>
 
-                <h1 className="text-4xl font-black tracking-tight mb-12">特定商取引法に基づく表記</h1>
+                <h1 className="text-3xl font-black tracking-tight mb-12">特定商取引法に基づく表記</h1>
 
                 <div className="border-t border-slate-200">
-                    <dl className="divide-y divide-slate-200 text-sm md:text-base">
+                    <dl className="divide-y divide-slate-200 text-sm">
 
                         <div className="py-6 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8">
                             <dt className="font-bold text-slate-900">販売事業者名</dt>
@@ -40,7 +40,7 @@ export default function SpecifiedCommercialTransactions() {
                             <dd className="col-span-2 text-slate-600 font-medium leading-relaxed">
                                 メールアドレス：info@insiders-hub.jp<br />
                                 電話番号：080-4471-1198<br />
-                                <span className="text-xs text-slate-400 mt-2 block">
+                                <span className="text-[10px] text-slate-400 mt-2 block">
                                     （※サービスに関するお問い合わせは、原則としてメールまたはプラットフォーム内のメッセージにてお願いいたします）
                                 </span>
                             </dd>
