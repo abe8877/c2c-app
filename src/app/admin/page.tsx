@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, Plane, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -85,7 +85,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
             if (field === 'reward_deposit') {
                 await updateAssetTimestamp(assetId, 'reward_deposit', approved ? now : null);
                 if (postUrl) {
-                    await updateAssetTimestamp(assetId, 'payment_link', null, { paymentLink: postUrl });
+                    await updateAssetTimestamp(assetId, 'reward_paymentlink', null, { paymentLink: postUrl });
                 }
             } else {
                 await updateAssetTimestamp(
@@ -219,7 +219,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
 
                                 <div className="space-y-6">
                                     <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-bold text-slate-400 ml-1">動画データURL (Googleドライブ ※必ずDL権限をオフにする) </label>
+                                        <label className="text-[10px] font-bold text-slate-400 ml-1">動画データURL（supabaseから追加） </label>
                                         <input
                                             type="url"
                                             placeholder="https://..."
@@ -293,7 +293,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                         <button
                                             onClick={async () => {
                                                 setLoading(true);
-                                                await updateAssetTimestamp(assetId, 'payment_link', null, { paymentLink: postUrl });
+                                                await updateAssetTimestamp(assetId, 'reward_paymentlink', null, { paymentLink: postUrl });
                                                 alert("Payment Linkを保存しました");
                                                 setLoading(false);
                                                 if (onUpdate) onUpdate();
@@ -849,12 +849,54 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         { id: '4', advertiser: 'Harajuku Desserts', creator: 'Mika K.', matchScore: 95, vibes: ['#Kawaii', '#Photogenic'], date: '2024-03-01 15:10' },
     ];
 
-    // 代替候補を取得するロジック (Mock)
+    // 既存の getAlternatives をこのロジックで上書きします
     const getAlternatives = (offer: any) => {
-        // 本来はAPIを叩くが、ここでは既存のcreatorsから適当にピックアップ
-        return creators
-            .filter(c => c.is_public && (c.tier === 'S' || c.tier === 'A'))
-            .slice(0, 5);
+        // 辞退/キャンセルされたクリエイターを取得（プロパティ名は実際のDBに合わせてください）
+        const targetCreator = offer.creator || offer.target_creator;
+        if (!targetCreator) return [];
+
+        const targetVibes = targetCreator.vibe_tags ? targetCreator.vibe_tags.map((t: string) => t.toLowerCase()) : [];
+
+        // 全クリエイターリスト（allCreators 等のState/Props）から計算
+        // ※以下の `allCreators` は実際のデータ配列名に置き換えてください
+        const alternatives = creators
+            .filter((c: any) => c.id !== targetCreator.id) // 本人は除外
+            .map((c: any) => {
+                let simScore = 65; // 類似度の基礎点
+
+                // 1. VIBEタグ・ジャンルの一致（最重要：+8点/個）
+                const cVibes = c.vibe_tags ? c.vibe_tags.map((t: string) => t.toLowerCase()) : [];
+                const commonVibes = targetVibes.filter((tag: string) => cVibes.includes(tag));
+                simScore += commonVibes.length * 8;
+
+                // 2. オーディエンス（視聴者層）の一致（+5点）
+                if (c.audience === targetCreator.audience) simScore += 5;
+
+                // 3. 規模感（Tier）の近似（+5点）
+                if (c.tier === targetCreator.tier) simScore += 5;
+
+                // 4. ステータスブースト（今日本にいる、またはすぐ来る人を優先推薦：+8点）
+                if (c.in_japan) simScore += 8;
+                else if (c.coming_soon) simScore += 4;
+
+                // 5. 決定論的マイクロバリアンス（シードベースの微細な揺らぎ: -3% 〜 +3%）
+                const seedString = String(c.id) + String(targetCreator.id);
+                let hash = 0;
+                for (let i = 0; i < seedString.length; i++) {
+                    hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const jitter = (Math.abs(hash) % 7) - 3;
+                simScore += jitter;
+
+                // 正規化 (AIのリアリティを出すため 70% 〜 98% の間に収める)
+                simScore = Math.max(70, Math.min(simScore, 98));
+
+                return { ...c, similarityScore: Math.floor(simScore) };
+            })
+            .sort((a: any, b: any) => b.similarityScore - a.similarityScore) // 類似度スコアが高い順にソート
+            .slice(0, 5); // 上位5名を抽出
+
+        return alternatives;
     };
 
     const handlePushAlternative = async (offerId: string, altId: string) => {
@@ -1521,7 +1563,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         field="reward_deposit"
                                                                                         currentValue={offer.reward_deposit ? offer.updated_at : null}
                                                                                         currentStatus={offer.status}
-                                                                                        currentPostUrl={offer.payment_link}
+                                                                                        currentPostUrl={offer.reward_paymentlink}
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                     <TimelineButton
@@ -1585,12 +1627,9 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         <Sparkles size={16} />
                                                                                     </span>
                                                                                     <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">
-                                                                                        AI Alternative Suggestions
+                                                                                        代替アンバサダー候補
                                                                                     </h4>
                                                                                 </div>
-                                                                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-                                                                                    Based on Vibe & Genre Match
-                                                                                </span>
                                                                             </div>
 
                                                                             <div className="grid grid-cols-5 gap-4">
@@ -1598,20 +1637,43 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                     <motion.div
                                                                                         key={alt.id}
                                                                                         whileHover={{ y: -4 }}
-                                                                                        className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200"
+                                                                                        className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-xl hover:border-indigo-200 cursor-pointer relative overflow-hidden"
                                                                                     >
                                                                                         <div className="relative mb-3">
                                                                                             <img
-                                                                                                src={alt.thumbnail_url || 'https://via.placeholder.com/150'}
+                                                                                                src={alt.thumbnail_url || alt.profile_image_url || 'https://via.placeholder.com/150'}
                                                                                                 className="w-16 h-16 rounded-full object-cover ring-2 ring-slate-50 shadow-sm transition-transform group-hover:scale-105"
                                                                                                 referrerPolicy="no-referrer"
+                                                                                                alt={alt.name}
                                                                                             />
-                                                                                            <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
-                                                                                                <Check size={8} />
-                                                                                            </div>
+
+                                                                                            {/* ▼▼ 滞在ステータスバッジの追加 ▼▼ */}
+                                                                                            {alt.in_japan ? (
+                                                                                                <div className="absolute -bottom-1 -right-2 bg-emerald-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-0.5">
+                                                                                                    <MapPin size={8} /> IN JAPAN
+                                                                                                </div>
+                                                                                            ) : alt.coming_soon ? (
+                                                                                                <div className="absolute -bottom-1 -right-2 bg-blue-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-0.5">
+                                                                                                    <Plane size={8} /> SOON
+                                                                                                </div>
+                                                                                            ) : (
+                                                                                                <div className="absolute -bottom-1 -right-1 bg-indigo-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
+                                                                                                    <Check size={8} />
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {/* ▲▲ 追加ここまで ▲▲ */}
                                                                                         </div>
-                                                                                        <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">{alt.name}</p>
-                                                                                        <p className="text-[10px] font-bold text-slate-400 mb-4">{alt.followersStr} followers</p>
+
+                                                                                        <p className="text-xs font-black text-slate-900 truncate w-full mb-0.5">@{alt.name || alt.handle}</p>
+                                                                                        <p className="text-[10px] font-bold text-slate-400 mb-2">{alt.followersStr || alt.followers || '---'} followers</p>
+
+                                                                                        {/* ▼▼ 計算された類似度スコアを表示（90%以上は色を変えてハイライト） ▼▼ */}
+                                                                                        <p className={`text-[10px] font-black px-2 py-0.5 rounded-md mb-4 border ${alt.similarityScore >= 90
+                                                                                            ? 'text-amber-600 bg-amber-50 border-amber-200 shadow-[0_0_8px_rgba(251,191,36,0.3)]'
+                                                                                            : 'text-indigo-600 bg-indigo-50 border-indigo-100'
+                                                                                            }`}>
+                                                                                            {alt.similarityScore}% Match
+                                                                                        </p>
 
                                                                                         <button
                                                                                             onClick={(e) => {

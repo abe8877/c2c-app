@@ -7,9 +7,9 @@ import {
     Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers,
     CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users,
     AlertCircle, Camera, Bell, User, Gift, Diamond, X, AlertTriangle,
-    Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud,
-    Plus, Instagram, MessageSquareQuote, BarChart3, TrendingUp, Home,
-    Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target,
+    Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud, Download,
+    Plus, MessageSquareQuote, BarChart3, TrendingUp, Home,
+    Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target, Plane,
     SettingsIcon, Video, Loader2,
     Smartphone, DollarSign,
     DiamondIcon,
@@ -47,7 +47,7 @@ export interface Asset {
     delivery_at?: string;
     finalized?: boolean;
     reward_deposit?: boolean;
-    payment_link?: string;
+    reward_paymentlink?: string;
     comment_count?: number;
     like_count?: number;
     save_count?: number;
@@ -86,6 +86,9 @@ export interface Creator {
     offer_count?: number;
     pricing_guide?: string;
     avatar_url?: string;
+    in_japan?: boolean;
+    coming_soon?: boolean;
+    ai_insight?: string;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -173,12 +176,38 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                                 <Sparkles size={12} className="text-yellow-400" /> @{creatorName}
                             </p>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/10 transition-all active:scale-95"
-                        >
-                            <X size={24} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {isDirectVideo && (
+                                <button
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        try {
+                                            const response = await fetch(currentUrl);
+                                            const blob = await response.blob();
+                                            const url = window.URL.createObjectURL(blob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `${creatorName}_video.mp4`;
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            document.body.removeChild(a);
+                                            window.URL.revokeObjectURL(url);
+                                        } catch {
+                                            window.open(currentUrl, '_blank');
+                                        }
+                                    }}
+                                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/10 transition-all active:scale-95"
+                                >
+                                    <Download size={24} />
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full border border-white/10 transition-all active:scale-95"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="relative flex items-center h-[70vh] md:h-[85vh] aspect-[9/16] justify-center" onClick={(e) => e.stopPropagation()}>
@@ -204,6 +233,7 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
                                         src={currentUrl}
                                         controls
                                         autoPlay
+                                        muted
                                         className="w-full h-full object-cover"
                                         controlsList="nodownload"
                                         onContextMenu={(e) => e.preventDefault()}
@@ -296,7 +326,32 @@ const CreatorCard = ({
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             {/* Top Badges */}
-            <div className="absolute top-3 left-3 flex gap-1.5 z-10 flex-wrap">
+            <div className="absolute top-3 left-3 flex gap-1.5 z-10 flex-wrap max-w-[90%]">
+                {/* 1. 滞在ステータス (Priority 1) */}
+                {creator.in_japan && (
+                    <span className="backdrop-blur-md bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-emerald-500/50 font-black flex items-center gap-1 shadow-[0_0_10px_rgba(16,185,129,0.3)] tracking-wider">
+                        <MapPin className="w-2.5 h-2.5 fill-current" /> IN JAPAN
+                    </span>
+                )}
+                {!creator.in_japan && creator.coming_soon && (
+                    <span className="backdrop-blur-md bg-blue-500/20 text-blue-400 text-[10px] px-2 py-0.5 rounded border border-blue-500/50 font-black flex items-center gap-1 shadow-[0_0_10px_rgba(59,130,246,0.3)] tracking-wider">
+                        <Plane className="w-2.5 h-2.5 fill-current" /> COMING SOON
+                    </span>
+                )}
+
+                {/* 2. パフォーマンス (Priority 2) */}
+                {creator.is_hot && (
+                    <span className="backdrop-blur-md bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded border border-orange-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)] animate-pulse">
+                        <Flame className="w-2.5 h-2.5 fill-current" /> HOT
+                    </span>
+                )}
+                {(parseInt((creator.followers || "0").toString().replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
+                    <span className="backdrop-blur-md bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded border border-amber-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                        <Crown className="w-2.5 h-2.5 fill-current" /> 人気
+                    </span>
+                )}
+
+                {/* 3. ジャンルタグ (Priority 3: 視覚的優先度を下げる) */}
                 {(() => {
                     const safeGenres = Array.isArray(creator.genre)
                         ? creator.genre
@@ -304,37 +359,34 @@ const CreatorCard = ({
                     return safeGenres.slice(0, 3).map((g: string) => (
                         <span
                             key={g}
-                            className="backdrop-blur-md bg-black/30 text-white text-[10px] px-2 py-0.5 rounded border border-white/20 font-bold flex items-center gap-1"
+                            className="backdrop-blur-md bg-black/50 text-white/80 text-[9px] px-1.5 py-0.5 rounded border border-white/10 font-bold flex items-center gap-1"
                         >
                             {genreEmoji[g] || '✨'} {g}
                         </span>
                     ));
                 })()}
-                {creator.is_hot && (
-                    <span className="backdrop-blur-md bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded border border-orange-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)]">
-                        <Flame className="w-2.5 h-2.5 fill-current" /> HOT
-                    </span>
-                )}
-                {(parseInt(creator.followers.replace(/,/g, '')) >= 50000 || (creator.offer_count ?? 0) >= 10) && (
-                    <span className="backdrop-blur-md bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded border border-amber-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(245,158,11,0.3)]">
-                        <Crown className="w-2.5 h-2.5 fill-current" /> 人気
-                    </span>
-                )}
             </div>
 
             {/* Bottom Content */}
             <div className="absolute bottom-0 left-0 right-0 p-4 z-10 text-left">
-                {/* VIBEマッチ度バッジ - Moved above name as requested */}
-                {hasScore && (
-                    <div className="mb-2">
-                        <span className={`text-[11px] font-black tracking-tight whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 90
-                            ? 'text-amber-400'
-                            : (creator.vibeMatchScore ?? 0) >= 80
-                                ? 'text-teal-400'
-                                : 'text-white/70'
-                            }`}>
-                            マッチ度 {creator.vibeMatchScore}%
-                        </span>
+
+                {/* VIBEマッチ度バッジ & AI Insight */}
+                {(hasScore || creator.ai_insight) && (
+                    <div className="mb-2 flex flex-col gap-1">
+                        {hasScore && (
+                            <span className={`text-[12px] font-black tracking-tight whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 95 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' :
+                                (creator.vibeMatchScore ?? 0) >= 90 ? 'text-amber-200 drop-shadow-sm' :
+                                    (creator.vibeMatchScore ?? 0) >= 80 ? 'text-white' : 'text-white/70 font-medium'
+                                }`}>
+                                マッチ度 {creator.vibeMatchScore}%
+                            </span>
+                        )}
+                        {creator.ai_insight && (
+                            <div className="flex items-start gap-1 text-[9px] sm:text-[10px] text-indigo-200 bg-indigo-900/40 border border-indigo-500/30 px-2 py-1 rounded backdrop-blur-md w-fit shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+                                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
+                                <span className="leading-snug font-medium">{creator.ai_insight}</span>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -347,7 +399,7 @@ const CreatorCard = ({
 
                             {/* Simple Tooltip */}
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black/90 text-white text-[9px] rounded-lg opacity-0 invisible group-hover/verified:opacity-100 group-hover/verified:visible transition-all z-50 pointer-events-none border border-white/10">
-                                本人確認済みの公式メンバーです。確実にマッチングします。
+                                認証済みアンバサダー
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-black/90" />
                             </div>
                         </div>
@@ -370,7 +422,7 @@ const CreatorCard = ({
                     {/* AUDIENCE - Vertical stack, Unified Glass Box UI */}
                     <div className="flex items-center gap-1.5 text-white/90 text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-1 bg-white/15 backdrop-blur-md rounded border border-white/10 w-fit truncate max-w-full">
                         <Globe className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/50 shrink-0" />
-                        <span className="truncate">主な視聴者層: {creator.nationality || creator.ethnicity || 'Global'}</span>
+                        <span className="truncate">主な視聴者層: {creator.ethnicity || creator.nationality || 'Global'}</span>
                     </div>
 
                     {/* PRICING GUIDE - Multi-line supported */}
@@ -1502,7 +1554,7 @@ export default function VibeCatalogue({
             .from('assets')
             .select(`
                 *,
-                creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url )
+                creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url, thumbnail_url )
             `)
             .eq('shop_id', shop.id);
 
@@ -1549,22 +1601,18 @@ export default function VibeCatalogue({
     const [revisionRequestId, setRevisionRequestId] = useState<string | null>(null);
     const [revisionMessage, setRevisionMessage] = useState("");
     const [revisionSuccessId, setRevisionSuccessId] = useState<string | null>(null);
+    const [tappedVideoCardId, setTappedVideoCardId] = useState<string | null>(null);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
-        const regionMatch = filterRegion === 'ALL'
-            || (filterRegion === 'WESTERN' && (c.ethnicity === 'AMERICA' || c.ethnicity === 'EUROPE'))
-            || (filterRegion === 'ASIAN' && c.ethnicity === 'ASIA')
-            || (filterRegion === 'GLOBAL');
         // Tier S/A 限定 + Public(onboarded && approved) のみ表示（ノイズゼロ担保）
         const tierOk = c.tier === 'S' || c.tier === 'A';
         const publicOk = c.is_public && c.review_status === 'approved';
-        return genreMatch && regionMatch && tierOk && publicOk;
+        return genreMatch && tierOk && publicOk;
     }).map(c => {
-        // ===== VIBEマッチングスコア計算 (Base+Bonus方式) =====
+        // ===== VIBEマッチングスコア計算 (Dynamic AI Gradient方式) =====
         const creatorVibes = c.vibe_tags.map(t => t.toLowerCase());
-
-        // 1. VIBEクラスターのマッチング（部分一致）
+        // 1. VIBEクラスターのマッチング
         const matched = shopVibeClusters.filter(cluster =>
             creatorVibes.some(tag =>
                 tag.toLowerCase().includes(cluster.toLowerCase()) ||
@@ -1572,31 +1620,35 @@ export default function VibeCatalogue({
             )
         );
 
-        // 2. Base Score: カテゴリ必須条件を満たしている時点で75%
-        const baseScore = 75;
+        // 2. Base Score: 基礎点を下げてグラデーションの幅を作る
+        let score = 72;
 
-        // 3. Vibe Bonus: 一致クラスターごとに+10%
-        const vibeBonus = matched.length * 10;
+        // 3. Vibe Bonus: 大味な10点から、刻む点数（+6点）へ変更
+        score += matched.length * 6;
 
-        // 4. Tier Bonus: Supabaseの tier カラムを参照 (安定化のため揺らぎを排除)
-        let tierBonus = 0;
-        if (c.tier === 'S') tierBonus = 5;
-        else if (c.tier === 'A') tierBonus = 3;
-        else if (c.tier === 'B') tierBonus = 2;
+        // 4. Tier Bonus: 階級の価値を少し強調
+        if (c.tier === 'S') score += 8;
+        else if (c.tier === 'A') score += 5;
+        else if (c.tier === 'B') score += 2;
 
-        // 5. 合計スコア（上限は99%）
-        // 安定化のため、10の倍数付近でキリの良い数字にする（若干の揺らぎを吸収）
-        const rawScore = baseScore + vibeBonus + tierBonus;
-        let score = Math.min(rawScore, 99);
+        // 5. Status Boost: 日本滞在やHOTの勢いをスコアに直結
+        if (c.coming_soon) score += 10;
+        if (c.in_japan) score += 4;
+        if (c.is_hot) score += 5;
 
-        // スコア表示の安定化: 5%刻み、または下1桁を固定するなどの処理を検討。
-        // ここでは単純に整数であることを保証し、上限を99にする
-        score = Math.floor(score);
-
-        // 6. HOT Boost: 急上昇クリエイターを確実に上位へ (さらに+5ポイント、上限100へ拡大)
-        if (c.is_hot) {
-            score = Math.min(score + 5, 100);
+        // 6. 決定論的マイクロバリアンス (Jitter) -> ★ここが魔法のスパイス
+        // クリエイターID等をシードにして、常に同じ「-3 〜 +4」の揺らぎを発生させる
+        const seedString = c.id + (shopVibeClusters.join("") || "default");
+        let hash = 0;
+        for (let i = 0; i < seedString.length; i++) {
+            hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
         }
+        const jitter = (Math.abs(hash) % 8) - 3; // -3% 〜 +4% の微細なバラツキ
+        score += jitter;
+
+        // 7. 正規化 (AIのリアリティを出すため、上限は絶対に「99%」とする)
+        score = Math.max(68, Math.min(score, 99));
+        score = Math.floor(score);
 
         return { ...c, vibeMatchScore: score, matchedClusters: matched };
     }).sort((a, b) => {
@@ -2266,7 +2318,7 @@ export default function VibeCatalogue({
                                                 <Sparkles size={14} className="text-yellow-400" />
                                             </div>
                                             <p className="text-[11px] font-bold text-stone-200 leading-relaxed text-left">
-                                                資産鮮度は、SNSにおけるPR効果の目安です。投稿後1ヶ月ほどがピークで、その後は緩やかに低下します。SNS以外にもGoogleマップに掲載して活用したり、定期的に動画を追加投稿することで、集客効果を最大化できます。
+                                                資産鮮度は、SNSにおけるPR効果の目安です。投稿後約1ヶ月がピークで、その後徐々に低下します。SNS以外にもGoogleマップに掲載して活用したり、定期的に動画を追加投稿することで、集客効果を最大化できます。
                                             </p>
                                         </div>
                                     </div>
@@ -2281,7 +2333,7 @@ export default function VibeCatalogue({
                                         .map((asset) => {
                                             const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
                                             const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
-                                            const src = asset.creator?.avatar_url || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=3000&auto=format&fit=crop';
+                                            const src = asset.creator?.thumbnail_url || asset.creator?.avatar_url || null;
                                             const isDeclined = asset.status === 'DECLINED';
 
                                             // タイムラインの構築（実際のデータがない場合はフォールバック表示）
@@ -2310,7 +2362,7 @@ export default function VibeCatalogue({
                                             return (
                                                 <div key={asset.id} className={`w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col`}>
                                                     <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
-                                                        {src && !src.includes('unsplash.com/photo-1529626455594-4ff0802cfb7e') ? (
+                                                        {src ? (
                                                             <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                                                         ) : (
                                                             <div className="w-full h-full bg-stone-100 flex items-center justify-center">
@@ -2405,8 +2457,8 @@ export default function VibeCatalogue({
                                                                     <p className="text-[10px] font-bold text-red-800 text-center leading-tight">アンバサダー報酬のご入金が必要です。<br />デポジット確認後、撮影が開始されます。</p>
                                                                     <button
                                                                         onClick={() => {
-                                                                            if (asset.payment_link) {
-                                                                                window.open(asset.payment_link, '_blank');
+                                                                            if (asset.reward_paymentlink) {
+                                                                                window.open(asset.reward_paymentlink, '_blank');
                                                                             } else {
                                                                                 alert("支払いリンクがまだ発行されていません。運営が発行中のため、しばらくお待ちください。");
                                                                             }
@@ -2467,29 +2519,45 @@ export default function VibeCatalogue({
 
                                             return (
                                                 <div key={asset.id} className="w-full bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col relative max-w-sm">
-                                                    <div className="aspect-video bg-stone-100 relative overflow-hidden flex items-center justify-center">
-                                                        {/* Card Header Background: Creator Thumbnail */}
-                                                        <img
-                                                            src={asset.creator?.thumbnail_url || asset.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(asset.creator?.name || 'A')}&background=random`}
-                                                            className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110"
-                                                            alt=""
-                                                        />
+                                                    <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
+                                                        {/* Card Header Background: Creator Thumbnail or Gray Fallback */}
+                                                        {(() => {
+                                                            const thumbSrc = asset.creator?.thumbnail_url || asset.creator?.avatar_url;
+                                                            if (thumbSrc) {
+                                                                return <img src={thumbSrc} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110" alt="" />;
+                                                            } else {
+                                                                return <div className="absolute inset-0 w-full h-full bg-stone-100" />;
+                                                            }
+                                                        })()}
 
                                                         {asset.video_url ? (
-                                                            <div className="w-full h-full relative group/video p-3">
+                                                            <div className="w-full h-full relative group/video p-3" onClick={() => {
+                                                                if (isFullyFinalized) setTappedVideoCardId(prev => prev === asset.id ? null : asset.id);
+                                                            }}>
                                                                 <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-black relative ring-1 ring-white/20 shadow-2xl">
                                                                     <video src={asset.video_url} className="w-full h-full object-cover" muted loop autoPlay playsInline controlsList="nodownload" onContextMenu={(e) => e.preventDefault()} />
-                                                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-100 md:opacity-0 md:group-hover/video:opacity-100 transition-opacity gap-2 p-4">
+
+                                                                    {/* ボタンオーバーレイ: isFullyFinalized時はタップで切替、非finalized時は常時表示 */}
+                                                                    <div className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 p-4 transition-opacity ${isFullyFinalized
+                                                                        ? (tappedVideoCardId === asset.id ? 'opacity-100 z-20' : 'opacity-0 pointer-events-none md:group-hover/video:opacity-100 md:group-hover/video:pointer-events-auto')
+                                                                        : 'opacity-100'
+                                                                        }`}>
                                                                         <button
-                                                                            onClick={() => setSelectedVideo({ urls: [asset.video_url!], name: asset.creator?.name || 'Ambassador' })}
+                                                                            onClick={(e) => { e.stopPropagation(); setSelectedVideo({ urls: [asset.video_url!], name: asset.creator?.name || 'Ambassador' }); }}
                                                                             className="max-w-[180px] w-full bg-white/90 text-black px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-xl"
                                                                         >
                                                                             <Eye size={14} className="text-indigo-600" />
                                                                             動画データを確認する
                                                                         </button>
+                                                                        {/* 納品承認済み＆投稿URL未提出時のサブテキスト */}
+                                                                        {isConfirmed && !asset.published_url && (
+                                                                            <p className="text-[7.5px] text-white font-bold text-center leading-tight tracking-tighter opacity-90 max-w-[200px]">
+                                                                                動画が投稿されると本依頼は完了となります。<br />クリエイターの投稿対応をお待ちください。
+                                                                            </p>
+                                                                        )}
                                                                         {asset.published_url && (
                                                                             <button
-                                                                                onClick={() => setSelectedVideo({ urls: [asset.published_url!], name: asset.creator?.name || 'Ambassador' })}
+                                                                                onClick={(e) => { e.stopPropagation(); setSelectedVideo({ urls: [asset.published_url!], name: asset.creator?.name || 'Ambassador' }); }}
                                                                                 className="max-w-[180px] w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-colors shadow-xl"
                                                                             >
                                                                                 <Video size={14} className="text-white" />
@@ -2497,8 +2565,10 @@ export default function VibeCatalogue({
                                                                             </button>
                                                                         )}
                                                                     </div>
-                                                                    {isFullyFinalized && (
-                                                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[92%] bg-black/60 backdrop-blur-xl px-3 py-2.5 rounded-2xl border border-white/20 transition-all flex flex-col items-center group-hover/video:opacity-0">
+
+                                                                    {/* 数値UI: isFullyFinalized時のみ表示。タップ中は非表示 */}
+                                                                    {isFullyFinalized && tappedVideoCardId !== asset.id && (
+                                                                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[92%] bg-black/60 backdrop-blur-xl px-3 py-2.5 rounded-2xl border border-white/20 transition-all flex flex-col items-center md:group-hover/video:opacity-0">
                                                                             <div className="w-full flex items-center justify-around">
                                                                                 <div className="flex flex-col items-center gap-0.5">
                                                                                     <div className="flex items-center gap-1 text-white font-black text-[12px]">
@@ -2531,13 +2601,9 @@ export default function VibeCatalogue({
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center p-3">
-                                                                <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-stone-100 flex items-center justify-center ring-1 ring-black/5">
-                                                                    <img
-                                                                        src={asset.creator?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(asset.creator?.name || 'A')}&background=random`}
-                                                                        className="w-full h-full object-cover"
-                                                                        alt=""
-                                                                    />
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                                    <User className="w-12 h-12 text-stone-300" />
                                                                 </div>
                                                             </div>
                                                         )}
@@ -2570,7 +2636,7 @@ export default function VibeCatalogue({
                                                                     <p className="text-[10px] font-black text-slate-800">修正依頼を送信しました</p>
                                                                 </motion.div>
                                                             )}
-                                                            <p className="text-[10px] font-black text-stone-400 uppercase mb-1">依頼開始日: {asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2026.01.01'}</p>
+                                                            <p className="text-[10px] font-black text-stone-400 uppercase mb-1">納品日: {asset.delivery_at ? new Date(asset.delivery_at).toISOString().split('T')[0] : (asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '---')}</p>
                                                             <h4 className="text-md font-black truncate leading-tight">@{asset.creator?.name || 'Creator'}</h4>
                                                         </div>
 
@@ -2641,9 +2707,27 @@ export default function VibeCatalogue({
                                                             </div>
                                                         ) : (
                                                             <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
-                                                                {isFullyFinalized && (
-                                                                    <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase mt-1">
-                                                                        <UploadCloud className="w-3.5 h-3.5" /> 動画をダウンロードする
+                                                                {isFullyFinalized && asset.video_url && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                const response = await fetch(asset.video_url!);
+                                                                                const blob = await response.blob();
+                                                                                const url = window.URL.createObjectURL(blob);
+                                                                                const a = document.createElement('a');
+                                                                                a.href = url;
+                                                                                a.download = `${asset.creator?.name || 'video'}_${asset.id.slice(0, 8)}.mp4`;
+                                                                                document.body.appendChild(a);
+                                                                                a.click();
+                                                                                document.body.removeChild(a);
+                                                                                window.URL.revokeObjectURL(url);
+                                                                            } catch {
+                                                                                window.open(asset.video_url!, '_blank');
+                                                                            }
+                                                                        }}
+                                                                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-all uppercase mt-1 active:scale-95"
+                                                                    >
+                                                                        <Download className="w-3.5 h-3.5" /> 動画をダウンロードする
                                                                     </button>
                                                                 )}
                                                             </div>

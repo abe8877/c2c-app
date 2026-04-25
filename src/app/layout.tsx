@@ -25,8 +25,8 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "INSIDERS. - Inbound Marketing with AI & Elite Creators",
-  description: "インバウンド集客に特化した、S/Aランククリエイター限定の招待制マッチングプラットフォーム。AIによるVIBE解析で、ブランドに最適なクリエイターを自動選定します。",
+  title: "INSIDERS. | 世界中のスマホに『インバウンド動画看板』を立てよう",
+  description: "厳選されたアンバサダーにショート動画PRを直接オファーできるインバウンド特化型プラットフォーム",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -52,13 +52,11 @@ export default function RootLayout({
 }>) {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
+    "@type": "WebSite",
     "name": "INSIDERS.",
     "url": "https://insiders-hub.jp",
-    "description": "インバウンド集客に特化した、S/Aランククリエイター限定の招待制マッチングプラットフォーム。AIによるVIBE解析で、ブランドに最適なクリエイターを自動選定します。",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "All",
-    "author": {
+    "description": "厳選されたアンバサダーにショート動画PRを直接オファーできるインバウンド特化型プラットフォーム",
+    "provider": {
       "@type": "Organization",
       "name": "株式会社nots"
     },

@@ -116,16 +116,18 @@ export default async function AdvertiserPage() {
             stats.offeredCount = allAssets.filter(a => a.status === 'OFFERED').length;
             stats.completedCount = allAssets.filter(a => a.status === 'COMPLETED').length;
 
-            // 鮮度計算: 投稿後1ヶ月(30日)をピークとし、その後緩やかに減衰するロジック
+            // 鮮度計算: 投稿後2週間(14日)は100%を維持、その後4週間目(28日)で20%まで線形に減衰
             const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED'].includes(a.status));
             if (completedAssets.length > 0) {
                 let totalFreshness = 0;
                 completedAssets.forEach(a => {
                     const daysOld = a.created_at ? Math.floor((new Date().getTime() - new Date(a.created_at).getTime()) / (1000 * 3600 * 24)) : 0;
                     let assetFreshness = 100;
-                    if (daysOld > 30) {
-                        // 30日以降は1日1%ずつ低下（最低限10%は残す）
-                        assetFreshness = Math.max(10, 100 - (daysOld - 30));
+                    if (daysOld > 14) {
+                        // 14日〜28日の14日間で100%→20%へ線形減衰（最低20%）
+                        const decayDays = daysOld - 14;
+                        const decayRate = (80 / 14); // 約5.7%/日
+                        assetFreshness = Math.max(20, Math.round(100 - decayDays * decayRate));
                     }
                     totalFreshness += assetFreshness;
                 });
@@ -143,7 +145,7 @@ export default async function AdvertiserPage() {
             .from('assets')
             .select(`
                 *,
-                creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url )
+                creator: creators ( name, tiktok_handle, portfolio_video_urls, avatar_url, thumbnail_url )
             `)
             .eq('shop_id', session.user.id);
 
