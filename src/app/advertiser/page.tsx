@@ -109,7 +109,7 @@ export default async function AdvertiserPage() {
     if (clientTag) {
         const { data: allAssets } = await supabase
             .from('assets')
-            .select('status, created_at')
+            .select('status, created_at, published_at')
             .eq('client_tag', clientTag);
 
         if (allAssets) {
@@ -117,16 +117,17 @@ export default async function AdvertiserPage() {
             stats.completedCount = allAssets.filter(a => a.status === 'COMPLETED').length;
 
             // 鮮度計算: 投稿後2週間(14日)は100%を維持、その後4週間目(28日)で20%まで線形に減衰
-            const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED'].includes(a.status));
+            const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED', 'APPROVED'].includes(a.status));
             if (completedAssets.length > 0) {
                 let totalFreshness = 0;
                 completedAssets.forEach(a => {
-                    const daysOld = a.created_at ? Math.floor((new Date().getTime() - new Date(a.created_at).getTime()) / (1000 * 3600 * 24)) : 0;
+                    const referenceDate = a.published_at || a.delivery_at || a.visit_at || a.created_at;
+                    const daysOld = referenceDate ? Math.floor((new Date().getTime() - new Date(referenceDate).getTime()) / (1000 * 3600 * 24)) : 0;
                     let assetFreshness = 100;
-                    if (daysOld > 14) {
-                        // 14日〜28日の14日間で100%→20%へ線形減衰（最低20%）
-                        const decayDays = daysOld - 14;
-                        const decayRate = (80 / 14); // 約5.7%/日
+                    if (daysOld > 30) {
+                        // 30日〜60日の30日間で100%→20%へ線形減衰（最低20%）
+                        const decayDays = daysOld - 30;
+                        const decayRate = (80 / 30); 
                         assetFreshness = Math.max(20, Math.round(100 - decayDays * decayRate));
                     }
                     totalFreshness += assetFreshness;

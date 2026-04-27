@@ -1329,52 +1329,132 @@ export default function InsidersLP() {
 
                     {/* ROI Usecases */}
                     <div className="mt-20 max-w-5xl mx-auto">
-                        <h3 className="text-xl sm:text-2xl lg:text-2xl font-black text-center text-slate-900 mb-10 tracking-tight">
-                            インバウンドと好相性な業界・商品<br /><span className="text-indigo-600">-PR実施シミュレーション-</span>
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* ROI Usecases */}
+                    <div className="mt-32 max-w-6xl mx-auto px-4">
+                        <div className="text-center mb-16 space-y-4">
+                            <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                                インバウンドと好相性な業界・商品<br />
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                                    - PR実施シミュレーション -
+                                </span>
+                            </h3>
+                            <p className="text-slate-500 font-medium text-lg">
+                                わずかな来店・利用で、月額コストを超える集客効果が期待できます。
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Card 1 */}
-                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-teal-100/20 hover:shadow-teal-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-teal-50 border border-teal-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
-                                    🍵
+                            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl shadow-indigo-100/30 hover:shadow-indigo-200/50 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span className="text-8xl">🍣</span>
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">1. 飲食店・体験サービス</h4>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    <span className="font-black text-teal-500">看板メニューや独自の日本体験を紹介</span>
-                                </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
-                                    単価5千円の場合、依頼アンバサダー5組<br /><span className="underline decoration-teal-500 decoration-2 underline-offset-4 font-black">来店約20名で月額コストを回収</span>
-                                </p>
+                                <div className="w-16 h-16 bg-orange-50 border border-orange-100 rounded-2xl flex items-center justify-center mb-8 text-3xl group-hover:scale-110 transition-transform shadow-sm">
+                                    🍣
+                                </div>
+                                <h4 className="font-black text-slate-900 mb-6 text-xl tracking-tight">1. 飲食店・体験サービス</h4>
+                                <div className="space-y-6">
+                                    <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
+                                        <p className="text-orange-700 text-sm font-black leading-relaxed">
+                                            看板メニューや独自の日本体験を<br />
+                                            シズル感たっぷりに紹介
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            <span>単価 5,000円の場合</span>
+                                            <span className="text-indigo-600">ROI達成目安</span>
+                                        </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                whileInView={{ width: '85%' }}
+                                                transition={{ duration: 1.5, delay: 0.5 }}
+                                                className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"
+                                            />
+                                        </div>
+                                        <p className="text-slate-900 text-lg leading-tight font-black mt-4">
+                                            依頼 5組 / <span className="text-2xl text-orange-600">来店 20名</span><br />
+                                            <span className="text-sm font-bold text-slate-500 italic">で月額コストを完全回収</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Card 2 */}
-                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-rose-100/20 hover:shadow-rose-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
+                            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl shadow-indigo-100/30 hover:shadow-indigo-200/50 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span className="text-8xl">💅</span>
+                                </div>
+                                <div className="w-16 h-16 bg-rose-50 border border-rose-100 rounded-2xl flex items-center justify-center mb-8 text-3xl group-hover:scale-110 transition-transform shadow-sm">
                                     💆
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">2. 美容系（サロン・エステ等）</h4>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    <span className="font-black text-rose-500">日本ならではの高品質な美容体験を紹介</span>
-                                </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
-                                    単価1万円の場合、依頼アンバサダー3組<br /><span className="underline decoration-rose-500 decoration-2 underline-offset-4 font-black">来店約8名で月額コストを回収</span>
-                                </p>
+                                <h4 className="font-black text-slate-900 mb-6 text-xl tracking-tight">2. 美容・サロン・エステ</h4>
+                                <div className="space-y-6">
+                                    <div className="p-4 bg-rose-50/50 rounded-2xl border border-rose-100">
+                                        <p className="text-rose-700 text-sm font-black leading-relaxed">
+                                            日本ならではの高品質な<br />
+                                            美容体験をステップごとに紹介
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            <span>単価 10,000円の場合</span>
+                                            <span className="text-indigo-600">ROI達成目安</span>
+                                        </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                whileInView={{ width: '70%' }}
+                                                transition={{ duration: 1.5, delay: 0.7 }}
+                                                className="h-full bg-gradient-to-r from-rose-400 to-rose-500 rounded-full"
+                                            />
+                                        </div>
+                                        <p className="text-slate-900 text-lg leading-tight font-black mt-4">
+                                            依頼 3組 / <span className="text-2xl text-rose-600">来店 8名</span><br />
+                                            <span className="text-sm font-bold text-slate-500 italic">で月額コストを完全回収</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Card 3 */}
-                            <div className="bg-white/60 backdrop-blur-md rounded-2xl p-6 border border-slate-200 shadow-xl shadow-indigo-100/20 hover:shadow-indigo-200/40 hover:-translate-y-1 transition-all group flex flex-col items-center text-center">
-                                <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center mb-4 text-xl group-hover:scale-110 transition-transform">
+                            <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl shadow-indigo-100/30 hover:shadow-indigo-200/50 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <span className="text-8xl">🏨</span>
+                                </div>
+                                <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center mb-8 text-3xl group-hover:scale-110 transition-transform shadow-sm">
                                     🏨
                                 </div>
-                                <h4 className="font-black text-slate-900 mb-3 text-[15px]">3. 宿泊施設</h4>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold">
-                                    <span className="font-black text-indigo-500">アクセス性や周辺情報をセットで紹介</span>
-                                </p>
-                                <p className="text-slate-600 text-sm leading-relaxed font-bold mt-2">
-                                    単価3万円の場合、依頼アンバサダー1~2組<br /><span className="underline decoration-indigo-500 decoration-2 underline-offset-4 font-black">来店約3名で月額コストを回収</span>
-                                </p>
+                                <h4 className="font-black text-slate-900 mb-6 text-xl tracking-tight">3. 宿泊施設・ホテル</h4>
+                                <div className="space-y-6">
+                                    <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                                        <p className="text-indigo-700 text-sm font-black leading-relaxed">
+                                            アクセス性や周辺の観光情報を<br />
+                                            セットで魅力的に紹介
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            <span>単価 30,000円の場合</span>
+                                            <span className="text-indigo-600">ROI達成目安</span>
+                                        </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <motion.div 
+                                                initial={{ width: 0 }}
+                                                whileInView={{ width: '60%' }}
+                                                transition={{ duration: 1.5, delay: 0.9 }}
+                                                className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
+                                            />
+                                        </div>
+                                        <p className="text-slate-900 text-lg leading-tight font-black mt-4">
+                                            依頼 1~2組 / <span className="text-2xl text-indigo-600">来店 3名</span><br />
+                                            <span className="text-sm font-bold text-slate-500 italic">で月額コストを完全回収</span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </section >

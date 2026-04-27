@@ -358,6 +358,8 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
             // 投稿済みURLが渡された場合は保存する
             if (extraData?.postUrl) {
                 (currentDetails as any).post_url = extraData.postUrl;
+                updatePayload.published_url = extraData.postUrl;
+                updatePayload.published_at = timestamp || new Date().toISOString();
             }
 
             (currentDetails as any).timeline = timeline;
@@ -381,6 +383,66 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
             .eq('id', assetId);
 
         if (error) throw error;
+
+        // --- 通知処理を追加 ---
+        try {
+            const { data: asset } = await supabaseAdmin
+                .from('assets')
+                .select(`
+                    shop_id,
+                    creator_id,
+                    shops ( name, login_email, notification_email, email_notifications_enabled ),
+                    creators ( name, email )
+                `)
+                .eq('id', assetId)
+                .single();
+
+            if (asset) {
+                const shop = asset.shops as any;
+                const creator = asset.creators as any;
+                
+                let subject = "[INSIDERS] ステータス更新のお知らせ";
+                let message = `案件（クリエイター: ${creator?.name}）のステータスが更新されました。`;
+                
+                if (field === 'approved_at') {
+                    subject = timestamp ? "[INSIDERS] オファーが承認されました" : "[INSIDERS] オファーが見送られました";
+                    message = timestamp 
+                        ? `${shop?.name} 様、${creator?.name} さんがオファーを承認しました。撮影の準備をお願いします。`
+                        : `${shop?.name} 様、残念ながら ${creator?.name} さんは今回のオファーを見送りました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
+                } else if (field === 'delivered_at') {
+                    subject = "[INSIDERS] 動画が納品されました";
+                    message = `${shop?.name} 様、${creator?.name} さんが動画を納品しました。アセットハブより内容を確認し、承認または修正依頼を行ってください。`;
+                } else if (field === 'confirmed_at') {
+                    subject = "[INSIDERS] 投稿が完了し、案件が終了しました";
+                    message = `${shop?.name} 様、${creator?.name} さんがSNSへの投稿を完了しました。これにて本案件はクローズとなります。`;
+                } else if (field === 'reward_deposit' && timestamp) {
+                    subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
+                    message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
+                }
+                
+                const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+                if (n8nWebhookUrl) {
+                    const recipientEmail = shop?.notification_email || shop?.login_email;
+                    // 通知設定が有効な場合のみ送信
+                    if (recipientEmail && shop?.email_notifications_enabled !== false) {
+                        fetch(n8nWebhookUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'STATUS_UPDATE',
+                                recipientEmail,
+                                subject,
+                                content: message,
+                                assetId
+                            })
+                        }).catch(err => console.error("Notification Webhook Error:", err));
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Action Notification Error:", err);
+        }
+
         return { success: true };
     });
 }

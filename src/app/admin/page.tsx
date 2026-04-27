@@ -849,37 +849,80 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         { id: '4', advertiser: 'Harajuku Desserts', creator: 'Mika K.', matchScore: 95, vibes: ['#Kawaii', '#Photogenic'], date: '2024-03-01 15:10' },
     ];
 
-    // 既存の getAlternatives をこのロジックで上書きします
-    const getAlternatives = (offer: any) => {
-        // 辞退/キャンセルされたクリエイターを取得（プロパティ名は実際のDBに合わせてください）
+    const getAlternatives = (offer: any, creators: any[]) => {
         const targetCreator = offer.creator || offer.target_creator;
         if (!targetCreator) return [];
 
         const targetVibes = targetCreator.vibe_tags ? targetCreator.vibe_tags.map((t: string) => t.toLowerCase()) : [];
 
-        // 全クリエイターリスト（allCreators 等のState/Props）から計算
-        // ※以下の `allCreators` は実際のデータ配列名に置き換えてください
+        // ▼ K/M 表記対応の堅牢な数値パーサー
+        const parseFollowers = (val: any) => {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            let strVal = val.toString().toUpperCase().replace(/,/g, '').trim();
+            let multiplier = 1;
+            if (strVal.endsWith('K')) { multiplier = 1000; strVal = strVal.slice(0, -1); }
+            else if (strVal.endsWith('M')) { multiplier = 1000000; strVal = strVal.slice(0, -1); }
+            const num = parseFloat(strVal);
+            return isNaN(num) ? 0 : num * multiplier;
+        };
+
+        const targetFollowers = parseFollowers(targetCreator.followers);
+
         const alternatives = creators
             .filter((c: any) => c.id !== targetCreator.id) // 本人は除外
-            .map((c: any) => {
-                let simScore = 65; // 類似度の基礎点
 
-                // 1. VIBEタグ・ジャンルの一致（最重要：+8点/個）
+            // ▼ 1: 厳密な公開条件フィルター（サムネ無しの不完全データを排除）
+            .filter((c: any) => {
+                const status = (c.status || '').toString().toLowerCase();
+                const reviewVal = (c.review_status || c.review || '').toString().toLowerCase();
+                const isPublic = status === 'public' || status === 'active';
+                const isApproved = reviewVal === 'approved';
+
+                return isPublic && isApproved;
+            })
+
+            // ▼ 2: フォロワー足切り（1.2倍制限）＋ フォロワー数不明の排除
+            .filter((c: any) => {
+                if (targetFollowers === 0) return true;
+                const cFollowers = parseFollowers(c.followers);
+                if (cFollowers === 0) return false; // フォロワー数不明は予算リスクになるため排除
+
+                return cFollowers <= (targetFollowers * 1.2);
+            })
+
+            // ▼ 3: スコアリング（コスパ重視ロジックを導入）
+            .map((c: any) => {
+                let simScore = 65; // 基礎点
+                const cFollowers = parseFollowers(c.followers); // コスパ計算用
+
+                // A. VIBEタグの一致（+8点/個）
                 const cVibes = c.vibe_tags ? c.vibe_tags.map((t: string) => t.toLowerCase()) : [];
                 const commonVibes = targetVibes.filter((tag: string) => cVibes.includes(tag));
                 simScore += commonVibes.length * 8;
 
-                // 2. オーディエンス（視聴者層）の一致（+5点）
+                // B. オーディエンスの一致（+5点）
                 if (c.audience === targetCreator.audience) simScore += 5;
 
-                // 3. 規模感（Tier）の近似（+5点）
-                if (c.tier === targetCreator.tier) simScore += 5;
+                // C. コスパボーナス（失注要因「予算乖離」を防ぐための最重要ロジック）
+                if (targetFollowers > 0) {
+                    const ratio = cFollowers / targetFollowers;
+                    if (ratio < 0.5) {
+                        simScore += 15; // 半分以下（超高コスパ：大加点）
+                    } else if (ratio < 0.8) {
+                        simScore += 10; // 8割未満（高コスパ：中加点）
+                    } else if (ratio <= 1.0) {
+                        simScore += 5;  // 同等以下（コスパ良：小加点）
+                    } else {
+                        simScore -= 5;  // 1.0倍超え〜1.2倍未満（予算リスク：減点）
+                    }
+                }
 
-                // 4. ステータスブースト（今日本にいる、またはすぐ来る人を優先推薦：+8点）
+                // D. ステータスブースト
                 if (c.in_japan) simScore += 8;
                 else if (c.coming_soon) simScore += 4;
 
-                // 5. 決定論的マイクロバリアンス（シードベースの微細な揺らぎ: -3% 〜 +3%）
+                // E. 決定論的マイクロバリアンス（シードベースの揺らぎ）
                 const seedString = String(c.id) + String(targetCreator.id);
                 let hash = 0;
                 for (let i = 0; i < seedString.length; i++) {
@@ -888,12 +931,22 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                 const jitter = (Math.abs(hash) % 7) - 3;
                 simScore += jitter;
 
-                // 正規化 (AIのリアリティを出すため 70% 〜 98% の間に収める)
+                // 正規化 (70% 〜 98% の間に収める)
                 simScore = Math.max(70, Math.min(simScore, 98));
 
-                return { ...c, similarityScore: Math.floor(simScore) };
+                return {
+                    ...c,
+                    similarityScore: Math.floor(simScore),
+                    parsedFollowers: cFollowers // ソート用に保持
+                };
             })
-            .sort((a: any, b: any) => b.similarityScore - a.similarityScore) // 類似度スコアが高い順にソート
+            // ▼ 4: 最終ソート（マッチ率降順 -> 同点ならフォロワー数昇順）
+            .sort((a: any, b: any) => {
+                if (b.similarityScore !== a.similarityScore) {
+                    return b.similarityScore - a.similarityScore; // 1. スコアが高い順
+                }
+                return a.parsedFollowers - b.parsedFollowers;     // 2. スコアが同じならフォロワーが少ない（コスパが良い）順
+            })
             .slice(0, 5); // 上位5名を抽出
 
         return alternatives;
@@ -1584,7 +1637,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         onUpdate={fetchData}
                                                                                     />
                                                                                     <TimelineButton
-                                                                                        label="Advertiser承認"
+                                                                                        label="広告主承認"
                                                                                         assetId={offer.id}
                                                                                         field="confirmed_at"
                                                                                         currentValue={offer.status === 'FINALIZED' ? offer.updated_at : null}
@@ -1592,16 +1645,6 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         currentPostUrl={offer.published_url}
                                                                                         onUpdate={fetchData}
                                                                                     />
-                                                                                    <TimelineButton
-                                                                                        label="運営最終承認"
-                                                                                        assetId={offer.id}
-                                                                                        field="final_status"
-                                                                                        currentValue={offer.finalized ? offer.updated_at : null}
-                                                                                        currentStatus={offer.status}
-                                                                                        onUpdate={fetchData}
-                                                                                    />
-                                                                                </div>
-                                                                                <div className="grid grid-cols-1 gap-2">
                                                                                     <TimelineButton
                                                                                         label="投稿済みURLを共有して依頼を完了する"
                                                                                         assetId={offer.id}
@@ -1633,7 +1676,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                             </div>
 
                                                                             <div className="grid grid-cols-5 gap-4">
-                                                                                {getAlternatives(offer).map((alt) => (
+                                                                                {getAlternatives(offer, creators).map((alt) => (
                                                                                     <motion.div
                                                                                         key={alt.id}
                                                                                         whileHover={{ y: -4 }}
