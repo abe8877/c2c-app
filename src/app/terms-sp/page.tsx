@@ -23,7 +23,7 @@ export default function SpecifiedCommercialTransactions() {
                         </div>
 
                         <div className="py-6 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-8">
-                            <dt className="font-bold text-slate-900">運営統括責任者</dt>
+                            <dt className="font-bold text-slate-900">運営責任者</dt>
                             <dd className="col-span-2 text-slate-600 font-medium">阿部脩平</dd>
                         </div>
 
@@ -39,10 +39,6 @@ export default function SpecifiedCommercialTransactions() {
                             <dt className="font-bold text-slate-900">連絡先</dt>
                             <dd className="col-span-2 text-slate-600 font-medium leading-relaxed">
                                 メールアドレス：info@insiders-hub.jp<br />
-                                電話番号：080-4471-1198<br />
-                                <span className="text-[10px] text-slate-400 mt-2 block">
-                                    （※サービスに関するお問い合わせは、原則としてメールまたはプラットフォーム内のメッセージにてお願いいたします）
-                                </span>
                             </dd>
                         </div>
 

@@ -72,7 +72,7 @@ const dict = {
         applyNote: "申請後、キュレーションチームがSNSアカウントを厳査します。承認された場合、登録された連絡先へ通知が届きます。",
         displayPreview: "表示プレビュー",
         previewNote: "※広告主にはこのように表示されます",
-        yourProfile: "プロフィール設定",
+        yourProfile: "プロフィール編集",
         profileDesc: "広告主はこれらの情報を見て、あなたの強みを理解し、オファーを検討します。",
         portfolioUrl: "ポートフォリオURL (SNS)",
         vibeShot: "世界観を表す1枚 (Best Shot)",
@@ -103,14 +103,14 @@ const dict = {
     }
 };
 
-export function OnboardingForm({ 
-    creator, 
-    offer, 
-    isApplyMode = false, 
-    initialLang = 'ja' 
-}: { 
-    creator: any, 
-    offer?: any, 
+export function OnboardingForm({
+    creator,
+    offer,
+    isApplyMode = false,
+    initialLang = 'ja'
+}: {
+    creator: any,
+    offer?: any,
     isApplyMode?: boolean,
     initialLang?: Lang
 }) {
@@ -504,15 +504,15 @@ export function OnboardingForm({
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em] block">{t.password}</label>
                                     <div className="relative">
-                                        <input 
-                                            type={showPassword ? "text" : "password"} 
+                                        <input
+                                            type={showPassword ? "text" : "password"}
                                             name="password"
                                             autoComplete="new-password"
-                                            minLength={6} 
-                                            value={formData.password} 
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
-                                            className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 pr-12 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700" 
-                                            placeholder={t.minChars} 
+                                            minLength={6}
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            className="w-full bg-zinc-900/50 border border-white/5 text-white rounded-xl px-4 pr-12 py-4 focus:border-white focus:outline-none transition-all text-sm placeholder:text-zinc-700"
+                                            placeholder={t.minChars}
                                         />
                                         <button
                                             type="button"

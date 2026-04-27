@@ -109,12 +109,12 @@ export default async function AdvertiserPage() {
     if (clientTag) {
         const { data: allAssets } = await supabase
             .from('assets')
-            .select('status, created_at, published_at')
+            .select('status, created_at, published_at, delivery_at, visit_at')
             .eq('client_tag', clientTag);
 
         if (allAssets) {
             stats.offeredCount = allAssets.filter(a => a.status === 'OFFERED').length;
-            stats.completedCount = allAssets.filter(a => a.status === 'COMPLETED').length;
+            stats.completedCount = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED'].includes(a.status) || (a.status === 'WORKING' && a.published_at)).length;
 
             // 鮮度計算: 投稿後2週間(14日)は100%を維持、その後4週間目(28日)で20%まで線形に減衰
             const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED', 'APPROVED'].includes(a.status));
@@ -122,7 +122,7 @@ export default async function AdvertiserPage() {
                 let totalFreshness = 0;
                 completedAssets.forEach(a => {
                     const referenceDate = a.published_at || a.delivery_at || a.visit_at || a.created_at;
-                    const daysOld = referenceDate ? Math.floor((new Date().getTime() - new Date(referenceDate).getTime()) / (1000 * 3600 * 24)) : 0;
+                    const daysOld = referenceDate ? Math.floor((Date.now() - new Date(referenceDate).getTime()) / (1000 * 3600 * 24)) : 0;
                     let assetFreshness = 100;
                     if (daysOld > 30) {
                         // 30日〜60日の30日間で100%→20%へ線形減衰（最低20%）

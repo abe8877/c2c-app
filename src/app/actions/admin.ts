@@ -422,7 +422,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                 
                 const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
                 if (n8nWebhookUrl) {
-                    const recipientEmail = shop?.notification_email || shop?.login_email;
+                    const recipientEmail = shop?.notify_url || shop?.login_email;
                     // 通知設定が有効な場合のみ送信
                     if (recipientEmail && shop?.email_notifications_enabled !== false) {
                         fetch(n8nWebhookUrl, {
@@ -438,9 +438,84 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                         }).catch(err => console.error("Notification Webhook Error:", err));
                     }
                 }
+
+                // --- チャットルームに通知メッセージを投稿（通知モーダル等での視認性向上） ---
+                await supabaseAdmin.from('messages').insert({
+                    asset_id: assetId,
+                    sender_id: shop?.id, // システムメッセージに近いが、店舗からの通知として扱う
+                    sender_type: 'shop',
+                    message: `📢 【システム通知】: ${subject}\n\n${message}`,
+                    is_notification: true
+                });
             }
         } catch (err) {
             console.error("Action Notification Error:", err);
+        }
+
+        return { success: true };
+    });
+}
+
+/**
+ * 代替アンバサダーを提案する
+ */
+export async function proposeAlternativeAmbassador(assetId: string, alternativeCreatorId: string) {
+    return publicAction({}, async () => {
+        const supabaseAdmin = createAdminClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        // assetのoffer_detailsを取得
+        const { data: asset, error: fetchError } = await supabaseAdmin
+            .from('assets')
+            .select('offer_details, shop_id')
+            .eq('id', assetId)
+            .single();
+
+        if (fetchError || !asset) throw new Error("Asset not found");
+
+        const details = asset.offer_details || {};
+        const alternatives = (details as any).alternatives || [];
+        
+        // 重複チェック
+        if (!alternatives.includes(alternativeCreatorId)) {
+            alternatives.push(alternativeCreatorId);
+        }
+
+        (details as any).alternatives = alternatives;
+
+        const { error: updateError } = await supabaseAdmin
+            .from('assets')
+            .update({
+                offer_details: details,
+                status: 'SUGGESTING_ALTERNATIVES'
+            })
+            .eq('id', assetId);
+
+        if (updateError) throw updateError;
+
+        // 通知
+        try {
+            const { data: shop } = await supabaseAdmin.from('shops').select('name, notify_url, login_email').eq('id', asset.shop_id).single();
+            const recipientEmail = shop?.notify_url || shop?.login_email;
+            const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
+            
+            if (recipientEmail && n8nWebhookUrl) {
+                fetch(n8nWebhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'ALTERNATIVE_SUGGESTION',
+                        recipientEmail,
+                        subject: "[INSIDERS] 代替アンバサダーの提案が届きました",
+                        content: `${shop?.name} 様、辞退されたアンバサダーの代わりに、新しい候補者を運営より提案させていただきました。アセットハブよりご確認ください。`,
+                        assetId
+                    })
+                }).catch(e => console.error("n8n Webhook Error:", e));
+            }
+        } catch (e) {
+            console.error("Alternative notification error:", e);
         }
 
         return { success: true };

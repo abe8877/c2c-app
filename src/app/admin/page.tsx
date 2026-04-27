@@ -849,115 +849,135 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         { id: '4', advertiser: 'Harajuku Desserts', creator: 'Mika K.', matchScore: 95, vibes: ['#Kawaii', '#Photogenic'], date: '2024-03-01 15:10' },
     ];
 
-    const getAlternatives = (offer: any, creators: any[]) => {
+    const getAlternatives = (offer: any, creators: Array<any>) => {
         const targetCreator = offer.creator || offer.target_creator;
-        if (!targetCreator) return [];
+        if (!targetCreator || !creators || creators.length === 0) {
+            return new Array();
+        }
 
-        const targetVibes = targetCreator.vibe_tags ? targetCreator.vibe_tags.map((t: string) => t.toLowerCase()) : [];
-
-        // ▼ K/M 表記対応の堅牢な数値パーサー
         const parseFollowers = (val: any) => {
             if (!val) return 0;
             if (typeof val === 'number') return val;
             let strVal = val.toString().toUpperCase().replace(/,/g, '').trim();
             let multiplier = 1;
-            if (strVal.endsWith('K')) { multiplier = 1000; strVal = strVal.slice(0, -1); }
-            else if (strVal.endsWith('M')) { multiplier = 1000000; strVal = strVal.slice(0, -1); }
+            if (strVal.endsWith('K')) {
+                multiplier = 1000;
+                strVal = strVal.slice(0, -1);
+            } else if (strVal.endsWith('M')) {
+                multiplier = 1000000;
+                strVal = strVal.slice(0, -1);
+            }
             const num = parseFloat(strVal);
             return isNaN(num) ? 0 : num * multiplier;
         };
 
         const targetFollowers = parseFollowers(targetCreator.followers);
 
-        const alternatives = creators
-            .filter((c: any) => c.id !== targetCreator.id) // 本人は除外
+        let targetVibes = new Array<string>();
+        if (targetCreator.vibe_tags && Array.isArray(targetCreator.vibe_tags)) {
+            targetVibes = targetCreator.vibe_tags.map((t: string) => t.toLowerCase());
+        }
 
-            // ▼ 1: 厳密な公開条件フィルター（サムネ無しの不完全データを排除）
-            .filter((c: any) => {
-                const status = (c.status || '').toString().toLowerCase();
-                const reviewVal = (c.review_status || c.review || '').toString().toLowerCase();
-                const isPublic = status === 'public' || status === 'active';
-                const isApproved = reviewVal === 'approved';
+        // 1. 候補の抽出と厳格なホワイトリスト・フィルタリング
+        let validCreators = creators.filter((c: any) => {
+            // 本人は除外
+            if (c.id === targetCreator.id) return false;
 
-                return isPublic && isApproved;
-            })
+            // 【最重要】公開条件の完全一致（非公開クリエイターを絶対に許容しない）
+            const isPublic = c.is_public === true || c.is_public === 'true';
+            const reviewStatus = (c.review_status || '').toString().toLowerCase();
+            if (!isPublic || reviewStatus !== 'approved') {
+                return false;
+            }
 
-            // ▼ 2: フォロワー足切り（1.2倍制限）＋ フォロワー数不明の排除
-            .filter((c: any) => {
-                if (targetFollowers === 0) return true;
-                const cFollowers = parseFollowers(c.followers);
-                if (cFollowers === 0) return false; // フォロワー数不明は予算リスクになるため排除
+            // 【テストデータ排除】フォロワー10,000人未満は一般人/ゴミデータとして足切り
+            const cFollowers = parseFollowers(c.followers);
+            if (cFollowers < 10000) {
+                return false;
+            }
 
-                return cFollowers <= (targetFollowers * 1.2);
-            })
+            return true;
+        });
 
-            // ▼ 3: スコアリング（コスパ重視ロジックを導入）
-            .map((c: any) => {
-                let simScore = 65; // 基礎点
-                const cFollowers = parseFollowers(c.followers); // コスパ計算用
+        // 2. スコアリング（コスパ比率の適正化）
+        const alternatives = validCreators.map((c: any) => {
+            let simScore = 65;
+            const cFollowers = parseFollowers(c.followers);
 
-                // A. VIBEタグの一致（+8点/個）
-                const cVibes = c.vibe_tags ? c.vibe_tags.map((t: string) => t.toLowerCase()) : [];
-                const commonVibes = targetVibes.filter((tag: string) => cVibes.includes(tag));
-                simScore += commonVibes.length * 8;
+            let cVibes = new Array<string>();
+            if (c.vibe_tags && Array.isArray(c.vibe_tags)) {
+                cVibes = c.vibe_tags.map((t: string) => t.toLowerCase());
+            }
 
-                // B. オーディエンスの一致（+5点）
-                if (c.audience === targetCreator.audience) simScore += 5;
+            const commonVibes = targetVibes.filter((tag: string) => cVibes.includes(tag));
+            simScore += commonVibes.length * 8;
 
-                // C. コスパボーナス（失注要因「予算乖離」を防ぐための最重要ロジック）
-                if (targetFollowers > 0) {
-                    const ratio = cFollowers / targetFollowers;
-                    if (ratio < 0.5) {
-                        simScore += 15; // 半分以下（超高コスパ：大加点）
-                    } else if (ratio < 0.8) {
-                        simScore += 10; // 8割未満（高コスパ：中加点）
-                    } else if (ratio <= 1.0) {
-                        simScore += 5;  // 同等以下（コスパ良：小加点）
-                    } else {
-                        simScore -= 5;  // 1.0倍超え〜1.2倍未満（予算リスク：減点）
-                    }
+            if (c.audience === targetCreator.audience) simScore += 5;
+
+            // コスパ判定（ミスマッチの防止）
+            if (targetFollowers > 0) {
+                const ratio = cFollowers / targetFollowers;
+                if (ratio < 0.1) {
+                    simScore -= 10; // ターゲットの10%未満は規模が違いすぎるため減点
+                } else if (ratio < 0.5) {
+                    simScore += 15; // 10%〜50% (超高コスパ：大加点)
+                } else if (ratio < 0.8) {
+                    simScore += 10; // 50%〜80% (高コスパ：中加点)
+                } else if (ratio <= 1.2) {
+                    simScore += 5;  // 80%〜120% (同規模：小加点)
+                } else {
+                    simScore -= 20; // 120%超 (予算オーバーリスク：大減点)
                 }
+            }
 
-                // D. ステータスブースト
-                if (c.in_japan) simScore += 8;
-                else if (c.coming_soon) simScore += 4;
+            if (c.in_japan) simScore += 8;
+            else if (c.coming_soon) simScore += 4;
 
-                // E. 決定論的マイクロバリアンス（シードベースの揺らぎ）
-                const seedString = String(c.id) + String(targetCreator.id);
-                let hash = 0;
-                for (let i = 0; i < seedString.length; i++) {
-                    hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const jitter = (Math.abs(hash) % 7) - 3;
-                simScore += jitter;
+            // シードベースの揺らぎ
+            const seedString = String(c.id) + String(targetCreator.id);
+            let hash = 0;
+            for (let i = 0; i < seedString.length; i++) {
+                hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const jitter = (Math.abs(hash) % 7) - 3;
+            simScore += jitter;
 
-                // 正規化 (70% 〜 98% の間に収める)
-                simScore = Math.max(70, Math.min(simScore, 98));
+            simScore = Math.max(50, Math.min(simScore, 98));
 
-                return {
-                    ...c,
-                    similarityScore: Math.floor(simScore),
-                    parsedFollowers: cFollowers // ソート用に保持
-                };
-            })
-            // ▼ 4: 最終ソート（マッチ率降順 -> 同点ならフォロワー数昇順）
-            .sort((a: any, b: any) => {
-                if (b.similarityScore !== a.similarityScore) {
-                    return b.similarityScore - a.similarityScore; // 1. スコアが高い順
-                }
-                return a.parsedFollowers - b.parsedFollowers;     // 2. スコアが同じならフォロワーが少ない（コスパが良い）順
-            })
-            .slice(0, 5); // 上位5名を抽出
+            return {
+                ...c,
+                similarityScore: Math.floor(simScore),
+                parsedFollowers: cFollowers
+            };
+        });
 
-        return alternatives;
+        // 3. 最終ソートと抽出
+        const sortedAlternatives = alternatives.sort((a: any, b: any) => {
+            if (b.similarityScore !== a.similarityScore) {
+                return b.similarityScore - a.similarityScore; // 第一条件: マッチ率降順
+            }
+            return a.parsedFollowers - b.parsedFollowers;     // 第二条件: 同点ならフォロワー数昇順（コスパ順）
+        });
+
+        return sortedAlternatives.slice(0, 5);
     };
 
     const handlePushAlternative = async (offerId: string, altId: string) => {
         setIsActionLoading(true);
-        // 推奨：本来はここでもAPIを叩き、offerのステータスを alternative_proposed に更新する
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        alert('広告主へ代替案を提案しました。');
-        setExpandedOfferId(null);
+        try {
+            const { proposeAlternativeAmbassador } = await import('@/app/actions/admin');
+            const res = await proposeAlternativeAmbassador(offerId, altId);
+            if (res.success) {
+                alert('広告主へ代替案を提案しました。');
+                setExpandedOfferId(null);
+                fetchData();
+            } else {
+                alert('提案に失敗しました: ' + (res.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error("Alternative propose error:", error);
+            alert('通信エラーが発生しました。');
+        }
         setIsActionLoading(false);
     };
 

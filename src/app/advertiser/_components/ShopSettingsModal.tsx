@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, ChevronRight, ChevronLeft, MapPin, Camera, Utensils, Globe, Info, Clock, CheckCircle2 } from 'lucide-react';
+import { X, Sparkles, ChevronRight, ChevronLeft, MapPin, Camera, Utensils, Globe, Info, Clock, CheckCircle2, Bell } from 'lucide-react';
 import { translateText } from '@/app/actions/translate';
 import { upsertShop } from '@/app/actions/shop';
 import { createClient } from '@/utils/supabase/client';
@@ -217,7 +217,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                 {/* Left Sidebar: Progress Navigation */}
                 <div className="md:w-64 bg-stone-900 text-stone-300 shrink-0 p-4 md:p-6 flex flex-col">
                     <div className="flex items-center justify-between mb-2 md:mb-2">
-                        <h2 className="text-white font-black text-lg md:text-xl tracking-tight">プロフィール設定</h2>
+                        <h2 className="text-white font-black text-lg md:text-xl tracking-tight">プロフィール編集</h2>
                         <button onClick={onClose} className="md:hidden text-stone-400 hover:text-white transition">
                             <X className="w-6 h-6" />
                         </button>
@@ -328,7 +328,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                     </div>
 
                                     <div className="space-y-6">
-                                        {renderAITextField("クリエイターに提供するメニュー・サービス (英語)", "preset_menu_en", "例: 和牛ランチ+デザート")}
+                                        {renderAITextField("アンバサダーへ提供するサービス (英語)", "preset_menu_en", "例: 和牛ランチ+デザート")}
 
                                         <div>
                                             <label className="text-sm font-bold text-gray-700 block mb-3">対応可能な食事制限（あれば）</label>

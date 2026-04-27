@@ -323,8 +323,8 @@ export default function ChatModal({
                                     <h3 className="text-base font-black uppercase tracking-wider flex items-center gap-2">
                                         <Sparkles className="w-4 h-4 text-teal-400" />
                                         {activeTemplate === 'schedule' && '日程候補を選択'}
-                                        {activeTemplate === 'map' && 'アクセス・店舗情報を編集'}
-                                        {activeTemplate === 'menu' && 'メニュー情報を編集'}
+                                        {activeTemplate === 'map' && 'アクセス・店舗情報'}
+                                        {activeTemplate === 'menu' && 'メニュー情報（オファー時に送付済みなら不要）'}
                                         {activeTemplate === 'camera' && '撮影ルール・要望（オファー時に送付済みなら不要）'}
                                     </h3>
                                     <button onClick={() => setActiveTemplate(null)} className="p-1.5 hover:bg-zinc-100 rounded-full"><X className="w-5 h-5" /></button>
@@ -529,7 +529,7 @@ export default function ChatModal({
                                 onClick={() => setActiveTemplate('map')}
                                 className="flex-none px-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-stone-100 transition-all"
                             >
-                                <MapPin className="w-3.5 h-3.5" /> 地図・アクセス
+                                <MapPin className="w-3.5 h-3.5" /> アクセス情報
                             </button>
                             <button
                                 onClick={() => setActiveTemplate('menu')}
