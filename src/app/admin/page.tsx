@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, Plane, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, Plane, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -133,10 +133,9 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         const isDeclined = localStatus === 'DECLINED';
         return (
             <>
-                <button
-                    onClick={() => setShowApproveModal(true)}
-                    disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${isDeclined
+                <div
+                    onClick={() => !loading && setShowApproveModal(true)}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${isDeclined
                         ? "bg-red-50 border-red-200 text-red-700"
                         : (value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm")}`}
                 >
@@ -144,8 +143,19 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                         <span className="opacity-60">{isDeclined ? "オファー不承認" : label}</span>
                         {value && !isDeclined && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
-                    {isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : (value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />)}
-                </button>
+                    <div className="flex items-center gap-1.5">
+                        {isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : (value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />)}
+                        {(value || isDeclined) && (
+                            <button
+                                onClick={handleReset}
+                                className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
+                                title="リセット"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {showApproveModal && (
@@ -193,10 +203,9 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
     if (field === 'delivered_at') {
         return (
             <>
-                <button
-                    onClick={() => setShowDeliveryModal(true)}
-                    disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+                <div
+                    onClick={() => !loading && setShowDeliveryModal(true)}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${value
                         ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                         : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
                 >
@@ -204,8 +213,19 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                         <span className="opacity-60">{label}</span>
                         {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
                     </div>
-                    {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                </button>
+                    <div className="flex items-center gap-1.5">
+                        {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                        {value && (
+                            <button
+                                onClick={handleReset}
+                                className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
+                                title="リセット"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {showDeliveryModal && (
@@ -248,17 +268,27 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
     if (field === 'reward_deposit') {
         return (
             <>
-                <button
-                    onClick={() => setShowApproveModal(true)}
-                    disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
+                <div
+                    onClick={() => !loading && setShowApproveModal(true)}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${value ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
                 >
                     <div className="flex flex-col items-start">
                         <span className="opacity-60">{label}</span>
                         {value && <span className="text-[9px] tabular-nums">Deposited</span>}
                     </div>
-                    {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <DollarSign size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                </button>
+                    <div className="flex items-center gap-1.5">
+                        {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <DollarSign size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                        {value && (
+                            <button
+                                onClick={handleReset}
+                                className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
+                                title="リセット"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {showApproveModal && (
@@ -317,10 +347,9 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         const subtitle = "依頼を完了するために、実際に投稿されたSNSのURLを添付してください";
         return (
             <>
-                <button
-                    onClick={() => setShowFinalModal(true)}
-                    disabled={loading}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+                <div
+                    onClick={() => !loading && setShowFinalModal(true)}
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${value
                         ? "bg-slate-900 border-slate-900 text-white shadow-xl"
                         : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
                 >
@@ -328,16 +357,19 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                         <span className="opacity-90">{label}</span>
                         {value && <span className="text-[9px] opacity-60">完了済: {new Date(value).toLocaleString('ja-JP')}</span>}
                     </div>
-                    {value ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Send size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                    {value && (
-                        <div
-                            onClick={handleReset}
-                            className="absolute -top-2 -right-2 bg-white text-slate-400 rounded-full p-0.5 border border-slate-100 opacity-0 group-hover/btn:opacity-100 hover:text-red-500 shadow-sm z-10"
-                        >
-                            <X size={10} />
-                        </div>
-                    )}
-                </button>
+                    <div className="flex items-center gap-1.5">
+                        {value ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Send size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                        {value && (
+                            <button
+                                onClick={handleReset}
+                                className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-red-400 transition-colors"
+                                title="リセット"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        )}
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {showFinalModal && (
@@ -379,10 +411,9 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
     }
 
     return (
-        <button
-            onClick={() => handleUpdate()}
-            disabled={loading}
-            className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn ${value
+        <div
+            onClick={() => !loading && handleUpdate()}
+            className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${value
                 ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                 : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
         >
@@ -390,20 +421,23 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 <span className="opacity-60">{label}</span>
                 {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
             </div>
-            {value ? (
-                <CheckCircle2 size={14} className="text-emerald-500" />
-            ) : (
-                <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />
-            )}
-            {value && (
-                <div
-                    onClick={handleReset}
-                    className="absolute -top-2 -right-2 bg-white text-slate-400 rounded-full p-0.5 border border-slate-100 opacity-0 group-hover/btn:opacity-100 hover:text-red-500 shadow-sm z-10"
-                >
-                    <X size={10} />
-                </div>
-            )}
-        </button>
+            <div className="flex items-center gap-1.5">
+                {value ? (
+                    <CheckCircle2 size={14} className="text-emerald-500" />
+                ) : (
+                    <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />
+                )}
+                {value && (
+                    <button
+                        onClick={handleReset}
+                        className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
+                        title="リセット"
+                    >
+                        <Trash2 size={12} />
+                    </button>
+                )}
+            </div>
+        </div>
     );
 };
 
@@ -1528,12 +1562,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                 return (
                                                                                     <>
                                                                                         <div className="absolute top-0 right-0 p-3 opacity-100 transition-opacity flex gap-2">
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    const text = `【オファー条件】\nプラン: ${details.plan === 'paid' ? '有償' : 'バーター（無償）'}\n${details.plan === 'paid' ? `報酬: ¥${Number(details.amount).toLocaleString()}\n` : ''}撮影時間: ${details.shootingTime || '指定なし'}\nスタッフ出演: ${details.staffAppearance || '指定なし'}\nNG項目: ${details.ngItems || 'なし'}\nタグ: ${details.selectedTags?.join(', ') || 'なし'}\n提供内容: ${offer.barterDetails || details.barterDetails || 'なし'}\n招待メッセージ: ${details.invitationMessage || 'なし'}`;
-                                                                                                    navigator.clipboard.writeText(text);
-                                                                                                    alert('オファー条件をコピーしました');
-                                                                                                }}
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const text = `[Offer Conditions]\nPlan: ${details.plan === 'paid' ? 'Paid' : 'Barter'}\n${details.plan === 'paid' ? `Reward: ¥${Number(details.amount).toLocaleString()}\n` : ''}Preferred Time: ${details.shootingTime || 'Anytime'}\nStaff Appearance: ${details.staffAppearance || 'OK'}\nRules/NG: ${details.ngItems || 'None'}\nTags: ${details.selectedTags?.join(', ') || 'None'}\nMenu: ${offer.barterDetails || details.barterDetails || 'Standard Menu'}\nMessage: ${details.invitationMessage || 'N/A'}`;
+                                                                            navigator.clipboard.writeText(text);
+                                                                            alert('Offer conditions copied to clipboard');
+                                                                        }}
                                                                                                 className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 p-2 rounded-xl transition-all shadow-sm border border-indigo-200"
                                                                                                 title="DM用にコピー"
                                                                                             >

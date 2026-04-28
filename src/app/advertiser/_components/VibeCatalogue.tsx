@@ -2481,7 +2481,7 @@ export default function VibeCatalogue({
                                                             {!asset.reward_deposit && asset.reward_paymentlink && (
                                                                 <div className="bg-red-50 border-2 border-red-500/20 rounded-[2rem] p-4 flex flex-col items-center gap-3 animate-pulse shadow-lg shadow-red-500/10">
                                                                     <div className="flex items-center gap-2 text-red-600 font-black text-xs uppercase tracking-widest">
-                                                                        <Clock size={14} /> 支払期限: 23時間59分
+                                                                        <CreditCard size={14} /> 報酬デポジット
                                                                     </div>
                                                                     <p className="text-[12px] font-bold text-red-800 text-center leading-tight">アンバサダー報酬の仮払いが必要です。<br />支払いを確認後、動画制作が開始されます。</p>
                                                                     <p className="text-[8px] font-medium text-red-800 text-center leading-tight">※報酬の支払いトラブル防止のため、運営が報酬を一時的に預かり、動画投稿完了後に正式に支払われる仕組みです。アンバサダー都合によるキャンセル・納品不備があった場合は全額返金されます。</p>

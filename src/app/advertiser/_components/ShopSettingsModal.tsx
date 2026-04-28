@@ -35,6 +35,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
         english_friendly_level: 'Basic',
         reservation_url: '',
         preferred_shoot_time: 'Lunch',
+        staff_appearance: 'OK',
         shoot_rules_en: '',
         instagram_handle: '',
         tiktok_handle: '',

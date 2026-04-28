@@ -331,43 +331,38 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
         );
 
         let updatePayload: any = {};
-
         if (field === 'approved_at') {
             updatePayload.approved_at = timestamp;
             if (timestamp) {
                 updatePayload.status = 'WORKING';
                 updatePayload.rejection_reason = null;
             } else {
-                updatePayload.status = 'DECLINED';
-                if (extraData?.rejectionReason) updatePayload.rejection_reason = extraData.rejectionReason;
+                updatePayload.status = 'OFFERED';
+                updatePayload.rejection_reason = null;
             }
-        } else if (field === 'final_status') {
-            updatePayload.finalized = true;
-            updatePayload.status = 'FINALIZED';
+        } else if (field === 'final_status' || field === 'confirmed_at') {
+            updatePayload.finalized = !!timestamp;
+            updatePayload.status = timestamp ? 'FINALIZED' : 'DELIVERED';
+            if (field === 'confirmed_at') {
+                const { data: currentAsset } = await supabaseAdmin.from('assets').select('offer_details').eq('id', assetId).single();
+                const currentDetails = currentAsset?.offer_details || {};
+                const timeline = (currentDetails as any).timeline || {};
+                timeline.confirmed_at = timestamp;
+
+                if (extraData?.postUrl) {
+                    (currentDetails as any).post_url = extraData.postUrl;
+                    updatePayload.published_url = extraData.postUrl;
+                    updatePayload.published_at = timestamp || new Date().toISOString();
+                }
+
+                (currentDetails as any).timeline = timeline;
+                updatePayload.offer_details = currentDetails;
+            }
         } else if (field === 'filming_at') {
             updatePayload.visit_at = timestamp;
         } else if (field === 'delivered_at') {
             updatePayload.delivery_at = timestamp;
-            if (timestamp) updatePayload.status = 'DELIVERED';
-        } else if (field === 'confirmed_at') {
-            updatePayload.finalized = true;
-            if (timestamp) updatePayload.status = 'FINALIZED';
-
-            // タイムラインにも一応残す
-            const { data: currentAsset } = await supabaseAdmin.from('assets').select('offer_details').eq('id', assetId).single();
-            const currentDetails = currentAsset?.offer_details || {};
-            const timeline = (currentDetails as any).timeline || {};
-            timeline[field] = timestamp;
-
-            // 投稿済みURLが渡された場合は保存する
-            if (extraData?.postUrl) {
-                (currentDetails as any).post_url = extraData.postUrl;
-                updatePayload.published_url = extraData.postUrl;
-                updatePayload.published_at = timestamp || new Date().toISOString();
-            }
-
-            (currentDetails as any).timeline = timeline;
-            updatePayload.offer_details = currentDetails;
+            updatePayload.status = timestamp ? 'DELIVERED' : 'WORKING';
         } else if (field === 'reward_deposit') {
             updatePayload.reward_deposit = !!timestamp;
             if (timestamp) {
@@ -469,6 +464,13 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
+
+        // UUID形式のチェック
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(assetId) || !uuidRegex.test(alternativeCreatorId)) {
+            console.error("Invalid UUID format:", { assetId, alternativeCreatorId });
+            throw new Error("Invalid ID format");
+        }
 
         // assetのsuggested_creator_idsを取得
         const { data: asset, error: fetchError } = await supabaseAdmin
