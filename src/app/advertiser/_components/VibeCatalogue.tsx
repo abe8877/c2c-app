@@ -2496,7 +2496,7 @@ export default function VibeCatalogue({
                                                                         className="w-full bg-red-600 text-white py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl"
                                                                     >
                                                                         <Zap size={14} className="fill-current text-yellow-400" />
-                                                                        支払いへ進む
+                                                                        支払手続きに進む
                                                                     </button>
                                                                 </div>
                                                             )}
