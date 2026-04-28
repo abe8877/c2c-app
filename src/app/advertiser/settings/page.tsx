@@ -10,17 +10,17 @@ import Link from 'next/link';
 export default function SettingsPage() {
     const router = useRouter();
     const [emailNotifications, setEmailNotifications] = useState(true);
-    const [notificationEmail, setNotificationEmail] = useState("");
+    const [notify_url, setNotify_url] = useState("");
     const [shop, setShop] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     // 🌟 追加：Stripeポータル遷移のローディング状態管理
     const [isPortalLoading, setIsPortalLoading] = useState(false);
 
-    const supabase = createBrowserClient(
+    const supabase = React.useMemo(() => createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    ), []);
 
     useEffect(() => {
         const fetchShop = async () => {
@@ -28,13 +28,12 @@ export default function SettingsPage() {
             if (user) {
                 const { data } = await supabase
                     .from('shops')
-                    .select('name, is_premium, free_offers_remaining, notification_email, email_notifications_enabled')
+                    .select('name, is_premium, free_offers_remaining, notify_url')
                     .eq('id', user.id)
                     .single();
                 if (data) {
                     setShop(data);
-                    setNotificationEmail(data.notification_email || "");
-                    setEmailNotifications(data.email_notifications_enabled ?? true);
+                    setNotify_url(data.notify_url || "");
                 }
             }
         };
@@ -43,17 +42,27 @@ export default function SettingsPage() {
 
     const handleSaveNotifications = async (enabled: boolean, email: string) => {
         setIsSaving(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            await supabase
-                .from('shops')
-                .update({
-                    notification_email: email,
-                    email_notifications_enabled: enabled
-                })
-                .eq('id', user.id);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { error } = await supabase
+                    .from('shops')
+                    .update({
+                        notify_url: email
+                    })
+                    .eq('id', user.id);
+                
+                if (error) throw error;
+                
+                // Update local shop state as well
+                setShop((prev: any) => ({ ...prev, notify_url: email, email_notifications_enabled: enabled }));
+            }
+        } catch (error: any) {
+            console.error("Save Error:", error);
+            alert("保存に失敗しました: " + error.message);
+        } finally {
+            setIsSaving(false);
         }
-        setIsSaving(false);
     };
 
     // 🌟 追加：Stripeカスタマーポータルへの遷移ハンドラー
@@ -127,7 +136,7 @@ export default function SettingsPage() {
                                     onChange={(e) => {
                                         const val = e.target.checked;
                                         setEmailNotifications(val);
-                                        handleSaveNotifications(val, notificationEmail);
+                                        handleSaveNotifications(val, notify_url);
                                     }}
                                 />
                                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
@@ -140,13 +149,13 @@ export default function SettingsPage() {
                                 <input
                                     type="email"
                                     placeholder="your@email.com"
-                                    value={notificationEmail}
-                                    onChange={(e) => setNotificationEmail(e.target.value)}
+                                    value={notify_url}
+                                    onChange={(e) => setNotify_url(e.target.value)}
                                     className="flex-1 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-slate-900 transition-all"
                                 />
                                 <button
                                     onClick={async () => {
-                                        await handleSaveNotifications(emailNotifications, notificationEmail);
+                                        await handleSaveNotifications(emailNotifications, notify_url);
                                         alert("通知設定を保存しました！");
                                     }}
                                     disabled={isSaving}

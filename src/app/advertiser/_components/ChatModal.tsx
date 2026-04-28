@@ -59,20 +59,20 @@ export default function ChatModal({
     useEffect(() => {
         if (shopData) {
             setFormAccess({
-                hours: shopData.business_hours || "",
-                holidays: shopData.irregular_holidays || "",
-                address: shopData.address_jp || "",
-                access_en: shopData.address_en || "",
-                map_url: shopData.google_map_url || ""
+                hours: shopData.business_hours_en || shopData.business_hours || "",
+                holidays: shopData.closed_days_en || shopData.closed_days || "",
+                address: shopData.address_en || "",
+                access_en: shopData.access_info_en || "",
+                map_url: shopData.google_maps_url || ""
             });
             setFormMenu({
                 description: shopData.preset_menu_en || "",
-                restrictions: shopData.dietary_restrictions || []
+                restrictions: shopData.dietary_options || []
             });
             setFormShooting({
-                elements: shopData.shoot_elements || [],
-                time: shopData.shoot_time_slot || "Lunch",
-                staff: shopData.shoot_staff_appearance || "OK",
+                elements: shopData.requirements || [],
+                time: shopData.preferred_shoot_time || "Lunch",
+                staff: shopData.staff_appearance || "OK",
                 special: shopData.shoot_rules_en || ""
             });
         }
@@ -92,7 +92,12 @@ export default function ChatModal({
                     id,
                     shop_id,
                     creator_id,
-                    shops ( logo_url, name, address_en, preset_menu_en, shoot_rules_en ),
+                    shops ( 
+                        logo_url, name, address_en, preset_menu_en, shoot_rules_en,
+                        business_hours, business_hours_en, closed_days, closed_days_en,
+                        access_info_en, google_maps_url, dietary_options, requirements,
+                        preferred_shoot_time, staff_appearance
+                    ),
                     creators ( avatar_url )
                 `)
                 .eq('id', assetId)

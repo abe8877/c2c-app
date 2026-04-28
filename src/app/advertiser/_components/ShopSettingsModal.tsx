@@ -72,6 +72,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                     english_friendly_level: data.english_friendly_level || 'Basic',
                     reservation_url: data.reservation_url || '',
                     preferred_shoot_time: data.preferred_shoot_time || 'Lunch',
+                    staff_appearance: data.staff_appearance || 'OK',
                     shoot_rules_en: data.shoot_rules_en || '',
                     instagram_handle: data.instagram_handle || '',
                     tiktok_handle: data.tiktok_handle || '',
@@ -385,7 +386,7 @@ export default function ShopSettingsModal({ isOpen, onClose, onSuccess }: { isOp
                                             </div>
                                             <div>
                                                 <label className="text-sm font-bold text-gray-700 block mb-2">スタッフの映り込み・顔出し可否</label>
-                                                <select value={formData.preferred_shoot_time} onChange={e => updateField('preferred_shoot_time', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
+                                                <select value={formData.staff_appearance} onChange={e => updateField('staff_appearance', e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-black text-sm font-bold appearance-none">
                                                     <option>OK</option><option>NG</option><option>ASK（応相談）</option>
                                                 </select>
                                             </div>

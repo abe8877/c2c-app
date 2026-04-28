@@ -33,14 +33,14 @@ export async function getAdminStats() {
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', sevenDaysAgo.toISOString());
-                
+
             const { count: matchedOffersThisWeek } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', sevenDaysAgo.toISOString())
                 .in('status', ['APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED', 'FINALIZED']);
 
-            let avgMatchRate = 88.5; 
+            let avgMatchRate = 88.5;
             if (totalOffersThisWeek && totalOffersThisWeek > 0 && matchedOffersThisWeek !== null) {
                 avgMatchRate = Math.round((matchedOffersThisWeek / totalOffersThisWeek) * 1000) / 10;
             } else if (totalOffersThisWeek === 0) {
@@ -128,7 +128,6 @@ export async function getLostAssets() {
                 .select(`
                     id,
                     created_at,
-                    updated_at,
                     rejection_reason,
                     offer_details,
                     barter_details,
@@ -136,7 +135,7 @@ export async function getLostAssets() {
                     creators:creator_id (name, vibe_tags)
                 `)
                 .eq('status', 'DECLINED')
-                .order('updated_at', { ascending: false });
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
 
@@ -147,7 +146,7 @@ export async function getLostAssets() {
                     rejectedCreator: item.creators?.name || '不明なクリエイター',
                     missingVibes: item.creators?.vibe_tags || [],
                     aiAction: item.rejection_reason || '理由なし',
-                    timestamp: new Date(item.updated_at || item.created_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+                    timestamp: new Date(item.created_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
                 }));
             }
 
@@ -219,6 +218,9 @@ export async function getOngoingOffers() {
                     offer_details,
                     barter_details,
                     rejection_reason,
+                    reward_deposit,
+                    reward_paymentlink,
+                    suggested_creator_ids,
                     shops:shop_id (id, name),
                     creators:creator_id (id, name, avatar_url, followers)
                 `)
@@ -259,6 +261,9 @@ export async function getOngoingOffers() {
                         view_count: item.view_count,
                         submitted_at: item.submitted_at,
                         video_url: item.video_url,
+                        reward_deposit: item.reward_deposit,
+                        reward_paymentlink: item.reward_paymentlink,
+                        suggested_creator_ids: item.suggested_creator_ids,
                         diffHours,
                         alertLevel
                     };
@@ -326,7 +331,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
         );
 
         let updatePayload: any = {};
-        
+
         if (field === 'approved_at') {
             updatePayload.approved_at = timestamp;
             if (timestamp) {
@@ -339,7 +344,6 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
         } else if (field === 'final_status') {
             updatePayload.finalized = true;
             updatePayload.status = 'FINALIZED';
-            updatePayload.updated_at = timestamp || new Date().toISOString();
         } else if (field === 'filming_at') {
             updatePayload.visit_at = timestamp;
         } else if (field === 'delivered_at') {
@@ -354,7 +358,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
             const currentDetails = currentAsset?.offer_details || {};
             const timeline = (currentDetails as any).timeline || {};
             timeline[field] = timestamp;
-            
+
             // 投稿済みURLが渡された場合は保存する
             if (extraData?.postUrl) {
                 (currentDetails as any).post_url = extraData.postUrl;
@@ -391,7 +395,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                 .select(`
                     shop_id,
                     creator_id,
-                    shops ( name, login_email, notification_email, email_notifications_enabled ),
+                    shops ( name, login_email, notify_url, email_notifications_enabled ),
                     creators ( name, email )
                 `)
                 .eq('id', assetId)
@@ -400,13 +404,13 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
             if (asset) {
                 const shop = asset.shops as any;
                 const creator = asset.creators as any;
-                
+
                 let subject = "[INSIDERS] ステータス更新のお知らせ";
                 let message = `案件（クリエイター: ${creator?.name}）のステータスが更新されました。`;
-                
+
                 if (field === 'approved_at') {
                     subject = timestamp ? "[INSIDERS] オファーが承認されました" : "[INSIDERS] オファーが見送られました";
-                    message = timestamp 
+                    message = timestamp
                         ? `${shop?.name} 様、${creator?.name} さんがオファーを承認しました。撮影の準備をお願いします。`
                         : `${shop?.name} 様、残念ながら ${creator?.name} さんは今回のオファーを見送りました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
                 } else if (field === 'delivered_at') {
@@ -419,7 +423,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                     subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
                     message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
                 }
-                
+
                 const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
                 if (n8nWebhookUrl) {
                     const recipientEmail = shop?.notify_url || shop?.login_email;
@@ -466,29 +470,33 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // assetのoffer_detailsを取得
+        // assetのsuggested_creator_idsを取得
         const { data: asset, error: fetchError } = await supabaseAdmin
             .from('assets')
-            .select('offer_details, shop_id')
+            .select('suggested_creator_ids, shop_id')
             .eq('id', assetId)
             .single();
 
         if (fetchError || !asset) throw new Error("Asset not found");
 
-        const details = asset.offer_details || {};
-        const alternatives = (details as any).alternatives || [];
-        
-        // 重複チェック
-        if (!alternatives.includes(alternativeCreatorId)) {
-            alternatives.push(alternativeCreatorId);
+        let suggestedIds = asset.suggested_creator_ids || [];
+        if (!Array.isArray(suggestedIds)) {
+            suggestedIds = [];
         }
 
-        (details as any).alternatives = alternatives;
+        // 重複チェック & 最大3名制限
+        if (!suggestedIds.includes(alternativeCreatorId)) {
+            if (suggestedIds.length >= 3) {
+                suggestedIds = [...suggestedIds.slice(1), alternativeCreatorId];
+            } else {
+                suggestedIds.push(alternativeCreatorId);
+            }
+        }
 
         const { error: updateError } = await supabaseAdmin
             .from('assets')
             .update({
-                offer_details: details,
+                suggested_creator_ids: suggestedIds,
                 status: 'SUGGESTING_ALTERNATIVES'
             })
             .eq('id', assetId);
@@ -500,7 +508,7 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
             const { data: shop } = await supabaseAdmin.from('shops').select('name, notify_url, login_email').eq('id', asset.shop_id).single();
             const recipientEmail = shop?.notify_url || shop?.login_email;
             const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
-            
+
             if (recipientEmail && n8nWebhookUrl) {
                 fetch(n8nWebhookUrl, {
                     method: 'POST',
@@ -546,7 +554,7 @@ export async function sendAdminProxyMessage({
             .select('shop_id, creator_id')
             .eq('id', assetId)
             .single();
-            
+
         if (assetError) throw assetError;
 
         // 1. メッセージ保存 (Admin権限で実行)
@@ -574,7 +582,7 @@ export async function sendAdminProxyMessage({
                 .select(`
                     shop_id,
                     creator_id,
-                    shops ( name, login_email, notification_email, email_notifications_enabled ),
+                    shops ( name, login_email, notify_url, email_notifications_enabled ),
                     creators ( name, email )
                 `)
                 .eq('id', assetId)
@@ -585,7 +593,7 @@ export async function sendAdminProxyMessage({
                 const creator = asset.creators as any;
 
                 // 通知先の設定
-                let recipientEmail = senderType === 'shop' ? creator?.email : (shop?.notification_email || shop?.login_email);
+                let recipientEmail = senderType === 'shop' ? creator?.email : (shop?.notify_url || shop?.login_email);
                 const senderName = senderType === 'shop' ? `(Admin) ${shop?.name}` : `(Admin) ${creator?.name}`;
 
                 // ショップへの通知の場合、設定を確認

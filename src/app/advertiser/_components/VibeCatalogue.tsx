@@ -6,7 +6,7 @@ import ChatModal from "./ChatModal";
 import {
     Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers,
     CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users,
-    AlertCircle, Camera, Bell, User, Gift, Diamond, X, AlertTriangle,
+    AlertCircle, Camera, Bell, User, Gift, Diamond, X, AlertTriangle, CreditCard,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud, Download,
     Plus, MessageSquareQuote, BarChart3, TrendingUp, Home,
     Calendar, Map, Trash, Menu, CheckCircle2, Flame, Crown, Target, Plane,
@@ -55,6 +55,7 @@ export interface Asset {
     published_url?: string;
     published_at?: string;
     view_count?: number;
+    suggested_creator_ids?: string[];
     creator?: {
         name: string;
         tiktok_handle?: string;
@@ -447,7 +448,7 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
         }
         setSynced(true);
         setFreshness(100);
-        alert("動画をダウンロードしました。Googleマップアプリを開いて投稿してください。");
+        alert("動画をダウンロードしました。SNSやGoogleマップへの投稿にご活用ください。");
     };
 
     const handleCopyWidgetCode = () => {
@@ -471,20 +472,18 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 text-left">
-                {/* 1. Google Maps Sync */}
+                {/* 1. Download Video */}
                 <div className="bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col ring-1 ring-stone-100">
                     <div className="p-6 border-b bg-stone-50 flex justify-between items-center">
                         <h3 className="font-black text-sm flex items-center gap-2 uppercase tracking-tight">
-                            <MapPin className="w-5 h-5 text-red-500" /> Google Maps Sync
+                            <Download className="w-5 h-5 text-blue-600" /> 動画をダウンロード
                         </h3>
                         <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-1 rounded-full font-black uppercase tracking-wider">
-                            Inbound 必須
+                            集客用アセット
                         </span>
                     </div>
 
                     <div className="p-6 space-y-6 flex-1">
-
-
                         <div className="border rounded-[24px] p-5 bg-stone-50 relative ring-1 ring-stone-200/50 overflow-hidden">
                             <AnimatePresence>
                                 {synced && (
@@ -495,7 +494,7 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-24 aspect-[9/16] bg-black rounded-xl overflow-hidden shadow-2xl ring-4 ring-blue-500"
                                     >
                                         <video autoPlay loop muted className="w-full h-full object-cover">
-                                            <source src="https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4" type="video/mp4" />
+                                            <source src={latestAssetUrl || "https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4"} type="video/mp4" />
                                         </video>
                                     </motion.div>
                                 )}
@@ -525,7 +524,7 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                                 <div className={`aspect-square rounded-xl flex items-center justify-center transition-all duration-700 shadow-md ${synced ? 'bg-black ring-2 ring-blue-500' : 'bg-stone-100 border-2 border-dashed border-stone-300'}`}>
                                     {synced ? (
                                         <video autoPlay loop muted className="w-full h-full object-cover rounded-xl opacity-90">
-                                            <source src="https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4" type="video/mp4" />
+                                            <source src={latestAssetUrl || "https://assets.mixkit.co/videos/preview/mixkit-people-eating-at-a-restaurant-4433-large.mp4"} type="video/mp4" />
                                         </video>
                                     ) : (
                                         <span className="text-[8px] font-black text-stone-400 text-center leading-tight uppercase tracking-widest">New<br />Video</span>
@@ -533,18 +532,22 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                                 </div>
                             </div>
                         </div>
+                        <p className="text-xs text-stone-500 px-2 leading-relaxed font-bold">
+                            納品された動画をダウンロードして、GoogleマップやSNSへの投稿にご活用ください。
+                        </p>
                     </div>
 
                     <div className="p-4 border-t bg-stone-50">
                         <button
                             onClick={handleGoogleMapsSync}
-                            disabled={synced}
-                            className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${synced ? 'bg-stone-200 text-stone-500' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg active:scale-95'}`}
+                            disabled={synced && !latestAssetUrl}
+                            className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${synced && !latestAssetUrl ? 'bg-stone-200 text-stone-500' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg active:scale-95'}`}
                         >
-                            {synced ? <><Check className="w-4 h-4 inline mr-1" /> 同期済み (再ダウンロード)</> : <>Google Maps に投稿する</>}
+                            {synced ? <><Check className="w-4 h-4 inline mr-1" /> ダウンロード済み (再ダウンロード)</> : <><Download className="w-4 h-4 inline mr-1" /> 動画をダウンロード</>}
                         </button>
                     </div>
                 </div>
+
 
                 {/* 2. Web Widget */}
                 <div className="bg-white rounded-3xl border shadow-sm overflow-hidden flex flex-col ring-1 ring-stone-100">
@@ -785,7 +788,7 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     );
 };
 
-const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void }) => {
+const OfferModal = ({ isOpen, onClose, creator, onSend, shop }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void; shop: any }) => {
     const creatorName = creator?.name || '';
     const isHot = !!creator?.is_hot;
     const followers = typeof creator?.followers === 'string'
@@ -800,16 +803,19 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
     const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
     const [amount, setAmount] = useState<number>(15000);
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram Reels']);
-    const [selectedTags, setSelectedTags] = useState<string[]>(['看板メニュー', '店内の雰囲気']);
-    const [barterDetails, setBarterDetails] = useState('');
+    // Preset: 盛り込んでほしい要素
+    const [selectedTags, setSelectedTags] = useState<string[]>(shop?.requirements || ['看板メニュー', '店内の雰囲気']);
+    // Preset: 提供サービス
+    const [barterDetails, setBarterDetails] = useState(shop?.preset_menu_en || '');
     const [invitationMessage, setInvitationMessage] = useState('');
     const [isManualMessage, setIsManualMessage] = useState(false);
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
-    // 移植項目: 撮影条件 & NG事項
-    const [shootingTime, setShootingTime] = useState('Flexible');
-    const [staffAppearance, setStaffAppearance] = useState('OK');
-    const [ngItems, setNgItems] = useState('');
+    // 移植項目: 撮影条件 & NG事項 (Presets applied)
+    const [shootingTime, setShootingTime] = useState(shop?.preferred_shoot_time || 'Flexible');
+    const [staffAppearance, setStaffAppearance] = useState(shop?.staff_appearance || 'OK');
+    const [ngItems, setNgItems] = useState(shop?.shoot_rules_en || '');
+
 
     // 同意事項
     const [consent, setConsent] = useState({
@@ -1158,7 +1164,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         />
                                         <div className="space-y-0.5">
                                             <p className="text-[11px] font-bold text-gray-900 leading-tight">表現手法の一任・修正に関する規定</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">動画での表現手法（編集・演出等）は原則クリエイターに一任することに同意します。納品後の修正依頼は「事前の合意内容（上記オファー）と異なる場合」または「事実誤認（お店情報の誤り等）」に限り最大2回までとします。</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed mt-1">動画での表現手法（編集・演出等）は原則クリエイターに一任することに同意します。納品後の修正依頼は「事前の合意内容（上記オファー）と異なる場合」または「事実誤認（紹介した情報の誤り等）」に限り最大2回までとします。</p>
                                         </div>
                                     </label>
                                     <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
@@ -1170,7 +1176,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         />
                                         <div className="space-y-0.5">
                                             <p className="text-[11px] font-bold text-gray-900 leading-tight">直接交渉の禁止</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">案件の進行はすべて弊社サービスを介して行い、クリエイターとの直接連絡やプラットフォーム外での直接取引を行わないことに同意します。</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed mt-1">案件の進行はすべて弊社サービスを介して行い、クリエイターとの直接連絡やプラットフォーム外での直接取引を行わないことに同意します。</p>
                                         </div>
                                     </label>
                                     <label className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all cursor-pointer group">
@@ -1182,7 +1188,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend }: { isOpen: boolean; onC
                                         />
                                         <div className="space-y-0.5">
                                             <p className="text-[11px] font-bold text-gray-900 leading-tight">キャンセル規定</p>
-                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed">マッチング成立後は速やかに決済（デポジット）を行い、その後の広告主都合によるキャンセルはできないことに同意します。※クリエイター都合によるキャンセル・納品不備があった場合は返金されます。</p>
+                                            <p className="text-[9px] text-gray-500 font-medium leading-relaxed mt-1">マッチング成立後は速やかに報酬の仮払いを行い、その後の広告主都合によるキャンセルはできないことに同意します。※アンバサダー都合によるキャンセル・納品不備があった場合は全額返金されます。</p>
                                         </div>
                                     </label>
                                 </div>
@@ -1497,8 +1503,8 @@ export default function VibeCatalogue({
     const [isPremium, setIsPremium] = useState(false);
     const [isFetchingInfo, setIsFetchingInfo] = useState(true);
     const [shop, setShop] = useState<any>(null);
-    const [hasNewNotifications, setHasNewNotifications] = useState(true);
-    const [hasNewMessages, setHasNewMessages] = useState(true);
+    const hasNewNotifications = localAssets.some(a => ['DELIVERED', 'SUGGESTING_ALTERNATIVES', 'COMPLETED', 'DECLINED'].includes(a.status));
+    const [hasNewMessages, setHasNewMessages] = useState(false);
 
     const fetchShopInfo = async () => {
         const supabase = createClient();
@@ -1508,7 +1514,7 @@ export default function VibeCatalogue({
 
         const { data, error } = await supabase
             .from('shops')
-            .select('id, name, genre, is_premium, logo_url, free_offers_remaining')
+            .select('id, name, genre, is_premium, logo_url, free_offers_remaining, requirements, preset_menu_en, preferred_shoot_time, staff_appearance, shoot_rules_en')
             .eq('id', user.id)
             .single();
 
@@ -1563,8 +1569,9 @@ export default function VibeCatalogue({
     }, [step, activeTab]);
 
     // Derived stats from localAssets
-    const offeredCount = localAssets.filter(a => a.status === 'OFFERED' || a.status === 'DECLINED').length;
+    const offeredCount = localAssets.filter(a => a.status === 'OFFERED' || a.status === 'DECLINED' || a.status === 'SUGGESTING_ALTERNATIVES').length;
     const completedCount = localAssets.filter(a => a.status === 'COMPLETED').length; // Mock removed
+
     const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showPaywall, setShowPaywall] = useState(false);
@@ -1855,7 +1862,6 @@ export default function VibeCatalogue({
                             setIsNotificationOpen(!isNotificationOpen);
                             setIsChatListOpen(false);
                             setIsProfileOpen(false);
-                            setHasNewNotifications(false);
                         }}
                         className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors"
                     >
@@ -2328,7 +2334,7 @@ export default function VibeCatalogue({
                                                 { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
                                                 {
                                                     label: isDeclined ? 'オファー不承諾' : 'オファー承諾',
-                                                    date: isDeclined ? asset.updated_at : asset.approved_at,
+                                                    date: isDeclined ? asset.created_at : asset.approved_at,
                                                     active: isDeclined || !!asset.approved_at,
                                                     icon: isDeclined ? <X size={10} /> : <CheckCircle size={10} />,
                                                     isError: asset.status === 'DECLINED',
@@ -2337,7 +2343,7 @@ export default function VibeCatalogue({
                                                 ...(isDeclined ? [] : [
                                                     { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
                                                     { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
-                                                    { label: '最終承認', date: asset.finalized ? asset.updated_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
+                                                    { label: '最終承認', date: asset.finalized ? asset.created_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
                                                 ]),
                                             ];
 
@@ -2435,14 +2441,14 @@ export default function VibeCatalogue({
                                                             </motion.div>
                                                         )}
 
-                                                        {isDeclined && (asset as any).offer_details?.alternatives?.length > 0 && (
+                                                        {isDeclined && asset.suggested_creator_ids && asset.suggested_creator_ids.length > 0 && (
                                                             <div className="space-y-4 py-4 border-t border-stone-50 mt-2">
                                                                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
                                                                     <Sparkles size={12} /> 代替アンバサダーの提案
                                                                 </p>
                                                                 <div className="grid grid-cols-1 gap-3">
                                                                     {initialCreators
-                                                                        .filter(c => (asset as any).offer_details?.alternatives?.includes(c.id))
+                                                                        .filter(c => asset.suggested_creator_ids?.includes(c.id))
                                                                         .slice(0, 3)
                                                                         .map(altCreator => (
                                                                             <div key={altCreator.id} className="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50 hover:border-indigo-200 transition-colors">
@@ -2477,7 +2483,8 @@ export default function VibeCatalogue({
                                                                     <div className="flex items-center gap-2 text-red-600 font-black text-xs uppercase tracking-widest">
                                                                         <Clock size={14} /> 支払期限: 23時間59分
                                                                     </div>
-                                                                    <p className="text-[10px] font-bold text-red-800 text-center leading-tight">アンバサダー報酬のご入金が必要です。<br />デポジット確認後、撮影が開始されます。</p>
+                                                                    <p className="text-[12px] font-bold text-red-800 text-center leading-tight">アンバサダー報酬の仮払いが必要です。<br />支払いを確認後、動画制作が開始されます。</p>
+                                                                    <p className="text-[8px] font-medium text-red-800 text-center leading-tight">※報酬の支払いトラブル防止のため、運営が報酬を一時的に預かり、動画投稿完了後に正式に支払われる仕組みです。アンバサダー都合によるキャンセル・納品不備があった場合は全額返金されます。</p>
                                                                     <button
                                                                         onClick={() => {
                                                                             if (asset.reward_paymentlink) {
@@ -2489,7 +2496,7 @@ export default function VibeCatalogue({
                                                                         className="w-full bg-red-600 text-white py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-xl"
                                                                     >
                                                                         <Zap size={14} className="fill-current text-yellow-400" />
-                                                                        報酬をデポジットする
+                                                                        支払いへ進む
                                                                     </button>
                                                                 </div>
                                                             )}
@@ -2839,6 +2846,7 @@ export default function VibeCatalogue({
                         onClose={() => setIsModalOpen(false)}
                         creator={selectedCreator}
                         onSend={handleOfferSent}
+                        shop={shop}
                     />
                 )
             }

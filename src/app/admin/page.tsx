@@ -267,13 +267,13 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                 <button onClick={() => setShowApproveModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
 
                                 <div className="text-center space-y-2 mb-8">
-                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Reward Deposit Management</h4>
-                                    <p className="text-[10px] font-bold text-slate-400">デポジット状況を管理します</p>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">報酬デポジット管理</h4>
+                                    <p className="text-[10px] font-bold text-slate-400">アンバサダーが動画制作を開始する前に、必ず報酬のデポジット（預り金）の支払いを確認して下さい。</p>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase">Payment Link (Stripe etc.)</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Payment Link (Stripe)</p>
                                         <input
                                             type="text"
                                             placeholder="https://buy.stripe.com/..."
@@ -1595,7 +1595,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                                 </div>
                                                                                             )}
                                                                                             {details.ngItems && (
-                                                                                                <p className="text-[10px] text-red-500 font-bold px-2 py-1 bg-red-50 rounded border border-red-100 w-fit">NG: {details.ngItems}</p>
+                                                                                                <p className="text-[10px] text-red-500 font-bold px-2 py-1 bg-red-50 rounded border border-red-100 w-fit">動画・撮影のNG事項: {details.ngItems}</p>
                                                                                             )}
                                                                                         </div>
                                                                                     </>
@@ -1634,7 +1634,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         label="報酬デポジット"
                                                                                         assetId={offer.id}
                                                                                         field="reward_deposit"
-                                                                                        currentValue={offer.reward_deposit ? offer.updated_at : null}
+                                                                                        currentValue={offer.reward_deposit ? offer.createdAt : null}
                                                                                         currentStatus={offer.status}
                                                                                         currentPostUrl={offer.reward_paymentlink}
                                                                                         onUpdate={fetchData}
@@ -1660,7 +1660,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                         label="広告主承認"
                                                                                         assetId={offer.id}
                                                                                         field="confirmed_at"
-                                                                                        currentValue={offer.status === 'FINALIZED' ? offer.updated_at : null}
+                                                                                        currentValue={offer.status === 'FINALIZED' ? offer.createdAt : null}
                                                                                         currentStatus={offer.status}
                                                                                         currentPostUrl={offer.published_url}
                                                                                         onUpdate={fetchData}
