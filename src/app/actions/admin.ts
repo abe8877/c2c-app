@@ -2,17 +2,15 @@
 'use server'
 
 import { publicAction } from '@/lib/actions/safe-action';
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createAdminClient } from '@/utils/supabase/admin';
+import { revalidatePath } from 'next/cache';
 
 /**
  * ADMINダッシュボードの統計情報を取得
  */
 export async function getAdminStats() {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         try {
             const sevenDaysAgo = new Date();
@@ -69,10 +67,7 @@ export async function getAdminStats() {
  */
 export async function getSuccessLogs() {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         try {
             const { data, error } = await supabaseAdmin
@@ -123,10 +118,7 @@ function getMockSuccessLogs() {
  */
 export async function getLostAssets() {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         try {
             const { data, error } = await supabaseAdmin
@@ -209,10 +201,7 @@ function getMockLostAssets() {
  */
 export async function getOngoingOffers() {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         try {
             const { data, error } = await supabaseAdmin
@@ -340,10 +329,7 @@ function getMockOngoingOffers() {
  */
 export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'visit_at' | 'delivered_at' | 'confirmed_at' | 'finalized' | 'reward_deposit' | 'reward_paymentlink', timestamp: string | null, extraData?: any) {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         let updatePayload: any = {};
         if (field === 'approved_at') {
@@ -480,10 +466,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
  */
 export async function proposeAlternativeAmbassador(assetId: string, alternativeCreatorId: string) {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         if (!assetId || !alternativeCreatorId) {
             return { success: false, error: "Missing assetId or alternativeCreatorId" };
@@ -575,10 +558,7 @@ export async function sendAdminProxyMessage({
     senderType: 'shop' | 'creator';
 }) {
     return publicAction({}, async () => {
-        const supabaseAdmin = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const supabaseAdmin = createAdminClient();
 
         // assetからshop_idとcreator_idを取得
         const { data: assetInfo, error: assetError } = await supabaseAdmin
@@ -652,5 +632,130 @@ export async function sendAdminProxyMessage({
         }
 
         return { success: true };
+    });
+}
+
+/**
+ * クリエイターのフィールドを更新する（運営ダッシュボードから使用）
+ */
+export async function updateCreatorField(creatorId: string, field: string, value: any) {
+    return publicAction({}, async () => {
+        const supabaseAdmin = createAdminClient();
+
+        let updatePayload: any = {};
+        if (field === 'tier') updatePayload = { tier: value };
+        else if (field === 'vibeCluster') updatePayload = { vibe_tags: [value] };
+        else if (field === 'is_public') updatePayload = { is_public: value };
+        else if (field === 'genre') updatePayload = { genre: value };
+        else if (field === 'review_status') updatePayload = { review_status: value };
+        else {
+            return { success: false, error: `Unknown field: ${field}` };
+        }
+
+        const { error } = await supabaseAdmin
+            .from('creators')
+            .update(updatePayload)
+            .eq('id', creatorId);
+
+        if (error) {
+            console.error('updateCreatorField error:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    });
+}
+
+/**
+ * クリエイターの配列フィールドをトグル更新する（運営ダッシュボードから使用）
+ */
+export async function toggleCreatorArrayField(creatorId: string, field: 'genre' | 'vibeCluster', currentArray: string[], value: string) {
+    return publicAction({}, async () => {
+        const supabaseAdmin = createAdminClient();
+
+        const newArray = currentArray.includes(value)
+            ? currentArray.filter((v: string) => v !== value)
+            : [...currentArray, value];
+
+        const updatePayload = field === 'vibeCluster' ? { vibe_tags: newArray } : { genre: newArray };
+
+        const { error } = await supabaseAdmin
+            .from('creators')
+            .update(updatePayload)
+            .eq('id', creatorId);
+
+        if (error) {
+            console.error('toggleCreatorArrayField error:', error);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true, newArray };
+    });
+}
+
+/**
+ * 全クリエイターを取得する（運営ダッシュボードから使用）
+ */
+export async function fetchAllCreators() {
+    return publicAction({}, async () => {
+        const supabaseAdmin = createAdminClient();
+
+        let allCreators: any[] = [];
+        let page = 0;
+        const pageSize = 500;
+        let hasMore = true;
+
+        while (hasMore && page < 20) {
+            const { data, error } = await supabaseAdmin
+                .from('creators')
+                .select('*', { count: 'exact' })
+                .order('followers', { ascending: false })
+                .range(page * pageSize, (page + 1) * pageSize - 1);
+
+            if (error) throw error;
+            if (data && data.length > 0) {
+                allCreators = [...allCreators, ...data];
+                if (data.length < pageSize) {
+                    hasMore = false;
+                }
+                page++;
+            } else {
+                hasMore = false;
+            }
+        }
+
+        return { creators: allCreators };
+    });
+}
+
+/**
+ * 動画をStorageにアップロードし公開URLを返す（運営ダッシュボードから使用）
+ */
+export async function uploadDeliveryVideo(assetId: string, fileBase64: string, fileExt: string) {
+    return publicAction({}, async () => {
+        const supabaseAdmin = createAdminClient();
+
+        const fileName = `${assetId}-${Date.now()}.${fileExt}`;
+        const filePath = `deliveries/${fileName}`;
+
+        // base64をBufferに変換
+        const buffer = Buffer.from(fileBase64, 'base64');
+
+        const { error: uploadError } = await supabaseAdmin.storage
+            .from('videos')
+            .upload(filePath, buffer, {
+                contentType: `video/${fileExt === 'mp4' ? 'mp4' : fileExt === 'mov' ? 'quicktime' : 'mp4'}`,
+            });
+
+        if (uploadError) {
+            console.error('uploadDeliveryVideo error:', uploadError);
+            return { success: false, error: uploadError.message };
+        }
+
+        const { data: { publicUrl } } = supabaseAdmin.storage
+            .from('videos')
+            .getPublicUrl(filePath);
+
+        return { success: true, publicUrl };
     });
 }

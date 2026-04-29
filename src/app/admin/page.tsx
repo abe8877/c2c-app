@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
-import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage } from '@/app/actions/admin';
+import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage, updateCreatorField, toggleCreatorArrayField, fetchAllCreators, uploadDeliveryVideo } from '@/app/actions/admin';
 import { triggerN8nWebhook } from '@/app/actions/creator';
 
 // Define the Creator Interface
@@ -275,27 +275,32 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
 
                                                 setLoading(true);
                                                 try {
-                                                    const supabase = createClient();
-                                                    const fileExt = file.name.split('.').pop();
-                                                    const fileName = `${assetId}-${Date.now()}.${fileExt}`;
-                                                    const filePath = `deliveries/${fileName}`;
+                                                    const fileExt = file.name.split('.').pop() || 'mp4';
 
-                                                    const { error: uploadError } = await supabase.storage
-                                                        .from('videos')
-                                                        .upload(filePath, file);
-
-                                                    if (uploadError) throw uploadError;
-
-                                                    const { data: { publicUrl } } = supabase.storage
-                                                        .from('videos')
-                                                        .getPublicUrl(filePath);
-
-                                                    setVideoUrl(publicUrl);
-                                                    alert("動画をアップロードしました。URLが自動入力されました。");
+                                                    // ファイルをBase64に変換してServer Actionに送信
+                                                    const reader = new FileReader();
+                                                    reader.onload = async () => {
+                                                        try {
+                                                            const base64 = (reader.result as string).split(',')[1];
+                                                            const res = await uploadDeliveryVideo(assetId, base64, fileExt);
+                                                            if (res.success && res.data?.publicUrl) {
+                                                                setVideoUrl(res.data.publicUrl);
+                                                                alert("動画をアップロードしました。URLが自動入力されました。");
+                                                            } else {
+                                                                alert("アップロードに失敗しました: " + (res.error || 'Unknown error'));
+                                                            }
+                                                        } catch (err: any) {
+                                                            console.error(err);
+                                                            alert("アップロードに失敗しました: " + err.message);
+                                                        } finally {
+                                                            setLoading(false);
+                                                        }
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                    return; // setLoading(false) is handled in the reader.onload callback
                                                 } catch (err: any) {
                                                     console.error(err);
                                                     alert("アップロードに失敗しました: " + err.message);
-                                                } finally {
                                                     setLoading(false);
                                                 }
                                             }}
@@ -720,45 +725,24 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         setSelectedIds(new Set()); // Reset
     };
 
-    // ★ 1. データ取得処理 (SupabaseからRead)
+    // ★ 1. データ取得処理 (Server Action経由で取得)
     const fetchData = async () => {
         try {
             setLoading(true);
 
-            // ユーザー情報の取得
+            // ユーザー情報の取得（認証確認はクライアント側で許容）
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
 
-            // 10,000人規模まで対応するためのページング取得 (pageSizeを小さめにして確実にページングさせる)
-            let allCreators: any[] = [];
-            let page = 0;
-            const pageSize = 500;
-            let hasMore = true;
-
-            while (hasMore && page < 20) { // 最大10000人まで取得可能に
-                const { data, error, count } = await supabase
-                    .from('creators')
-                    .select('*', { count: 'exact' })
-                    .order('followers', { ascending: false })
-                    .range(page * pageSize, (page + 1) * pageSize - 1);
-
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    allCreators = [...allCreators, ...data];
-                    // 取得件数がpageSize未満ならこれ以上データはない
-                    if (data.length < pageSize) {
-                        hasMore = false;
-                    }
-                    page++;
-                } else {
-                    hasMore = false;
-                }
-            }
+            // Server Action経由で全クリエイターを取得
+            const creatorsRes = await fetchAllCreators();
+            if (!creatorsRes.success) throw new Error(creatorsRes.error || 'Failed to fetch creators');
+            const allCreators = creatorsRes.data?.creators || [];
 
             console.log(`Fetched total ${allCreators.length} creators.`);
 
             // 取得したデータをUI用に整形
-            const formattedData = allCreators.map((item, index) => {
+            const formattedData = allCreators.map((item: any, index: number) => {
                 const isSystemHidden = !item.is_onboarded && item.was_public;
 
                 // is_ai_recommendedの場合、未着手ならデフォルトをセット
@@ -828,21 +812,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         ));
 
         try {
-            // DB更新用のペイロードを作成
-            let updatePayload: any = {};
-            if (field === 'tier') updatePayload = { tier: value };
-            if (field === 'vibeCluster') updatePayload = { vibe_tags: [value] };
-            if (field === 'is_public') updatePayload = { is_public: value };
-            if (field === 'genre') updatePayload = { genre: value };
-            if (field === 'review_status') updatePayload = { review_status: value };
-
-            // DB更新実行
-            const { error } = await supabase
-                .from('creators')
-                .update(updatePayload)
-                .eq('id', id);
-
-            if (error) throw error;
+            const res = await updateCreatorField(id, field, value);
+            if (!res.success) throw new Error(res.error || 'Unknown error');
 
             // Trigger n8n webhook if making public and thumbnail is missing
             if (field === 'is_public' && value === true) {
@@ -873,12 +844,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             ? currentArray.filter((v: string) => v !== value)
             : [...currentArray, value];
 
+        // Optimistic UI
         setCreators(prev => prev.map(c => c.id === id ? { ...c, [field]: newArray } : c));
 
         try {
-            const updatePayload = field === 'vibeCluster' ? { vibe_tags: newArray } : { genre: newArray };
-            const { error } = await supabase.from('creators').update(updatePayload).eq('id', id);
-            if (error) throw error;
+            const res = await toggleCreatorArrayField(id, field, currentArray, value);
+            if (!res.success) throw new Error(res.error || 'Unknown error');
             setTimeout(() => setIsSaving(false), 800);
         } catch (error) {
             console.error('Update Error:', error);

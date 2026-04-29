@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import ChatModal from "./ChatModal";
 import {
     Search, MapPin, ChevronDown, Check, Globe, RefreshCw, Star, Info, Layers,
-    CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users,
+    CheckCircle, ChevronRight, MessageSquare, Play, Sparkles, Send, Users, Handshake,
     AlertCircle, Camera, Bell, User, Gift, Diamond, X, AlertTriangle, CreditCard,
     Trash2, ChevronLeft, ArrowRight, Clock, MessageCircle, UploadCloud, Download,
     Plus, MessageSquareQuote, BarChart3, TrendingUp, Home,
@@ -2398,11 +2398,11 @@ export default function VibeCatalogue({
 
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3 justify-center md:justify-start">
-                                    <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
-                                        <RefreshCw size={20} className="animate-spin-slow" />
+                                    <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+                                        <Handshake size={20} className="animate-pulse duration-500" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black tracking-tight uppercase">オファーの進行状況</h3>
+                                        <h3 className="text-xl font-black tracking-tight uppercase">進行中のオファー</h3>
                                         <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">現在交渉中・制作中の案件</p>
                                     </div>
                                 </div>
@@ -2443,7 +2443,7 @@ export default function VibeCatalogue({
                                                             </div>
                                                         )}
                                                         {['APPROVED', 'WORKING', 'DELIVERED'].includes(asset.status || '') ? (
-                                                            <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                            <div className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
                                                                 <RefreshCw className="w-3 h-3 animate-spin-slow" /> 進行中
                                                             </div>
                                                         ) : ['FINALIZED', 'COMPLETED'].includes(asset.status || '') ? (
@@ -2451,7 +2451,7 @@ export default function VibeCatalogue({
                                                                 <CheckCircle className="w-3 h-3" /> 完了
                                                             </div>
                                                         ) : (
-                                                            <div className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
+                                                            <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
                                                                 <RefreshCw className="w-3 h-3 animate-spin-slow" /> 交渉中
                                                             </div>
                                                         )}
@@ -2555,10 +2555,10 @@ export default function VibeCatalogue({
                                 <div className="space-y-8 mb-16">
                                     <div className="flex items-center gap-3 justify-center md:justify-start">
                                         <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
-                                            <Sparkles size={20} />
+                                            <RefreshCw size={20} className="animate-spin-slow" />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-black tracking-tight uppercase">代案アンバサダーのご提案</h3>
+                                            <h3 className="text-xl font-black tracking-tight uppercase">成立しなかったオファー</h3>
                                             <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">マッチングが成立しなかった案件への対応</p>
                                         </div>
                                     </div>
@@ -2721,7 +2721,15 @@ export default function VibeCatalogue({
 
                             {/* Acquired Videos Section */}
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">獲得した動画一覧</h3>
+                                <div className="flex items-center gap-3 justify-center md:justify-start">
+                                    <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+                                        <Sparkle size={20} className="animate-pulse duration-500" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black tracking-tight uppercase">投稿済み動画ギャラリー</h3>
+                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">動画は今もSNS上で来店を呼び込んでいます！</p>
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
                                         .filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED' || (a.status === 'WORKING' && a.video_url))
