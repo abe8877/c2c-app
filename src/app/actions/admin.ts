@@ -436,10 +436,17 @@ export async function sendAssetNotification(assetId: string, type: string, extra
         // 通知対象によってWebhook URLを切り替え
         const sniperWebhookUrl = "https://nots.app.n8n.cloud/webhook/sniper-notify";
         const generalWebhookUrl = "https://nots.app.n8n.cloud/webhook/general-notify";
+        const operationWebhookUrl = "https://nots.app.n8n.cloud/webhook/operation-notify";
         
-        const n8nWebhookUrl = (type === 'SNIPER_NOTIFY' || type === 'TABIMAE_DETECTED') 
-            ? sniperWebhookUrl 
-            : generalWebhookUrl;
+        let n8nWebhookUrl = generalWebhookUrl;
+        let isForOperation = false;
+
+        if (type === 'SNIPER_NOTIFY' || type === 'TABIMAE_DETECTED') {
+            n8nWebhookUrl = sniperWebhookUrl;
+        } else if (['OFFER_DECLINED', 'REVISION_REQUESTED', 'FINALIZED', 'DEPOSIT_CONFIRMED'].includes(type)) {
+            n8nWebhookUrl = operationWebhookUrl;
+            isForOperation = true;
+        }
 
         let subject = "[INSIDERS] ステータス更新のお知らせ";
         let message = `案件（クリエイター: ${creator?.name}）のステータスが更新されました。`;
@@ -450,49 +457,51 @@ export async function sendAssetNotification(assetId: string, type: string, extra
                 message = `${shop?.name} 様、${creator?.name} さんがオファーを承認しました。撮影の準備をお願いします。`;
                 break;
             case 'OFFER_DECLINED':
-                subject = "[INSIDERS] オファーが見送られました";
-                message = `${shop?.name} 様、残念ながら ${creator?.name} さんは今回のオファーを見送りました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
+                subject = "[INSIDERS] 【運営】オファー辞退のお知らせ";
+                message = `${shop?.name} 様へのオファーが、${creator?.name} さんによって辞退されました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
+                break;
+            case 'SUGGESTING_ALTERNATIVES':
+                subject = "[INSIDERS] 代替アンバサダーのご提案";
+                message = `${shop?.name} 様、大変恐縮ながらクリエイターより辞退の連絡がありました。代わりに、運営が厳選した新しいアンバサダー候補を提案いたしました。Asset Hubをご確認ください。`;
                 break;
             case 'VIDEO_DELIVERED':
                 subject = "[INSIDERS] 動画が納品されました";
                 message = `${shop?.name} 様、${creator?.name} さんが動画を納品しました。アセットハブより内容を確認し、承認または修正依頼を行ってください。`;
                 break;
             case 'FINALIZED':
-                subject = "[INSIDERS] 投稿が完了し、案件が終了しました";
-                message = `${shop?.name} 様、${creator?.name} さんがSNSへの投稿を完了しました。これにて本案件はクローズとなります。`;
+                subject = "[INSIDERS] 【運営】検収完了のお知らせ";
+                message = `${shop?.name} 様が、${creator?.name} さんの動画を承認（検収完了）しました。`;
                 break;
             case 'REVISION_REQUESTED':
-                subject = "[INSIDERS] 修正依頼が送信されました";
-                message = `${shop?.name} 様、クリエイター（${creator?.name}）へ修正依頼を送信しました。内容を確認次第、クリエイターが対応を開始します。`;
+                subject = "[INSIDERS] 【運営】修正依頼が届きました";
+                message = `${shop?.name} 様より、${creator?.name} さんへの修正依頼が送信されました。`;
                 break;
             case 'DEPOSIT_CONFIRMED':
-                subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
-                message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
+                subject = "[INSIDERS] 【運営】入金確認のお知らせ";
+                message = `${shop?.name} 様の報酬デポジットを確認しました。`;
                 break;
             case 'FILMING_DATE_FIXED':
                 subject = "[INSIDERS] 撮影日程が確定しました";
                 message = `${shop?.name} 様、${creator?.name} さんの撮影日が確定しました。\n日程: ${extraData?.date ? new Date(extraData.date).toLocaleString('ja-JP') : '未定'}`;
                 break;
-            case 'AUTO_APPROVAL':
-                subject = "[INSIDERS] みなし承認が完了しました";
-                message = `${shop?.name} 様、動画納品から5日間が経過したため、システムにより「みなし承認」が行われました。アンバサダーへの支払いが確定しました。`;
-                break;
         }
 
         if (n8nWebhookUrl) {
             const recipientEmail = shop?.notify_url || shop?.login_email;
-            if (recipientEmail && shop?.email_notifications_enabled !== false) {
+            // 運営向け通知の場合は個別のショップへのメール送信可否は問わずWebhookを叩く
+            if (isForOperation || (recipientEmail && shop?.email_notifications_enabled !== false)) {
                 await fetch(n8nWebhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type,
-                        recipientEmail,
+                        recipientEmail: isForOperation ? 'operation@insiders.jp' : recipientEmail,
                         subject,
                         content: message,
                         assetId,
                         shopName: shop?.name,
-                        creatorName: creator?.name
+                        creatorName: creator?.name,
+                        rejectionReason: extraData?.rejectionReason
                     })
                 }).catch(err => console.error("Notification Webhook Error:", err));
             }
@@ -553,43 +562,14 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
 
         // 通知
         try {
-            const { data: shop } = await supabaseAdmin
-                .from('shops')
-                .select('id, name, notify_url, login_email, email_notifications_enabled')
-                .eq('id', originalAsset.shop_id)
-                .single();
-
-            const recipientEmail = shop?.notify_url || shop?.login_email;
-            const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
-
-            if (recipientEmail && n8nWebhookUrl && shop?.email_notifications_enabled !== false) {
-                const subject = "代替アンバサダーの提案が届きました";
-                const message = `${shop?.name} 様\n\n辞退されたアンバサダーの代わりに、運営より新しい候補者の提案が届きました。\nアセットハブより内容をご確認ください。`;
-
-                fetch(n8nWebhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: 'ALTERNATIVE_SUGGESTION',
-                        recipientEmail,
-                        subject,
-                        content: message,
-                        assetId: targetAssetId,
-                        shopName: shop?.name
-                    })
-                }).catch(e => console.error("n8n Webhook Error:", e));
-
-                // チャットにも通知を記録 (新しい案件の方に記録)
-                await supabaseAdmin.from('messages').insert({
-                    asset_id: targetAssetId,
-                    sender_id: shop?.id,
-                    sender_type: 'shop',
-                    message: `📢 【システム通知】: ${subject}\n\n${message}`,
-                    is_notification: true
+            // 代替案が最初の1名だった場合のみ通知を飛ばす（ユーザー体験を損ねないため）
+            if (currentSuggestedIds.length === 0) {
+                await sendAssetNotification(targetAssetId, 'SUGGESTING_ALTERNATIVES', { 
+                    rejectionReason: originalAsset.rejection_reason || '希望条件の不一致' 
                 });
             }
-        } catch (e) {
-            console.error("Alternative notification error:", e);
+        } catch (err) {
+            console.error("Propose notification error:", err);
         }
 
         return { success: true };
@@ -847,8 +827,7 @@ export async function checkAutoApprove() {
 
         if (!updateError) {
             results.push(asset.id);
-            // 通知送信
-            await sendAssetNotification(asset.id, 'AUTO_APPROVAL');
+            // AUTO_APPROVALの通知は不要（納品と同義のため削除）
         }
     }
 
