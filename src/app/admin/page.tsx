@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, Plane, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign, Trash2 } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Loader2, Save, Check, PlayCircle, Copy, ImageIcon, CheckCircle2, Clock, Plane, ChevronDown, Sparkles, AlertTriangle, Users, XCircle, FileText, CheckSquare, Settings, Info, MessageCircle, Send, Plus, X, DollarSign, Trash2, UploadCloud, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
@@ -238,8 +238,81 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                 </div>
 
                                 <div className="space-y-6">
+                                    {/* Storage Upload Area */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">動画ファイルをアップロード</label>
+                                        <div
+                                            className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition-all cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : 'hover:border-indigo-400 hover:bg-indigo-50 border-slate-200 bg-slate-50 mt-2'}`}
+                                            onClick={() => document.getElementById(`video-upload-${assetId}`)?.click()}
+                                        >
+                                            {loading ? (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <Loader2 className="animate-spin text-indigo-500" size={24} />
+                                                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest animate-pulse">Uploading...</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <UploadCloud size={24} className="text-slate-400 mb-2" />
+                                                    <p className="text-[10px] font-bold text-slate-600">動画をドラッグ＆ドロップ</p>
+                                                    <p className="text-[8px] font-medium text-slate-400 mt-1">またはクリックしてファイルを選択</p>
+                                                </>
+                                            )}
+                                        </div>
+                                        <input
+                                            type="file"
+                                            id={`video-upload-${assetId}`}
+                                            className="hidden"
+                                            accept="video/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+
+                                                // 50MB size limit check
+                                                if (file.size > 50 * 1024 * 1024) {
+                                                    alert("ファイルサイズが大きすぎます (最大50MB)。画質を落とすか、別のファイルを選択してください。");
+                                                    return;
+                                                }
+
+                                                setLoading(true);
+                                                try {
+                                                    const supabase = createClient();
+                                                    const fileExt = file.name.split('.').pop();
+                                                    const fileName = `${assetId}-${Date.now()}.${fileExt}`;
+                                                    const filePath = `deliveries/${fileName}`;
+
+                                                    const { error: uploadError } = await supabase.storage
+                                                        .from('videos')
+                                                        .upload(filePath, file);
+
+                                                    if (uploadError) throw uploadError;
+
+                                                    const { data: { publicUrl } } = supabase.storage
+                                                        .from('videos')
+                                                        .getPublicUrl(filePath);
+
+                                                    setVideoUrl(publicUrl);
+                                                    alert("動画をアップロードしました。URLが自動入力されました。");
+                                                } catch (err: any) {
+                                                    console.error(err);
+                                                    alert("アップロードに失敗しました: " + err.message);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="relative">
+                                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                            <div className="w-full border-t border-slate-100"></div>
+                                        </div>
+                                        <div className="relative flex justify-center text-[8px] uppercase font-bold">
+                                            <span className="bg-white px-2 text-slate-400 tracking-widest">OR (URL入力)</span>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-bold text-slate-400 ml-1">動画データURL（supabaseから追加） </label>
+                                        <label className="text-[10px] font-bold text-slate-400 ml-1">動画データURL </label>
                                         <input
                                             type="url"
                                             placeholder="https://..."
@@ -342,7 +415,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         );
     }
 
-    if (field === 'final_status') {
+    if (field === 'confirmed_at') {
         const title = "投稿済みURLの共有";
         const subtitle = "依頼を完了するために、実際に投稿されたSNSのURLを添付してください";
         return (
@@ -1450,7 +1523,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                 <div className="text-3xl font-black">{stats?.avgMatchRate || '88.5'}%</div>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">アクティブ店舗</p>
+                                <p className="text-slate-500 text-xs font-bold uppercase mb-1">アクティブ案件</p>
                                 <div className="text-3xl font-black">
                                     {stats?.activeShops || '42'}
                                     <span className="text-sm text-green-500 font-bold ml-2">↑ 5%</span>
@@ -1490,7 +1563,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {(ongoingOffers || []).filter(o => logTab === 'lost' ? o.status === 'DECLINED' : o.status !== 'DECLINED').map((offer) => {
+                                    {(logTab === 'ongoing' ? ongoingOffers : lostAssets).map((offer) => {
                                         let rowStyle = "hover:bg-indigo-50/50 transition cursor-pointer";
                                         const isExpanded = expandedOfferId === offer.id;
                                         if (offer.alertLevel === 'CRITICAL') {
@@ -1537,6 +1610,23 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                     <span className="absolute -top-1.5 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm animate-pulse" />
                                                                 )}
                                                             </div>
+                                                            {(offer.status === 'DECLINED' || offer.status === 'EXPIRED') && (
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        if (confirm("この案件を『交渉中』に戻しますか？")) {
+                                                                            setLoading(true);
+                                                                            await updateAssetTimestamp(offer.id, 'approved_at', null, { status: 'OFFERED' });
+                                                                            setLoading(false);
+                                                                            fetchData();
+                                                                        }
+                                                                    }}
+                                                                    className="bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border border-indigo-100 flex items-center gap-1.5 shadow-sm active:scale-95"
+                                                                    title="進行中に戻す"
+                                                                >
+                                                                    <RefreshCw size={10} /> 進行中に戻す
+                                                                </button>
+                                                            )}
                                                             <ChevronDown className={`text-slate-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} size={16} />
                                                         </div>
                                                     </td>
@@ -1562,12 +1652,21 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                 return (
                                                                                     <>
                                                                                         <div className="absolute top-0 right-0 p-3 opacity-100 transition-opacity flex gap-2">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const text = `[Offer Conditions]\nPlan: ${details.plan === 'paid' ? 'Paid' : 'Barter'}\n${details.plan === 'paid' ? `Reward: ¥${Number(details.amount).toLocaleString()}\n` : ''}Preferred Time: ${details.shootingTime || 'Anytime'}\nStaff Appearance: ${details.staffAppearance || 'OK'}\nRules/NG: ${details.ngItems || 'None'}\nTags: ${details.selectedTags?.join(', ') || 'None'}\nMenu: ${offer.barterDetails || details.barterDetails || 'Standard Menu'}\nMessage: ${details.invitationMessage || 'N/A'}`;
-                                                                            navigator.clipboard.writeText(text);
-                                                                            alert('Offer conditions copied to clipboard');
-                                                                        }}
+                                                                                            <button
+                                                                                                onClick={() => {
+                                                                                                    const tagMap: { [key: string]: string } = {
+                                                                                                        '看板メニュー': 'Signature Menu',
+                                                                                                        '店内の雰囲気': 'Atmosphere',
+                                                                                                        'スタッフの接客': 'Staff Service',
+                                                                                                        '外観・看板': 'Exterior/Signage',
+                                                                                                        'アクセス情報': 'Access Info',
+                                                                                                        '利用シーン提案': 'Usage Scenes'
+                                                                                                    };
+                                                                                                    const translatedTags = details.selectedTags?.map((tag: string) => tagMap[tag] || tag);
+                                                                                                    const text = `[Offer Conditions]\nPlan: ${details.plan === 'paid' ? 'Paid' : 'Barter'}\n${details.plan === 'paid' ? `Reward: ¥${Number(details.amount).toLocaleString()}\n` : ''}Preferred Time: ${details.shootingTime || 'Anytime'}\nStaff Appearance: ${details.staffAppearance || 'OK'}\nRules/NG: ${details.ngItems || 'None'}\nTags: ${translatedTags?.join(', ') || 'None'}\nMenu: ${offer.barterDetails || details.barterDetails || 'Standard Menu'}\nMessage: ${details.invitationMessage || 'N/A'}`;
+                                                                                                    navigator.clipboard.writeText(text);
+                                                                                                    alert('オファー内容をコピーしました');
+                                                                                                }}
                                                                                                 className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 p-2 rounded-xl transition-all shadow-sm border border-indigo-200"
                                                                                                 title="DM用にコピー"
                                                                                             >
@@ -1693,7 +1792,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                     <TimelineButton
                                                                                         label="広告主承認"
                                                                                         assetId={offer.id}
-                                                                                        field="confirmed_at"
+                                                                                        field="finalized"
                                                                                         currentValue={offer.status === 'FINALIZED' ? offer.createdAt : null}
                                                                                         currentStatus={offer.status}
                                                                                         currentPostUrl={offer.published_url}
@@ -1702,7 +1801,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                                                     <TimelineButton
                                                                                         label="投稿済みURLを共有して依頼を完了する"
                                                                                         assetId={offer.id}
-                                                                                        field="final_status"
+                                                                                        field="confirmed_at"
                                                                                         currentValue={offer.published_url ? offer.createdAt : null}
                                                                                         currentPostUrl={offer.published_url}
                                                                                         onUpdate={fetchData}

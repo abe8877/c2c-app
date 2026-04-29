@@ -22,7 +22,7 @@ export async function getAdminStats() {
             // 実際のアナリティクスデータがない場合はダミーを返す
             const weeklyAnalysis = 1280;
 
-            // 2. アクティブ店舗 (現在進行中の案件数)
+            // 2. アクティブ案件 (現在進行中の案件数)
             const { count: activeShops } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
@@ -76,28 +76,34 @@ export async function getSuccessLogs() {
 
         try {
             const { data, error } = await supabaseAdmin
-                .from('shops')
-                .select('*')
-                .order('updated_at', { ascending: false })
-                .limit(5);
+                .from('assets')
+                .select(`
+                    id,
+                    updated_at,
+                    finalized,
+                    shop:shop_id (name),
+                    creator:creator_id (name, vibe_tags)
+                `)
+                .in('status', ['FINALIZED', 'COMPLETED'])
+                .order('updated_at', { ascending: false });
 
             if (error) throw error;
 
             if (data && data.length > 0) {
-                return data.map((shop, index) => ({
-                    id: shop.id,
-                    advertiser: shop.name || '不明な店舗',
-                    creator: ['Sarah Jenkins', 'Liam Wong', 'Elena R.', 'Mika K.', 'Kento T.'][index % 5],
-                    matchScore: 85 + (index * 3) % 15,
-                    vibes: shop.requirements || ['#和モダン', '#自然光'],
-                    date: shop.updated_at ? new Date(shop.updated_at).toLocaleString('ja-JP').slice(0, 16) : '2024-03-01 10:00'
+                return data.map((item: any) => ({
+                    id: item.id,
+                    advertiser: item.shop?.name || '不明な店舗',
+                    creator: item.creator?.name || '不明なクリエイター',
+                    matchScore: 90,
+                    vibes: item.creator?.vibe_tags || [],
+                    date: item.updated_at ? new Date(item.updated_at).toLocaleString('ja-JP').slice(0, 16) : '-'
                 }));
             }
 
-            return getMockSuccessLogs();
+            return [];
         } catch (error) {
-            console.warn('Success logs fetch failed:', error);
-            return getMockSuccessLogs();
+            console.error('Success logs fetch error:', error);
+            return [];
         }
     });
 }
@@ -131,10 +137,12 @@ export async function getLostAssets() {
                     rejection_reason,
                     offer_details,
                     barter_details,
-                    shops:shop_id (name),
-                    creators:creator_id (name, vibe_tags)
+                    suggested_creator_ids,
+                    status,
+                    shop:shop_id (name),
+                    creator:creator_id (name, vibe_tags)
                 `)
-                .eq('status', 'DECLINED')
+                .in('status', ['DECLINED', 'EXPIRED', 'SUGGESTING_ALTERNATIVES'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -142,18 +150,24 @@ export async function getLostAssets() {
             if (data && data.length > 0) {
                 return data.map((item: any) => ({
                     id: item.id,
-                    advertiser: item.shops?.name || '不明な店舗',
-                    rejectedCreator: item.creators?.name || '不明なクリエイター',
-                    missingVibes: item.creators?.vibe_tags || [],
+                    advertiser: item.shop?.name || '不明な店舗',
+                    creator: item.creator?.name || '不明なクリエイター',
+                    rejectedCreator: item.creator?.name || '不明なクリエイター',
+                    missingVibes: item.creator?.vibe_tags || [],
                     aiAction: item.rejection_reason || '理由なし',
+                    suggested_creator_ids: item.suggested_creator_ids,
+                    status: item.status,
+                    createdAt: item.created_at,
+                    diffHours: (new Date().getTime() - new Date(item.created_at).getTime()) / (1000 * 60 * 60),
+                    alertLevel: item.status === 'SUGGESTING_ALTERNATIVES' ? 'CRITICAL' : 'NONE',
                     timestamp: new Date(item.created_at).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
                 }));
             }
 
-            return getMockLostAssets();
+            return [];
         } catch (error) {
-            console.warn('DB fetch for lost assets failed, using mock data:', error);
-            return getMockLostAssets();
+            console.error('Lost assets fetch error:', error);
+            return [];
         }
     });
 }
@@ -221,10 +235,10 @@ export async function getOngoingOffers() {
                     reward_deposit,
                     reward_paymentlink,
                     suggested_creator_ids,
-                    shops:shop_id (id, name),
-                    creators:creator_id (id, name, avatar_url, followers)
+                    shop:shop_id (id, name),
+                    creator:creator_id (id, name, avatar_url, followers)
                 `)
-                .or('status.eq.OFFERED,status.eq.SUGGESTING_ALTERNATIVES,status.eq.WORKING,status.eq.COMPLETED,status.eq.APPROVED,status.eq.DELIVERED,status.eq.FINALIZED,status.eq.DECLINED')
+                .in('status', ['OFFERED', 'WORKING', 'APPROVED', 'DELIVERED'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -244,10 +258,10 @@ export async function getOngoingOffers() {
 
                     return {
                         id: item.id,
-                        advertiser: item.shops?.name || '不明な店舗',
-                        creator: item.creators?.name || '不明なクリエイター',
-                        creatorThumb: item.creators?.avatar_url,
-                        creatorFollowers: item.creators?.followers,
+                        advertiser: item.shop?.name || '不明な店舗',
+                        creator: item.creator?.name || '不明なクリエイター',
+                        creatorThumb: item.creator?.avatar_url,
+                        creatorFollowers: item.creator?.followers,
                         status: item.status,
                         offerDetails: item.offer_details,
                         barterDetails: item.barter_details,
@@ -264,19 +278,20 @@ export async function getOngoingOffers() {
                         reward_deposit: item.reward_deposit,
                         reward_paymentlink: item.reward_paymentlink,
                         suggested_creator_ids: item.suggested_creator_ids,
+                        shop: item.shop,
+                        creatorObj: item.creator,
                         diffHours,
                         alertLevel
                     };
                 });
             }
 
-            return getMockOngoingOffers();
+            return [];
         } catch (error: any) {
-            console.warn('Ongoing offers fetch failed:', error);
-            // エラー原因を特定するために一時的に画面に表示させる
+            console.error('Ongoing offers fetch error:', error);
             return [{
-                id: 'error_fetch',
-                advertiser: 'Error Fetching Offers',
+                id: 'error_debug',
+                advertiser: 'DB Fetch Error',
                 creator: error?.message || String(error),
                 status: 'ERROR',
                 createdAt: new Date().toISOString(),
@@ -323,7 +338,7 @@ function getMockOngoingOffers() {
 /**
  * アセットの進行状況（タイムスタンプ）を更新する
  */
-export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'delivered_at' | 'confirmed_at' | 'final_status' | 'reward_deposit' | 'reward_paymentlink', timestamp: string | null, extraData?: any) {
+export async function updateAssetTimestamp(assetId: string, field: 'approved_at' | 'filming_at' | 'visit_at' | 'delivered_at' | 'confirmed_at' | 'finalized' | 'reward_deposit' | 'reward_paymentlink', timestamp: string | null, extraData?: any) {
     return publicAction({}, async () => {
         const supabaseAdmin = createAdminClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -340,7 +355,7 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                 updatePayload.status = 'OFFERED';
                 updatePayload.rejection_reason = null;
             }
-        } else if (field === 'final_status' || field === 'confirmed_at') {
+        } else if (field === 'finalized' || field === 'confirmed_at') {
             updatePayload.finalized = !!timestamp;
             updatePayload.status = timestamp ? 'FINALIZED' : 'DELIVERED';
             if (field === 'confirmed_at') {
@@ -411,19 +426,22 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                 } else if (field === 'delivered_at') {
                     subject = "[INSIDERS] 動画が納品されました";
                     message = `${shop?.name} 様、${creator?.name} さんが動画を納品しました。アセットハブより内容を確認し、承認または修正依頼を行ってください。`;
-                } else if (field === 'confirmed_at') {
+                } else if (field === 'confirmed_at' || field === 'finalized') {
                     subject = "[INSIDERS] 投稿が完了し、案件が終了しました";
                     message = `${shop?.name} 様、${creator?.name} さんがSNSへの投稿を完了しました。これにて本案件はクローズとなります。`;
                 } else if (field === 'reward_deposit' && timestamp) {
                     subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
                     message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
+                } else if ((field === 'visit_at' || field === 'filming_at') && timestamp) {
+                    subject = "[INSIDERS] 撮影日程が確定しました";
+                    message = `${shop?.name} 様、${creator?.name} さんの撮影日が確定しました。\n日程: ${new Date(timestamp).toLocaleString('ja-JP')}`;
                 }
 
                 const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
                 if (n8nWebhookUrl) {
                     const recipientEmail = shop?.notify_url || shop?.login_email;
-                    // 通知設定が有効な場合のみ送信
-                    if (recipientEmail && shop?.email_notifications_enabled !== false) {
+                    // 通知設定が明示的に false でない限り送信。ただし、進行中に戻す操作（status === 'OFFERED'）は通知しない。
+                    if (recipientEmail && shop?.email_notifications_enabled !== false && extraData?.status !== 'OFFERED') {
                         fetch(n8nWebhookUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -432,7 +450,9 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
                                 recipientEmail,
                                 subject,
                                 content: message,
-                                assetId
+                                assetId,
+                                shopName: shop?.name,
+                                creatorName: creator?.name
                             })
                         }).catch(err => console.error("Notification Webhook Error:", err));
                     }
@@ -465,64 +485,74 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // UUID形式のチェック
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(assetId) || !uuidRegex.test(alternativeCreatorId)) {
-            console.error("Invalid UUID format:", { assetId, alternativeCreatorId });
-            throw new Error("Invalid ID format");
+        if (!assetId || !alternativeCreatorId) {
+            return { success: false, error: "Missing assetId or alternativeCreatorId" };
         }
 
-        // assetのsuggested_creator_idsを取得
-        const { data: asset, error: fetchError } = await supabaseAdmin
+        // 元の案件情報を取得
+        const { data: originalAsset, error: fetchError } = await supabaseAdmin
             .from('assets')
-            .select('suggested_creator_ids, shop_id')
+            .select('*')
             .eq('id', assetId)
             .single();
 
-        if (fetchError || !asset) throw new Error("Asset not found");
+        if (fetchError || !originalAsset) return { success: false, error: `Original asset not found: ${fetchError?.message}` };
 
-        let suggestedIds = asset.suggested_creator_ids || [];
-        if (!Array.isArray(suggestedIds)) {
-            suggestedIds = [];
-        }
+        // 現在の代替案リストに新しいクリエイターを追加
+        const currentSuggestedIds = originalAsset.suggested_creator_ids || [];
+        const newSuggestedIds = Array.from(new Set([...currentSuggestedIds, alternativeCreatorId]));
 
-        // 重複チェック & 最大3名制限
-        if (!suggestedIds.includes(alternativeCreatorId)) {
-            if (suggestedIds.length >= 3) {
-                suggestedIds = [...suggestedIds.slice(1), alternativeCreatorId];
-            } else {
-                suggestedIds.push(alternativeCreatorId);
-            }
-        }
-
+        // 元の案件を「辞退・代替案提示中」として更新し、候補リストを保存
         const { error: updateError } = await supabaseAdmin
             .from('assets')
-            .update({
-                suggested_creator_ids: suggestedIds,
-                status: 'SUGGESTING_ALTERNATIVES'
+            .update({ 
+                status: 'DECLINED', // もしくは 'SUGGESTING_ALTERNATIVES'
+                rejection_reason: originalAsset.rejection_reason || '希望条件の不一致',
+                suggested_creator_ids: newSuggestedIds
             })
             .eq('id', assetId);
 
-        if (updateError) throw updateError;
+        if (updateError) return { success: false, error: `Update old asset failed: ${updateError.message}` };
+
+        // 通知対象の案件IDは元のものをそのまま使う
+        const targetAssetId = assetId;
 
         // 通知
         try {
-            const { data: shop } = await supabaseAdmin.from('shops').select('name, notify_url, login_email').eq('id', asset.shop_id).single();
+            const { data: shop } = await supabaseAdmin
+                .from('shops')
+                .select('id, name, notify_url, login_email, email_notifications_enabled')
+                .eq('id', originalAsset.shop_id)
+                .single();
+
             const recipientEmail = shop?.notify_url || shop?.login_email;
             const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
 
-            if (recipientEmail && n8nWebhookUrl) {
+            if (recipientEmail && n8nWebhookUrl && shop?.email_notifications_enabled !== false) {
+                const subject = "代替アンバサダーの提案が届きました";
+                const message = `${shop?.name} 様\n\n辞退されたアンバサダーの代わりに、運営より新しい候補者の提案が届きました。\nアセットハブより内容をご確認ください。`;
+
                 fetch(n8nWebhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         type: 'ALTERNATIVE_SUGGESTION',
                         recipientEmail,
-                        subject: "[INSIDERS] 代替アンバサダーの提案が届きました",
-                        content: `${shop?.name} 様、辞退されたアンバサダーの代わりに、新しい候補者を運営より提案させていただきました。アセットハブよりご確認ください。`,
-                        assetId
+                        subject,
+                        content: message,
+                        assetId: targetAssetId,
+                        shopName: shop?.name
                     })
                 }).catch(e => console.error("n8n Webhook Error:", e));
+
+                // チャットにも通知を記録 (新しい案件の方に記録)
+                await supabaseAdmin.from('messages').insert({
+                    asset_id: targetAssetId,
+                    sender_id: shop?.id,
+                    sender_type: 'shop',
+                    message: `📢 【システム通知】: ${subject}\n\n${message}`,
+                    is_notification: true
+                });
             }
         } catch (e) {
             console.error("Alternative notification error:", e);

@@ -17,7 +17,8 @@ import {
     Eye,
     Zap,
     Heart,
-    Bookmark
+    Bookmark,
+    Edit3
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import Image from 'next/image';
@@ -55,6 +56,8 @@ export interface Asset {
     published_url?: string;
     published_at?: string;
     view_count?: number;
+    offer_details?: string;
+    barter_details?: string;
     suggested_creator_ids?: string[];
     creator?: {
         name: string;
@@ -122,6 +125,11 @@ const AnimatedCounter = ({ value }: { value: number }) => {
 
     return <span>{count}</span>;
 };
+
+// 状態管理用のステートとロジックをコンポーネント内へ移動しました
+
+// ログインユーザーのshopIdが取得できたタイミングで実行
+// fetchUpgradedFavorites has been moved inside the component
 
 const genreEmoji: Record<string, string> = { FOOD: '🍣', BEAUTY: '💅', TRAVEL: '⛩️', EXPERIENCE: '🧖‍♀️', LIFESTYLE: '✨' };
 const ethnicityEmoji: Record<string, string> = { AMERICA: '🇺🇸', EUROPE: '🇪🇺', ASIA: '🌏', AFRICA: '🌍' };
@@ -295,6 +303,7 @@ const CreatorCard = ({
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 unoptimized={true}
                 priority={priority}
+                referrerPolicy="no-referrer" /* ★CTO Fix: 外部CDNの画像ブロックを回避 */
                 onError={(e) => {
                     e.currentTarget.style.display = 'none';
                 }}
@@ -1403,6 +1412,7 @@ export default function VibeCatalogue({
 
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
     const [assetHubHint, setAssetHubHint] = useState<string | null>(null);
+    const [upgradedFavorites, setUpgradedFavorites] = useState<any[]>([]);
 
     // ピックアップクリエイター（Tier S, カテゴリごとに上位3名）の選定
     const marqueeCreators = React.useMemo(() => {
@@ -1497,6 +1507,35 @@ export default function VibeCatalogue({
             setSearchGenreCount(count);
         }
     }, [step, searchGenre, initialCreators]);
+
+    // 来日予兆を検知したお気に入りクリエイターを取得する関数
+    const fetchUpgradedFavorites = async (shopId: string) => {
+        const supabase = createClient();
+        const { data, error } = await supabase
+            .from('favorites')
+            .select(`
+                creator_id,
+                creators (
+                    id,
+                    name,
+                    tiktok_handle,
+                    in_japan,
+                    coming_soon,
+                    status_upgraded_at
+                )
+            `)
+            .eq('shop_id', shopId)
+            .gte('creators.status_upgraded_at', new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString());
+
+        if (!error && data) {
+            const validNotifs = data.filter((f: any) =>
+                f.creators && (f.creators.coming_soon || f.creators.in_japan)
+            ).map((f: any) => ({
+                creator: f.creators
+            }));
+            setUpgradedFavorites(validNotifs);
+        }
+    };
     const [localAssets, setLocalAssets] = useState<Asset[]>(initialAssets);
 
     const [freeOffers, setFreeOffers] = useState(3);
@@ -1529,6 +1568,13 @@ export default function VibeCatalogue({
     useEffect(() => {
         fetchShopInfo();
     }, []);
+
+    // ログインユーザーのshopIdが取得できたタイミングで「来日予兆」通知を取得
+    useEffect(() => {
+        if (shop?.id) {
+            fetchUpgradedFavorites(shop.id);
+        }
+    }, [shop?.id]);
 
     const fetchAssets = async () => {
         if (!shop?.id) return;
@@ -1721,8 +1767,9 @@ export default function VibeCatalogue({
         }
     };
 
-    const handleOfferSent = async (details: any) => {
-        if (!selectedCreator) return;
+    const handleOfferSent = async (details: any, specificCreator?: Creator) => {
+        const creator = specificCreator || selectedCreator;
+        if (!creator) return;
 
         // 🌟 修正: IDだけでなく、基本情報（店舗名とジャンル）があるかだけをチェックする
         if (!shop?.id || !shop?.name || !shop?.genre) {
@@ -1733,16 +1780,16 @@ export default function VibeCatalogue({
 
         try {
             const res = await offerCreator({
-                creatorId: selectedCreator.id,
+                creatorId: creator.id,
                 shopId: shop.id, // 🔴 'demo-shop' などのダミー文字を排除し、必ずUUIDを渡す
-                creatorName: selectedCreator.name,
-                creatorAvatar: selectedCreator.avatar || selectedCreator.thumbnail_url || undefined,
+                creatorName: creator.name,
+                creatorAvatar: creator.avatar || creator.thumbnail_url || undefined,
                 offerDetails: details,
-                barterDetails: details.barterDetails,
+                barterDetails: details.barterDetails || details,
             });
 
             if (res.success) {
-                setInvitedCreatorIds(prev => new Set(prev).add(selectedCreator.id));
+                setInvitedCreatorIds(prev => new Set(prev).add(creator.id));
                 if (!isPremium && res.freeOffersRemaining !== undefined) {
                     setFreeOffers(res.freeOffersRemaining);
                 }
@@ -1753,15 +1800,22 @@ export default function VibeCatalogue({
                         {
                             id: res.assetId!,
                             client_tag: clientTag || '',
-                            creator_id: selectedCreator.id,
+                            creator_id: creator.id,
                             status: 'OFFERED',
                             created_at: new Date().toISOString(),
+                            offer_details: details,
+                            barter_details: details.barterDetails || details,
+                            video_url: null,
+                            suggested_creator_ids: null,
                             creator: {
-                                name: selectedCreator.name,
-                                tiktok_handle: selectedCreator.name,
-                                avatar_url: selectedCreator.thumbnail_url || selectedCreator.avatar || undefined,
+                                name: creator.name,
+                                tiktok_handle: creator.name,
+                                avatar_url: creator.thumbnail_url || creator.avatar || undefined,
+                                thumbnail_url: creator.thumbnail_url || undefined,
+                                vibe_tags: [],
+                                genre: []
                             }
-                        } as Asset
+                        } as unknown as Asset
                     ]);
                 }
                 setIsSent(true);
@@ -1874,9 +1928,33 @@ export default function VibeCatalogue({
                         <div className="fixed top-20 left-1/2 -translate-x-1/2 sm:absolute sm:top-14 sm:right-0 sm:left-auto sm:translate-x-0 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
-                                {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'DECLINED' || a.status === 'SUGGESTING_ALTERNATIVES' || a.status === 'DELIVERED').length === 0 && (
+
+                                {/* 修正: 両方のリストが空の場合のみ「新しい通知はありません」を表示 */}
+                                {localAssets.filter(a => a.status === 'COMPLETED' || a.status === 'DECLINED' || a.status === 'SUGGESTING_ALTERNATIVES' || a.status === 'DELIVERED').length === 0 && (!upgradedFavorites || upgradedFavorites.length === 0) && (
                                     <div className="p-8 text-center text-xs text-stone-400">新しい通知はありません</div>
                                 )}
+
+                                {/* ★ ここに挿入: Tabimae（先物オファー）の通知を一番上に表示 */}
+                                {upgradedFavorites && upgradedFavorites.map(fav => (
+                                    <div
+                                        key={`notif-fav-${fav.creator.id}`}
+                                        className="p-4 border-b border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 transition cursor-pointer"
+                                        onClick={() => {
+                                            setIsNotificationOpen(false);
+                                            // TODO: クリエイター詳細モーダルを開く関数を呼び出す
+                                            // openCreatorModal(fav.creator); 
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <span className="bg-indigo-600 p-1 rounded text-white"><Plane size={10} /></span>
+                                            <div className="text-xs font-black text-indigo-900 tracking-tight">来日予兆を検知しました！</div>
+                                        </div>
+                                        <div className="text-[10px] text-stone-600 font-medium">
+                                            お気に入り登録中の <span className="font-bold">@{fav.creator.tiktok_handle}</span> さんが<span className="text-indigo-600 font-bold">「近々来日予定」</span>になりました。他社にスケジュールを押さえられる前にオファーしましょう。
+                                        </div>
+                                    </div>
+                                ))}
+
                                 {localAssets.filter(a => a.status === 'DELIVERED').map(a => (
                                     <div key={`notif-delivered-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-stone-900 mb-1">🎬 動画が納品されました</div>
@@ -2319,32 +2397,34 @@ export default function VibeCatalogue({
                             </div>
 
                             <div className="space-y-8">
-                                <h3 className="text-xl font-black tracking-tight text-center md:text-left uppercase">オファーの進行状況</h3>
+                                <div className="flex items-center gap-3 justify-center md:justify-start">
+                                    <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm border border-blue-100">
+                                        <RefreshCw size={20} className="animate-spin-slow" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black tracking-tight uppercase">オファーの進行状況</h3>
+                                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">現在交渉中・制作中の案件</p>
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
-                                        .filter(a => (['OFFERED', 'DECLINED', 'APPROVED', 'WORKING'].includes(a.status || '') && !a.video_url))
+                                        .filter(a => ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED'].includes(a.status || '') && !a.video_url)
                                         .map((asset) => {
                                             const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
                                             const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
                                             const src = asset.creator?.thumbnail_url || asset.creator?.avatar_url || null;
-                                            const isDeclined = asset.status === 'DECLINED' || asset.status === 'SUGGESTING_ALTERNATIVES';
 
-                                            // タイムラインの構築（実際のデータがない場合はフォールバック表示）
-                                            const timeline = [
+                                            const timeline: { label: string; date?: string | null; active: boolean; icon: React.ReactNode; isError?: boolean; description?: string }[] = [
                                                 { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
                                                 {
-                                                    label: isDeclined ? 'オファー不承諾' : 'オファー承諾',
-                                                    date: isDeclined ? asset.created_at : asset.approved_at,
-                                                    active: isDeclined || !!asset.approved_at,
-                                                    icon: isDeclined ? <X size={10} /> : <CheckCircle size={10} />,
-                                                    isError: asset.status === 'DECLINED',
-                                                    description: isDeclined && (asset as any).rejection_reason ? `理由: ${(asset as any).rejection_reason}` : undefined
+                                                    label: 'オファー承諾',
+                                                    date: asset.approved_at,
+                                                    active: !!asset.approved_at,
+                                                    icon: <CheckCircle size={10} />,
                                                 },
-                                                ...(isDeclined ? [] : [
-                                                    { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
-                                                    { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
-                                                    { label: '最終承認', date: asset.finalized ? asset.created_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
-                                                ]),
+                                                { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
+                                                { label: '納品完了', date: asset.delivery_at, active: !!asset.delivery_at, icon: <Video size={10} /> },
+                                                { label: '最終承認', date: asset.finalized ? asset.created_at : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
                                             ];
 
                                             // showDetails state: null = closed, `${id}` = timeline, `${id}-improve` = improvement
@@ -2353,7 +2433,7 @@ export default function VibeCatalogue({
                                             const isAnyOpen = isTimelineOpen || isImproveOpen;
 
                                             return (
-                                                <div key={asset.id} className={`w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border ${isDeclined ? 'border-red-100 bg-red-50/5' : 'border-stone-100'} overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col`}>
+                                                <div key={asset.id} className="w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col">
                                                     <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
                                                         {src ? (
                                                             <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
@@ -2362,11 +2442,7 @@ export default function VibeCatalogue({
                                                                 <User className="w-12 h-12 text-stone-300" />
                                                             </div>
                                                         )}
-                                                        {isDeclined ? (
-                                                            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
-                                                                <AlertTriangle className="w-3 h-3" /> 辞退
-                                                            </div>
-                                                        ) : ['APPROVED', 'WORKING', 'DELIVERED'].includes(asset.status || '') ? (
+                                                        {['APPROVED', 'WORKING', 'DELIVERED'].includes(asset.status || '') ? (
                                                             <div className="absolute top-4 left-4 z-10 bg-blue-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform group-hover:scale-110">
                                                                 <RefreshCw className="w-3 h-3 animate-spin-slow" /> 進行中
                                                             </div>
@@ -2428,55 +2504,6 @@ export default function VibeCatalogue({
                                                             </motion.div>
                                                         )}
 
-                                                        {isImproveOpen && isDeclined && (
-                                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
-                                                                <div className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl">
-                                                                    <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー受諾率を向上させるには</h4>
-                                                                    <ul className="text-[11px] font-bold leading-relaxed space-y-2 relative z-10 text-indigo-100 list-disc pl-4">
-                                                                        <li>「提供するサービス」の見直し：<br />オファーするアンバサダーが関心を持ちそうな内容にしてみて下さい。報酬なし→1万円にしたり、同伴者も無料にする等の工夫も有効です。</li>
-                                                                        <li>「招待メッセージ」の見直し：<br />アンバサダーは報酬面以上に、オファーの本気度を重視しています。誰にでもオファーしているのではなく、なぜあなたに依頼したいのかを伝えることで、オファー受諾率が大きく向上します。</li>
-                                                                        <li>「過去の成功事例」の共有：<br />以前に動画PRを実施したことがあれば、その事例を共有するとアンバサダーも制作イメージが湧き、スムーズにオファーが受諾される可能性があります。</li>
-                                                                    </ul>
-                                                                </div>
-                                                            </motion.div>
-                                                        )}
-
-                                                        {isDeclined && asset.suggested_creator_ids && asset.suggested_creator_ids.length > 0 && (
-                                                            <div className="space-y-4 py-4 border-t border-stone-50 mt-2">
-                                                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
-                                                                    <Sparkles size={12} /> 代替アンバサダーの提案
-                                                                </p>
-                                                                <div className="grid grid-cols-1 gap-3">
-                                                                    {initialCreators
-                                                                        .filter(c => asset.suggested_creator_ids?.includes(c.id))
-                                                                        .slice(0, 3)
-                                                                        .map(altCreator => (
-                                                                            <div key={altCreator.id} className="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50 hover:border-indigo-200 transition-colors">
-                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
-                                                                                    {altCreator.thumbnail_url || altCreator.avatar_url ? (
-                                                                                        <img src={altCreator.thumbnail_url || altCreator.avatar_url!} className="w-full h-full object-cover" alt="" />
-                                                                                    ) : (
-                                                                                        <User className="w-full h-full p-2 text-stone-300" />
-                                                                                    )}
-                                                                                </div>
-                                                                                <div className="flex-1 min-w-0">
-                                                                                    <p className="text-[11px] font-black truncate">@{altCreator.name}</p>
-                                                                                    <p className="text-[9px] font-bold text-stone-500 uppercase tracking-tighter">{altCreator.genre}</p>
-                                                                                </div>
-                                                                                <button
-                                                                                    onClick={() => { setSelectedCreator(altCreator); setIsModalOpen(true); }}
-                                                                                    className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md active:scale-95"
-                                                                                >
-                                                                                    Offer
-                                                                                </button>
-                                                                            </div>
-                                                                        ))
-                                                                    }
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-
                                                         <div className="flex flex-col gap-2 mt-auto w-full">
                                                             {!asset.reward_deposit && asset.reward_paymentlink && (
                                                                 <div className="bg-red-50 border-2 border-red-500/20 rounded-[2rem] p-4 flex flex-col items-center gap-3 animate-pulse shadow-lg shadow-red-500/10">
@@ -2503,18 +2530,10 @@ export default function VibeCatalogue({
                                                             <div className="flex gap-2 w-full">
                                                                 <button
                                                                     onClick={() => setShowDetails(isTimelineOpen ? null : asset.id)}
-                                                                    className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${isTimelineOpen ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
+                                                                    className={`w-full text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${isTimelineOpen ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
                                                                 >
                                                                     {isTimelineOpen ? 'Close' : 'Timeline'}
                                                                 </button>
-                                                                {isDeclined && (
-                                                                    <button
-                                                                        onClick={() => setShowDetails(isImproveOpen ? null : `${asset.id}-improve`)}
-                                                                        className={`flex-1 text-[11px] font-black rounded-xl py-3.5 transition-all shadow-xl active:scale-95 uppercase tracking-widest ${isImproveOpen ? 'border-2 border-stone-100 hover:border-stone-200 text-slate-800 bg-white' : 'bg-stone-900 text-white hover:bg-black flex items-center justify-center gap-1'}`}
-                                                                    >
-                                                                        {isImproveOpen ? 'Close' : <><Sparkles className="w-3 h-3 text-yellow-400" /> 改善案</>}
-                                                                    </button>
-                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2522,18 +2541,183 @@ export default function VibeCatalogue({
 
                                             );
                                         })}
-                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'DECLINED', 'APPROVED', 'WORKING'].includes(a.status || '') && !a.video_url).length === 0 && (
-                                        <>
-                                            <div className="bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-200 aspect-video flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-60">
-                                                <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Clock className="w-6 h-6" /></div>
-                                                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">現在交渉中のクリエイターはいません</p>
-                                            </div>
-                                            <div className="hidden md:block bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-100 aspect-video opacity-30" />
-                                            <div className="hidden md:block bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-100 aspect-video opacity-10" />
-                                        </>
+                                    {(localAssets.length > 0 ? localAssets : initialAssets).filter(a => ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED'].includes(a.status || '') && !a.video_url).length === 0 && (
+                                        <div className="col-span-full bg-stone-50 rounded-[32px] border-2 border-dashed border-stone-200 aspect-video flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-60 w-full">
+                                            <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-300"><Clock className="w-6 h-6" /></div>
+                                            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">現在交渉中のクリエイターはいません</p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
+
+                            {/* --- アンマッチ・代替案のご提案 --- */}
+                            {(localAssets.length > 0 ? localAssets : initialAssets).some(a => ['DECLINED', 'SUGGESTING_ALTERNATIVES', 'EXPIRED'].includes(a.status || '')) && (
+                                <div className="space-y-8 mb-16">
+                                    <div className="flex items-center gap-3 justify-center md:justify-start">
+                                        <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
+                                            <Sparkles size={20} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black tracking-tight uppercase">代案アンバサダーのご提案</h3>
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">マッチングが成立しなかった案件への対応</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+                                        {(localAssets.length > 0 ? localAssets : initialAssets)
+                                            .filter(a => ['DECLINED', 'SUGGESTING_ALTERNATIVES', 'EXPIRED'].includes(a.status || ''))
+                                            .map((asset) => {
+                                                const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
+                                                const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
+                                                const src = asset.creator?.thumbnail_url || asset.creator?.avatar_url || null;
+
+                                                const timeline: { label: string; date?: string | null; active: boolean; icon: React.ReactNode; isError?: boolean; description?: string }[] = [
+                                                    { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
+                                                    {
+                                                        label: 'オファー不承諾',
+                                                        date: asset.created_at,
+                                                        active: true,
+                                                        icon: <X size={10} />,
+                                                        isError: true,
+                                                        description: (asset as any).rejection_reason ? `理由: ${(asset as any).rejection_reason}` : undefined
+                                                    }
+                                                ];
+
+                                                const isTimelineOpen = showDetails === asset.id;
+                                                const isImproveOpen = showDetails === `${asset.id}-improve`;
+
+                                                return (
+                                                    <div key={asset.id} className="w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border border-red-100 bg-red-50/5 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col">
+                                                        <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
+                                                            {src ? (
+                                                                <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                                            ) : (
+                                                                <div className="w-full h-full bg-stone-100 flex items-center justify-center">
+                                                                    <User className="w-12 h-12 text-stone-300" />
+                                                                </div>
+                                                            )}
+                                                            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase">
+                                                                <AlertTriangle className="w-3 h-3" /> 辞退
+                                                            </div>
+                                                        </div>
+                                                        <div className="p-8 space-y-4 text-left flex-1 flex flex-col">
+                                                            <div>
+                                                                <h3 className="font-black text-xl tracking-tight">{creatorName}</h3>
+                                                                <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
+                                                            </div>
+
+                                                            {isTimelineOpen && (
+                                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                    <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
+                                                                    <div className="space-y-4 relative">
+                                                                        <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-stone-100" />
+                                                                        {timeline.map((step, idx) => (
+                                                                            <div key={idx} className="flex gap-4 items-start relative z-10">
+                                                                                <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? (step.isError ? 'bg-red-500 border-red-500 shadow-lg shadow-red-100' : 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-100') : 'bg-white border-stone-100'}`}>
+                                                                                    {step.active && <div className="text-white">{step.icon}</div>}
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <p className={`text-[11px] font-black ${step.active ? (step.isError ? 'text-red-500' : 'text-stone-900') : 'text-stone-300'}`}>{step.label}</p>
+                                                                                    {step.description && <p className="text-[10px] font-bold text-red-500 mt-1 leading-relaxed bg-red-50 p-2 rounded-lg border border-red-100">{step.description}</p>}
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+
+                                                            {isImproveOpen && (
+                                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                    <div className="bg-stone-900 text-white p-5 rounded-2xl relative overflow-hidden shadow-2xl">
+                                                                        <h4 className="text-xs font-black mb-3 flex items-center gap-2"><Sparkles className="w-3 h-3 text-yellow-400" /> オファー受諾率を向上させるには</h4>
+                                                                        <ul className="text-[11px] font-bold leading-relaxed space-y-2 relative z-10 text-indigo-100 list-disc pl-4">
+                                                                            <li>「提供するサービス」の見直し：<br />オファーするアンバサダーが関心を持ちそうな内容にしてみて下さい。報酬なし→1万円にしたり、同伴者も無料にする等の工夫も有効です。</li>
+                                                                            <li>「招待メッセージ」の見直し：<br />アンバサダーは報酬面以上に、オファーの本気度を重視しています。誰にでもオファーしているのではなく、なぜあなたに依頼したいのかを伝えることで、オファー受諾率が大きく向上します。</li>
+                                                                            <li>「過去の成功事例」の共有：<br />以前に動画PRを実施したことがあれば、その事例を共有するとアンバサダーも制作イメージが湧き、スムーズにオファーが受諾される可能性があります。</li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+
+                                                            {asset.suggested_creator_ids && asset.suggested_creator_ids.length > 0 && (
+                                                                <div className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+                                                                        <Sparkles size={12} /> 代替アンバサダーの提案
+                                                                    </p>
+                                                                    <div className="grid grid-cols-1 gap-3">
+                                                                        {initialCreators
+                                                                            .filter(c => asset.suggested_creator_ids?.includes(c.id))
+                                                                            .slice(0, 3)
+                                                                            .map(altCreator => (
+                                                                                <div key={altCreator.id} className="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50 hover:border-indigo-200 transition-colors">
+                                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
+                                                                                        {altCreator.thumbnail_url || altCreator.avatar_url ? (
+                                                                                            <img src={altCreator.thumbnail_url || altCreator.avatar_url!} className="w-full h-full object-cover" alt="" />
+                                                                                        ) : (
+                                                                                            <User className="w-full h-full p-2 text-stone-300" />
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <div className="flex-1 min-w-0">
+                                                                                        <p className="text-[11px] font-black truncate">@{altCreator.name}</p>
+                                                                                        <p className="text-[9px] font-bold text-stone-500 uppercase tracking-tighter">{altCreator.genre}</p>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1 shrink-0 ml-2">
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                // そのままオファーを再送する
+                                                                                                const combinedDetails = {
+                                                                                                    ...(typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : (asset.offer_details as any || {})),
+                                                                                                    barterDetails: asset.barter_details
+                                                                                                };
+                                                                                                handleOfferSent(combinedDetails, altCreator);
+                                                                                            }}
+                                                                                            className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1"
+                                                                                        >
+                                                                                            <Send size={10} /> そのまま送る
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                setSelectedCreator(altCreator);
+                                                                                                // 条件を編集するためモーダルを開く
+                                                                                                // TODO: モーダル側で初期値を受け取れるようにするか、ローカルステートにプリセットするか
+                                                                                                // ※現状のOfferModalは props.offerDetails等の初期値を受け取っていない場合、
+                                                                                                //    ここでは setIsModalOpen(true) だけにし、必要に応じてOfferModalコンポーネントを改修します。
+                                                                                                setIsModalOpen(true);
+                                                                                            }}
+                                                                                            className="bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 flex items-center justify-center gap-1"
+                                                                                        >
+                                                                                            <Edit3 size={10} /> 条件を編集
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="flex gap-2 w-full mt-auto">
+                                                                <button
+                                                                    onClick={() => setShowDetails(isTimelineOpen ? null : asset.id)}
+                                                                    className={`flex-1 text-[11px] font-black border-2 rounded-xl py-3.5 transition-all uppercase tracking-widest ${isTimelineOpen ? 'bg-stone-900 border-stone-900 text-white' : 'border-stone-100 hover:border-stone-200'}`}
+                                                                >
+                                                                    {isTimelineOpen ? 'Close' : 'Timeline'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setShowDetails(isImproveOpen ? null : `${asset.id}-improve`)}
+                                                                    className={`flex-1 text-[11px] font-black rounded-xl py-3.5 transition-all shadow-xl active:scale-95 uppercase tracking-widest ${isImproveOpen ? 'border-2 border-stone-100 hover:border-stone-200 text-slate-800 bg-white' : 'bg-stone-900 text-white hover:bg-black flex items-center justify-center gap-1'}`}
+                                                                >
+                                                                    {isImproveOpen ? 'Close' : <><Sparkles className="w-3 h-3 text-yellow-400" /> 改善案</>}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Acquired Videos Section */}
                             <div className="space-y-8">
