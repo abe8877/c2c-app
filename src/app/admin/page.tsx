@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import ReviewStatusSelect from "@/app/admin/ReviewStatusSelect";
-import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage, updateCreatorField, toggleCreatorArrayField, fetchAllCreators, uploadDeliveryVideo } from '@/app/actions/admin';
+import { getAdminStats, getLostAssets, getSuccessLogs, getOngoingOffers, updateAssetTimestamp, sendAdminProxyMessage, updateCreatorField, toggleCreatorArrayField, fetchAllCreators, deliverOfferAsset } from '@/app/actions/admin';
 import { triggerN8nWebhook } from '@/app/actions/creator';
 
 // Define the Creator Interface
@@ -87,6 +87,10 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 if (postUrl) {
                     await updateAssetTimestamp(assetId, 'reward_paymentlink', null, { paymentLink: postUrl });
                 }
+            } else if (field === 'delivered_at') {
+                // 納品報告の場合は専用のServer Actionを使用
+                const res = await deliverOfferAsset(assetId, videoUrl);
+                if (!res.success) throw new Error(res.error || 'Update failed');
             } else {
                 await updateAssetTimestamp(
                     assetId,
@@ -95,9 +99,9 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                     { rejectionReason, videoUrl, postUrl }
                 );
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            alert("更新に失敗しました");
+            alert("更新に失敗しました: " + (e.message || ""));
             setLoading(false);
             return;
         }
@@ -234,7 +238,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                                 <button onClick={() => setShowDeliveryModal(false)} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
 
                                 <div className="text-center space-y-2 mb-8">
-                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">動画データを納品して承認を依頼する</h4>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase leading-none">動画データを納品して承認を依頼する</h4>
                                 </div>
 
                                 <div className="space-y-6">
@@ -275,32 +279,41 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
 
                                                 setLoading(true);
                                                 try {
+                                                    const supabase = createClient();
                                                     const fileExt = file.name.split('.').pop() || 'mp4';
+                                                    const fileName = `${assetId}-${Date.now()}.${fileExt}`;
+                                                    const filePath = `deliveries/${fileName}`;
 
-                                                    // ファイルをBase64に変換してServer Actionに送信
-                                                    const reader = new FileReader();
-                                                    reader.onload = async () => {
-                                                        try {
-                                                            const base64 = (reader.result as string).split(',')[1];
-                                                            const res = await uploadDeliveryVideo(assetId, base64, fileExt);
-                                                            if (res.success && res.data?.publicUrl) {
-                                                                setVideoUrl(res.data.publicUrl);
-                                                                alert("動画をアップロードしました。URLが自動入力されました。");
-                                                            } else {
-                                                                alert("アップロードに失敗しました: " + (res.error || 'Unknown error'));
-                                                            }
-                                                        } catch (err: any) {
-                                                            console.error(err);
-                                                            alert("アップロードに失敗しました: " + err.message);
-                                                        } finally {
-                                                            setLoading(false);
-                                                        }
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                    return; // setLoading(false) is handled in the reader.onload callback
+                                                    // 1. ブラウザからSupabase Storageへ直接アップロード (Vercelの制限を回避)
+                                                    const { error: uploadError } = await supabase.storage
+                                                        .from('videos')
+                                                        .upload(filePath, file, {
+                                                            cacheControl: '3600',
+                                                            upsert: false
+                                                        });
+
+                                                    if (uploadError) throw uploadError;
+
+                                                    // 公開URLを取得
+                                                    const { data: { publicUrl } } = supabase.storage
+                                                        .from('videos')
+                                                        .getPublicUrl(filePath);
+
+                                                    // 2. Server Actionを呼び出してDB更新のみ実行 (service_roleを使用)
+                                                    const res = await deliverOfferAsset(assetId, publicUrl);
+
+                                                    if (res.success) {
+                                                        setVideoUrl(publicUrl);
+                                                        alert("動画をアップロードし、納品報告を完了しました。");
+                                                        if (onUpdate) onUpdate();
+                                                        setShowDeliveryModal(false);
+                                                    } else {
+                                                        alert("DBの更新に失敗しました: " + (res.error || 'Unknown error'));
+                                                    }
                                                 } catch (err: any) {
                                                     console.error(err);
-                                                    alert("アップロードに失敗しました: " + err.message);
+                                                    alert("アップロードまたは更新に失敗しました: " + err.message);
+                                                } finally {
                                                     setLoading(false);
                                                 }
                                             }}

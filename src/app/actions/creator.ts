@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from '@/utils/supabase/server';
+import { sendAssetNotification } from './admin';
 
 export async function submitAssetDelivery(assetId: string, videoUrl: string) {
     const supabase = await createClient();
@@ -69,30 +70,45 @@ export async function finalizeAsset(assetId: string) {
         throw new Error(error.message);
     }
     
+    // 通知送信
+    await sendAssetNotification(assetId, 'FINALIZED');
+    
     return { success: true, assetId };
 }
 
 export async function requestAssetRevision(assetId: string, message: string) {
     const supabase = await createClient();
     
-    const { data: currentAsset, error: fetchError } = await supabase.from('assets').select('offer_details, shop_id, creator_id').eq('id', assetId).single();
+    // 現在の状態を取得 (retake_remaining を含む)
+    const { data: currentAsset, error: fetchError } = await supabase
+        .from('assets')
+        .select('offer_details, shop_id, creator_id, retake_remaining')
+        .eq('id', assetId)
+        .single();
+        
     if (fetchError || !currentAsset) throw new Error("対象のアセットが見つかりませんでした。");
+
+    // 残り回数チェック
+    const remaining = currentAsset.retake_remaining ?? 2;
+    if (remaining <= 0) throw new Error("修正依頼の残り回数がありません。");
 
     let currentDetails = currentAsset.offer_details || {};
     if (typeof currentDetails === 'string') try { currentDetails = JSON.parse(currentDetails); } catch { currentDetails = {}; }
     
     const timeline = currentDetails.timeline || {};
-    const revisionCount = (timeline.revision_count || 0) + 1;
-    timeline.revision_count = revisionCount;
+    // 表示用の修正カウント（2 - 残り回数 + 1）
+    const revisionNum = 3 - remaining;
+    
     timeline.last_revision_request = new Date().toISOString();
     currentDetails.timeline = timeline;
 
-    // ステータスを WORKING (または REVISION_REQUESTED) に戻す
+    // ステータスを WORKING に戻し、残り回数を減らす
     const { error } = await supabase
         .from('assets')
         .update({ 
             status: 'WORKING',
-            offer_details: currentDetails
+            offer_details: currentDetails,
+            retake_remaining: remaining - 1
         })
         .eq('id', assetId);
 
@@ -103,11 +119,14 @@ export async function requestAssetRevision(assetId: string, message: string) {
         asset_id: assetId,
         sender_id: currentAsset.shop_id,
         sender_type: 'shop',
-        message: `【修正依頼 (#${revisionCount}/2)】\n${message}`,
+        message: `【修正依頼 (#${revisionNum}/2)】\n${message}`,
         is_admin_action: false
     });
 
-    return { success: true, revisionCount };
+    // 通知送信
+    await sendAssetNotification(assetId, 'REVISION_REQUESTED');
+
+    return { success: true, remaining: remaining - 1 };
 }
 
 export async function updateCreatorPortfolio(creatorId: string, videoUrl: string) {

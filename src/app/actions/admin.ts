@@ -384,81 +384,132 @@ export async function updateAssetTimestamp(assetId: string, field: 'approved_at'
 
         if (error) throw error;
 
-        // --- 通知処理を追加 ---
-        try {
-            const { data: asset } = await supabaseAdmin
-                .from('assets')
-                .select(`
-                    shop_id,
-                    creator_id,
-                    shops ( name, login_email, notify_url, email_notifications_enabled ),
-                    creators ( name, email )
-                `)
-                .eq('id', assetId)
-                .single();
-
-            if (asset) {
-                const shop = asset.shops as any;
-                const creator = asset.creators as any;
-
-                let subject = "[INSIDERS] ステータス更新のお知らせ";
-                let message = `案件（クリエイター: ${creator?.name}）のステータスが更新されました。`;
-
-                if (field === 'approved_at') {
-                    subject = timestamp ? "[INSIDERS] オファーが承認されました" : "[INSIDERS] オファーが見送られました";
-                    message = timestamp
-                        ? `${shop?.name} 様、${creator?.name} さんがオファーを承認しました。撮影の準備をお願いします。`
-                        : `${shop?.name} 様、残念ながら ${creator?.name} さんは今回のオファーを見送りました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
-                } else if (field === 'delivered_at') {
-                    subject = "[INSIDERS] 動画が納品されました";
-                    message = `${shop?.name} 様、${creator?.name} さんが動画を納品しました。アセットハブより内容を確認し、承認または修正依頼を行ってください。`;
-                } else if (field === 'confirmed_at' || field === 'finalized') {
-                    subject = "[INSIDERS] 投稿が完了し、案件が終了しました";
-                    message = `${shop?.name} 様、${creator?.name} さんがSNSへの投稿を完了しました。これにて本案件はクローズとなります。`;
-                } else if (field === 'reward_deposit' && timestamp) {
-                    subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
-                    message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
-                } else if ((field === 'visit_at' || field === 'filming_at') && timestamp) {
-                    subject = "[INSIDERS] 撮影日程が確定しました";
-                    message = `${shop?.name} 様、${creator?.name} さんの撮影日が確定しました。\n日程: ${new Date(timestamp).toLocaleString('ja-JP')}`;
-                }
-
-                const n8nWebhookUrl = process.env.N8N_CHAT_WEBHOOK_URL;
-                if (n8nWebhookUrl) {
-                    const recipientEmail = shop?.notify_url || shop?.login_email;
-                    // 通知設定が明示的に false でない限り送信。ただし、進行中に戻す操作（status === 'OFFERED'）は通知しない。
-                    if (recipientEmail && shop?.email_notifications_enabled !== false && extraData?.status !== 'OFFERED') {
-                        fetch(n8nWebhookUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                type: 'STATUS_UPDATE',
-                                recipientEmail,
-                                subject,
-                                content: message,
-                                assetId,
-                                shopName: shop?.name,
-                                creatorName: creator?.name
-                            })
-                        }).catch(err => console.error("Notification Webhook Error:", err));
-                    }
-                }
-
-                // --- チャットルームに通知メッセージを投稿（通知モーダル等での視認性向上） ---
-                await supabaseAdmin.from('messages').insert({
-                    asset_id: assetId,
-                    sender_id: shop?.id, // システムメッセージに近いが、店舗からの通知として扱う
-                    sender_type: 'shop',
-                    message: `📢 【システム通知】: ${subject}\n\n${message}`,
-                    is_notification: true
-                });
-            }
-        } catch (err) {
-            console.error("Action Notification Error:", err);
+        // --- 通知処理 ---
+        let notifType = '';
+        if (field === 'approved_at') {
+            notifType = timestamp ? 'OFFER_APPROVED' : 'OFFER_DECLINED';
+        } else if (field === 'delivered_at') {
+            notifType = 'VIDEO_DELIVERED';
+        } else if (field === 'confirmed_at' || field === 'finalized') {
+            notifType = 'FINALIZED';
+        } else if (field === 'reward_deposit' && timestamp) {
+            notifType = 'DEPOSIT_CONFIRMED';
+        } else if ((field === 'visit_at' || field === 'filming_at') && timestamp) {
+            notifType = 'FILMING_DATE_FIXED';
         }
 
+        if (notifType) {
+            await sendAssetNotification(assetId, notifType, { ...extraData, date: timestamp });
+        }
+
+        revalidatePath('/admin');
+        revalidatePath('/advertiser');
         return { success: true };
     });
+}
+
+/**
+ * アセットのステータス更新を通知 (n8n Webhook経由)
+ */
+export async function sendAssetNotification(assetId: string, type: string, extraData?: any) {
+    const supabaseAdmin = createAdminClient();
+    try {
+        const { data: asset, error: fetchError } = await supabaseAdmin
+            .from('assets')
+            .select(`
+                id,
+                shop_id,
+                creator_id,
+                status,
+                finalized,
+                shops ( id, name, login_email, notify_url, email_notifications_enabled ),
+                creators ( name, email )
+            `)
+            .eq('id', assetId)
+            .single();
+
+        if (fetchError || !asset) return;
+
+        const shop = asset.shops as any;
+        const creator = asset.creators as any;
+        
+        // 通知対象によってWebhook URLを切り替え
+        const sniperWebhookUrl = "https://nots.app.n8n.cloud/webhook/sniper-notify";
+        const generalWebhookUrl = "https://nots.app.n8n.cloud/webhook/general-notify";
+        
+        const n8nWebhookUrl = (type === 'SNIPER_NOTIFY' || type === 'TABIMAE_DETECTED') 
+            ? sniperWebhookUrl 
+            : generalWebhookUrl;
+
+        let subject = "[INSIDERS] ステータス更新のお知らせ";
+        let message = `案件（クリエイター: ${creator?.name}）のステータスが更新されました。`;
+
+        switch (type) {
+            case 'OFFER_APPROVED':
+                subject = "[INSIDERS] オファーが承認されました";
+                message = `${shop?.name} 様、${creator?.name} さんがオファーを承認しました。撮影の準備をお願いします。`;
+                break;
+            case 'OFFER_DECLINED':
+                subject = "[INSIDERS] オファーが見送られました";
+                message = `${shop?.name} 様、残念ながら ${creator?.name} さんは今回のオファーを見送りました。\n理由: ${extraData?.rejectionReason || 'なし'}`;
+                break;
+            case 'VIDEO_DELIVERED':
+                subject = "[INSIDERS] 動画が納品されました";
+                message = `${shop?.name} 様、${creator?.name} さんが動画を納品しました。アセットハブより内容を確認し、承認または修正依頼を行ってください。`;
+                break;
+            case 'FINALIZED':
+                subject = "[INSIDERS] 投稿が完了し、案件が終了しました";
+                message = `${shop?.name} 様、${creator?.name} さんがSNSへの投稿を完了しました。これにて本案件はクローズとなります。`;
+                break;
+            case 'REVISION_REQUESTED':
+                subject = "[INSIDERS] 修正依頼が送信されました";
+                message = `${shop?.name} 様、クリエイター（${creator?.name}）へ修正依頼を送信しました。内容を確認次第、クリエイターが対応を開始します。`;
+                break;
+            case 'DEPOSIT_CONFIRMED':
+                subject = "[INSIDERS] 報酬デポジット完了のお知らせ";
+                message = `${shop?.name} 様、報酬のデポジットを確認しました。クリエイターへの支払いは投稿完了後に行われます。`;
+                break;
+            case 'FILMING_DATE_FIXED':
+                subject = "[INSIDERS] 撮影日程が確定しました";
+                message = `${shop?.name} 様、${creator?.name} さんの撮影日が確定しました。\n日程: ${extraData?.date ? new Date(extraData.date).toLocaleString('ja-JP') : '未定'}`;
+                break;
+            case 'AUTO_APPROVAL':
+                subject = "[INSIDERS] みなし承認が完了しました";
+                message = `${shop?.name} 様、動画納品から5日間が経過したため、システムにより「みなし承認」が行われました。アンバサダーへの支払いが確定しました。`;
+                break;
+        }
+
+        if (n8nWebhookUrl) {
+            const recipientEmail = shop?.notify_url || shop?.login_email;
+            if (recipientEmail && shop?.email_notifications_enabled !== false) {
+                await fetch(n8nWebhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type,
+                        recipientEmail,
+                        subject,
+                        content: message,
+                        assetId,
+                        shopName: shop?.name,
+                        creatorName: creator?.name
+                    })
+                }).catch(err => console.error("Notification Webhook Error:", err));
+            }
+        }
+
+        // チャットメッセージとしても投稿
+        await supabaseAdmin.from('messages').insert({
+            asset_id: assetId,
+            sender_id: shop?.id,
+            sender_type: 'shop',
+            message: `📢 【システム通知】: ${subject}\n\n${message}`,
+            is_notification: true
+        });
+
+    } catch (err) {
+        console.error("Send Notification Error:", err);
+    }
 }
 
 /**
@@ -488,7 +539,7 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
         // 元の案件を「辞退・代替案提示中」として更新し、候補リストを保存
         const { error: updateError } = await supabaseAdmin
             .from('assets')
-            .update({ 
+            .update({
                 status: 'DECLINED', // もしくは 'SUGGESTING_ALTERNATIVES'
                 rejection_reason: originalAsset.rejection_reason || '希望条件の不一致',
                 suggested_creator_ids: newSuggestedIds
@@ -729,33 +780,79 @@ export async function fetchAllCreators() {
 }
 
 /**
- * 動画をStorageにアップロードし公開URLを返す（運営ダッシュボードから使用）
+ * 納品動画のURLをDBに保存し、ステータスをDELIVEREDに更新する
  */
-export async function uploadDeliveryVideo(assetId: string, fileBase64: string, fileExt: string) {
+export async function deliverOfferAsset(assetId: string, videoUrl: string) {
     return publicAction({}, async () => {
         const supabaseAdmin = createAdminClient();
 
-        const fileName = `${assetId}-${Date.now()}.${fileExt}`;
-        const filePath = `deliveries/${fileName}`;
+        const { error } = await supabaseAdmin
+            .from('assets')
+            .update({
+                video_url: videoUrl,
+                status: 'DELIVERED',
+                // delivery_at: new Date().toISOString()
+            })
+            .eq('id', assetId);
 
-        // base64をBufferに変換
-        const buffer = Buffer.from(fileBase64, 'base64');
-
-        const { error: uploadError } = await supabaseAdmin.storage
-            .from('videos')
-            .upload(filePath, buffer, {
-                contentType: `video/${fileExt === 'mp4' ? 'mp4' : fileExt === 'mov' ? 'quicktime' : 'mp4'}`,
-            });
-
-        if (uploadError) {
-            console.error('uploadDeliveryVideo error:', uploadError);
-            return { success: false, error: uploadError.message };
+        if (error) {
+            console.error('deliverOfferAsset error:', error);
+            return { success: false, error: error.message };
         }
 
-        const { data: { publicUrl } } = supabaseAdmin.storage
-            .from('videos')
-            .getPublicUrl(filePath);
+        // 通知送信
+        await sendAssetNotification(assetId, 'VIDEO_DELIVERED');
 
-        return { success: true, publicUrl };
+        revalidatePath('/admin');
+        return { success: true };
     });
+}
+
+/**
+ * 120時間経過した未承認アセットを自動承認（みなし検収）
+ */
+export async function checkAutoApprove() {
+    const supabaseAdmin = createAdminClient();
+    const now = new Date();
+    const fiveDaysAgo = new Date(now.getTime() - 120 * 60 * 60 * 1000).toISOString();
+
+    const { data: expiredAssets, error: fetchError } = await supabaseAdmin
+        .from('assets')
+        .select('id, offer_details')
+        .eq('status', 'DELIVERED')
+        .eq('finalized', false)
+        .lte('delivery_at', fiveDaysAgo);
+
+    if (fetchError || !expiredAssets) return { success: false, error: fetchError?.message };
+
+    const results = [];
+    for (const asset of expiredAssets) {
+        let currentDetails = asset.offer_details || {};
+        if (typeof currentDetails === 'string') try { currentDetails = JSON.parse(currentDetails); } catch { currentDetails = {}; }
+        
+        const timeline = currentDetails.timeline || {};
+        timeline.confirmed_at = now.toISOString();
+        timeline.auto_approved = true;
+        currentDetails.timeline = timeline;
+
+        const { error: updateError } = await supabaseAdmin
+            .from('assets')
+            .update({
+                status: 'FINALIZED',
+                finalized: true,
+                offer_details: currentDetails,
+                updated_at: now.toISOString()
+            })
+            .eq('id', asset.id);
+
+        if (!updateError) {
+            results.push(asset.id);
+            // 通知送信
+            await sendAssetNotification(asset.id, 'AUTO_APPROVAL');
+        }
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/advertiser');
+    return { success: true, count: results.length };
 }
