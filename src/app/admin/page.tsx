@@ -145,7 +145,11 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 >
                     <div className="flex flex-col items-start">
                         <span className="opacity-60">{isDeclined ? "オファー不承認" : label}</span>
-                        {value && !isDeclined && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                        {value && value !== '0' && !isNaN(new Date(value).getTime()) && new Date(value).getTime() > 0 && (
+                            <span className="text-[9px] tabular-nums">
+                                {new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        )}
                     </div>
                     <div className="flex items-center gap-1.5">
                         {isDeclined ? <AlertTriangle size={14} className="text-red-500" /> : (value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />)}
@@ -209,17 +213,23 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
             <>
                 <div
                     onClick={() => !loading && setShowDeliveryModal(true)}
-                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${value
+                    className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl border font-bold text-[11px] transition-all group/btn cursor-pointer ${(value || currentVideoUrl)
                         ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                         : "bg-white border-slate-200 text-slate-400 hover:border-slate-400 hover:text-slate-600 shadow-sm"}`}
                 >
                     <div className="flex flex-col items-start">
                         <span className="opacity-60">{label}</span>
-                        {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                        {value && value !== '0' && !isNaN(new Date(value).getTime()) && new Date(value).getTime() > 0 ? (
+                            <span className="text-[9px] tabular-nums">
+                                {new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        ) : (!!currentVideoUrl && (
+                            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Delivered</span>
+                        ))}
                     </div>
                     <div className="flex items-center gap-1.5">
-                        {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                        {value && (
+                        {(value || currentVideoUrl) ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />}
+                        {!!(value || currentVideoUrl) && (
                             <button
                                 onClick={handleReset}
                                 className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
@@ -369,7 +379,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                     </div>
                     <div className="flex items-center gap-1.5">
                         {value ? <CheckCircle2 size={14} className="text-emerald-500" /> : <DollarSign size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                        {value && (
+                        {!!value && (
                             <button
                                 onClick={handleReset}
                                 className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
@@ -450,7 +460,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                     </div>
                     <div className="flex items-center gap-1.5">
                         {value ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Send size={14} className="opacity-40 group-hover/btn:opacity-100" />}
-                        {value && (
+                        {!!value && (
                             <button
                                 onClick={handleReset}
                                 className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-red-400 transition-colors"
@@ -510,7 +520,11 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         >
             <div className="flex flex-col items-start">
                 <span className="opacity-60">{label}</span>
-                {value && <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>}
+                {value && value !== '0' && !isNaN(new Date(value).getTime()) && new Date(value).getTime() > 0 ? (
+                    <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                ) : (field === 'reward_deposit' && value ? (
+                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Deposited</span>
+                ) : null)}
             </div>
             <div className="flex items-center gap-1.5">
                 {value ? (
@@ -518,7 +532,7 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 ) : (
                     <Plus size={14} className="opacity-40 group-hover/btn:opacity-100" />
                 )}
-                {value && (
+                {!!value && (
                     <button
                         onClick={handleReset}
                         className="p-1 hover:bg-slate-200 rounded-md text-slate-400 hover:text-red-500 transition-colors"
@@ -1392,7 +1406,7 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                                 <td className="px-4 py-4">
                                                     <div className="flex flex-wrap gap-1 max-w-[200px]">
                                                         {/* AIの推測（ヒント）があれば表示 */}
-                                                        {creator.vibeCluster.length === 0 && creator.vibeHint && (
+                                                        {!!(creator.vibeCluster.length === 0 && creator.vibeHint) && (
                                                             <span className="text-[10px] text-slate-400 font-mono w-full mb-1">🤖 AI: {creator.vibeHint}</span>
                                                         )}
                                                         {['Cinematic', 'Luxury', 'Street', 'Kawaii', 'Vlog', 'Traditional'].map(v => {

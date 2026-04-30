@@ -24,7 +24,7 @@ export async function getAdminStats() {
             const { count: activeShops } = await supabaseAdmin
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
-                .in('status', ['OFFERED', 'SUGGESTING_ALTERNATIVES', 'APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED']);
+                .in('status', ['OFFERED', 'SUGGESTING_ALTERNATIVES', 'APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED', 'REVISION_REQUESTED']);
 
             // 3. 平均マッチ率 (マッチ数 / オファー数)
             const { count: totalOffersThisWeek } = await supabaseAdmin
@@ -36,7 +36,7 @@ export async function getAdminStats() {
                 .from('assets')
                 .select('*', { count: 'exact', head: true })
                 .gte('created_at', sevenDaysAgo.toISOString())
-                .in('status', ['APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED', 'FINALIZED']);
+                .in('status', ['APPROVED', 'WORKING', 'COMPLETED', 'DELIVERED', 'FINALIZED', 'REVISION_REQUESTED']);
 
             let avgMatchRate = 88.5;
             if (totalOffersThisWeek && totalOffersThisWeek > 0 && matchedOffersThisWeek !== null) {
@@ -227,7 +227,7 @@ export async function getOngoingOffers() {
                     shop:shop_id (id, name),
                     creator:creator_id (id, name, avatar_url, followers)
                 `)
-                .in('status', ['OFFERED', 'WORKING', 'APPROVED', 'DELIVERED'])
+                .in('status', ['OFFERED', 'WORKING', 'APPROVED', 'DELIVERED', 'REVISION_REQUESTED'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -771,7 +771,7 @@ export async function deliverOfferAsset(assetId: string, videoUrl: string) {
             .update({
                 video_url: videoUrl,
                 status: 'DELIVERED',
-                // delivery_at: new Date().toISOString()
+                delivery_at: new Date().toISOString()
             })
             .eq('id', assetId);
 

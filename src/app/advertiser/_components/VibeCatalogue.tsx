@@ -201,7 +201,7 @@ const PortfolioVideoModal = ({ isOpen, onClose, videoUrls, creatorName }: { isOp
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {(!!isOpen) && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -345,7 +345,7 @@ const CreatorCard = ({
             {/* Top Badges */}
             <div className="absolute top-3 left-3 flex gap-1.5 z-10 flex-wrap max-w-[90%]">
                 {/* 1. 滞在ステータス (Priority 1) */}
-                {creator.in_japan && (
+                {(!!creator.in_japan) && (
                     <span className="backdrop-blur-md bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded border border-emerald-500/50 font-black flex items-center gap-1 shadow-[0_0_10px_rgba(16,185,129,0.3)] tracking-wider">
                         <MapPin className="w-2.5 h-2.5 fill-current" /> IN JAPAN
                     </span>
@@ -357,7 +357,7 @@ const CreatorCard = ({
                 )}
 
                 {/* 2. パフォーマンス (Priority 2) */}
-                {creator.is_hot && (
+                {(!!creator.is_hot) && (
                     <span className="backdrop-blur-md bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded border border-orange-400/50 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(249,115,22,0.3)] animate-pulse">
                         <Flame className="w-2.5 h-2.5 fill-current" /> HOT
                     </span>
@@ -390,7 +390,7 @@ const CreatorCard = ({
                 {/* VIBEマッチ度バッジ & AI Insight */}
                 {(hasScore || creator.ai_insight) && (
                     <div className="mb-2 flex flex-col gap-1">
-                        {hasScore && (
+                        {(!!hasScore) && (
                             <span className={`text-[12px] font-black tracking-tight whitespace-nowrap ${(creator.vibeMatchScore ?? 0) >= 95 ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' :
                                 (creator.vibeMatchScore ?? 0) >= 90 ? 'text-amber-200 drop-shadow-sm' :
                                     (creator.vibeMatchScore ?? 0) >= 80 ? 'text-white' : 'text-white/70 font-medium'
@@ -398,7 +398,7 @@ const CreatorCard = ({
                                 マッチ度 {creator.vibeMatchScore}%
                             </span>
                         )}
-                        {creator.ai_insight && (
+                        {(!!creator.ai_insight) && (
                             <div className="flex items-start gap-1 text-[9px] sm:text-[10px] text-indigo-200 bg-indigo-900/40 border border-indigo-500/30 px-2 py-1 rounded backdrop-blur-md w-fit shadow-[0_0_10px_rgba(99,102,241,0.2)]">
                                 <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
                                 <span className="leading-snug font-medium">{creator.ai_insight}</span>
@@ -409,7 +409,7 @@ const CreatorCard = ({
 
                 <div className="flex items-center gap-2 mb-3">
                     <h3 className="text-white font-black text-base tracking-tight">@{creator.name}</h3>
-                    {creator.is_verified && (
+                    {(!!creator.is_verified) && (
                         <div className="bg-teal-500/20 backdrop-blur-md border border-teal-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(20,184,166,0.3)] group/verified">
                             <CheckCircle2 className="w-2.5 h-2.5 text-teal-400" />
                             <span className="text-[8px] font-black text-teal-400 uppercase tracking-tighter">Verified</span>
@@ -421,7 +421,7 @@ const CreatorCard = ({
                             </div>
                         </div>
                     )}
-                    {creator.is_ai_recommended && (
+                    {(!!creator.is_ai_recommended) && (
                         <div className="bg-indigo-500/20 backdrop-blur-md border border-indigo-400/50 rounded-full px-2 py-0.5 flex items-center gap-1 shadow-[0_0_10px_rgba(99,102,241,0.3)] group/ai">
                             <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
                             <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">AI RECOMMENDED</span>
@@ -443,7 +443,7 @@ const CreatorCard = ({
                     </div>
 
                     {/* PRICING GUIDE - Multi-line supported */}
-                    {creator.pricing_guide && (
+                    {(!!creator.pricing_guide) && (
                         <div className="flex items-start gap-1.5 text-white text-[9px] sm:text-[10px] font-black tracking-tight px-2 py-1.5 bg-indigo-500/30 backdrop-blur-md rounded border border-indigo-400/30 w-fit max-w-full shadow-[0_0_10px_rgba(99,102,241,0.2)]">
                             <Sparkle className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-indigo-300 shrink-0 mt-0.5" />
                             <span className="leading-tight">{creator.pricing_guide.replace("推奨オファー", "市場価値")}</span>
@@ -461,7 +461,7 @@ const CreatorCard = ({
                     ✨ オファーを送る
                 </button>
 
-                {hasVideos && (
+                {(!!hasVideos) && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onPlayVideo(creator.portfolio_video_urls!); }}
                         className="w-[140px] bg-white/20 backdrop-blur-md text-white font-bold px-4 py-2.5 rounded-full border border-white/30 transition-all duration-500 sm:delay-75 sm:transform sm:translate-y-4 sm:group-hover:translate-y-0 hover:bg-white/30 active:scale-95 text-[10px] flex items-center justify-center gap-2 uppercase tracking-tight"
@@ -525,7 +525,7 @@ const AssetDeploymentSection = ({ freshness, setFreshness, synced, setSynced, cl
                     <div className="p-6 space-y-6 flex-1">
                         <div className="border rounded-[24px] p-5 bg-stone-50 relative ring-1 ring-stone-200/50 overflow-hidden">
                             <AnimatePresence>
-                                {synced && (
+                                {(!!synced) && (
                                     <motion.div
                                         initial={{ y: 50, x: -50, scale: 0.5, opacity: 0 }}
                                         animate={{ y: 0, x: 0, scale: 1, opacity: 1 }}
@@ -746,7 +746,7 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {(!!isOpen) && (
                 <motion.div
                     initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
                     transition={{ type: "spring", damping: 30, stiffness: 300 }}
@@ -789,7 +789,7 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                                         }`}
                                 >
                                     {msg.text}
-                                    {msg.translated && (
+                                    {(!!msg.translated) && (
                                         <div className="mt-1.5 pt-1.5 border-t border-white/20 flex items-center gap-1 text-[9px] text-gray-400">
                                             <Sparkles className="w-2.5 h-2.5" /> NOTS Translated
                                         </div>
@@ -906,7 +906,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend, shop }: { isOpen: boolea
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {(!!isOpen) && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center p-4"
@@ -999,7 +999,7 @@ const OfferModal = ({ isOpen, onClose, creator, onSend, shop }: { isOpen: boolea
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-                                {isHighDemand && (
+                                {(!!isHighDemand) && (
                                     <div className="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-200 flex items-start gap-4">
                                         <div>
                                             <p className="font-black text-amber-900 text-sm mb-1">👑 人気アンバサダーへのオファー</p>
@@ -1281,7 +1281,7 @@ const PaywallModal = ({ isOpen, onClose, companyId = 'guest', companyEmail = '',
     const [invoiceEmail, setInvoiceEmail] = useState(companyEmail || "");
     return (
         <AnimatePresence>
-            {isOpen && (
+            {(!!isOpen) && (
                 <motion.div
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="fixed inset-0 bg-black/60 z-[300] backdrop-blur-sm flex items-center justify-center p-4"
@@ -1591,13 +1591,14 @@ export default function VibeCatalogue({
     const [isPremium, setIsPremium] = useState(false);
     const [isFetchingInfo, setIsFetchingInfo] = useState(true);
     const [shop, setShop] = useState<any>(null);
-    const activeNotifications = localAssets.filter(a => 
+    const activeNotifications = localAssets.filter(a =>
         (a.status === 'COMPLETED' || a.status === 'DECLINED' || a.status === 'SUGGESTING_ALTERNATIVES' || a.status === 'DELIVERED') &&
         !dismissedNotifIds.includes(a.id)
     );
     const activeFavs = upgradedFavorites?.filter(fav => !dismissedFavIds.includes(fav.creator.id)) || [];
     const hasNewNotifications = activeNotifications.length > 0 || activeFavs.length > 0;
     const [hasNewMessages, setHasNewMessages] = useState(false);
+    const [hoveredAssetId, setHoveredAssetId] = useState<string | null>(null);
 
     const fetchShopInfo = async () => {
         const supabase = createClient();
@@ -1975,11 +1976,11 @@ export default function VibeCatalogue({
                         className="relative p-2.5 text-stone-400 hover:bg-stone-100 rounded-full transition-colors"
                     >
                         <Bell className="w-5 h-5" />
-                        {hasNewNotifications && (
+                        {(!!hasNewNotifications) && (
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
                         )}
                     </button>
-                    {isNotificationOpen && (
+                    {(!!isNotificationOpen) && (
                         <div className="fixed top-20 left-1/2 -translate-x-1/2 sm:absolute sm:top-14 sm:right-0 sm:left-auto sm:translate-x-0 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Notifications</div>
                             <div className="max-h-80 overflow-y-auto">
@@ -2000,7 +2001,7 @@ export default function VibeCatalogue({
                                             // openCreatorModal(fav.creator); 
                                         }}
                                     >
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedFavIds(prev => [...prev, fav.creator.id]); }}
                                             className="absolute top-2 right-2 p-1 text-indigo-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
@@ -2020,7 +2021,7 @@ export default function VibeCatalogue({
                                     <div key={`notif-delivered-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer relative group" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-stone-900 mb-1">🎬 動画が納品されました</div>
                                         <div className="text-[10px] text-stone-500">{a.creator?.name}さんの動画が完成しました！Asset Hubで確認しましょう。</div>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
                                             className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
@@ -2032,7 +2033,7 @@ export default function VibeCatalogue({
                                     <div key={`notif-alt-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer relative group" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-stone-900 mb-1">✨ 代替アンバサダーの提案</div>
                                         <div className="text-[10px] text-stone-500">{a.creator?.name}さんの代わりに、運営から新しいアンバサダーの提案が届きました。</div>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
                                             className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
@@ -2044,7 +2045,7 @@ export default function VibeCatalogue({
                                     <div key={`notif-completed-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer relative group" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-stone-900 mb-1">🎬 動画が納品されました</div>
                                         <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！Asset Hubで確認しましょう。</div>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
                                             className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
@@ -2056,7 +2057,7 @@ export default function VibeCatalogue({
                                     <div key={`notif-declined-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer relative group" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-red-600 mb-1">⚠️ オファーが辞退されました</div>
                                         <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんが今回は案件を見送りました。別のクリエイターを探してみましょう。</div>
-                                        <button 
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
                                             className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
@@ -2078,11 +2079,11 @@ export default function VibeCatalogue({
                         className="relative p-2.5 text-stone-400 hover:bg-blue-50 hover:text-blue-600 rounded-full transition-colors"
                     >
                         <MessageCircle className="w-5 h-5" />
-                        {hasNewMessages && (
+                        {(!!hasNewMessages) && (
                             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
                         )}
                     </button>
-                    {isChatListOpen && (
+                    {(!!isChatListOpen) && (
                         <div className="fixed top-20 left-1/2 -translate-x-1/2 sm:absolute sm:top-14 sm:right-0 sm:left-auto sm:translate-x-0 w-[calc(100vw-32px)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-stone-100 overflow-hidden z-50">
                             <div className="p-4 border-b border-stone-100 font-black text-xs uppercase tracking-widest text-stone-500 bg-stone-50">Messages</div>
                             <div className="max-h-80 overflow-y-auto">
@@ -2128,7 +2129,7 @@ export default function VibeCatalogue({
                                 alt="Shop"
                             />
                         </button>
-                        {isProfileOpen && (
+                        {(!!isProfileOpen) && (
                             <div className="absolute top-12 right-0 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50">
                                 <div className="p-4 border-b border-slate-100 mb-2">
                                     <div className="text-sm font-black text-slate-900 truncate">{shop?.name || "店舗名未設定"}</div>
@@ -2235,7 +2236,7 @@ export default function VibeCatalogue({
 
                                                 {/* Inline Error within the bar */}
                                                 <AnimatePresence>
-                                                    {urlError && (
+                                                    {(!!urlError) && (
                                                         <motion.div
                                                             initial={{ height: 0, opacity: 0 }}
                                                             animate={{ height: 'auto', opacity: 1 }}
@@ -2305,7 +2306,7 @@ export default function VibeCatalogue({
                                                     <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Ambassador Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
-                                                    {initialGenre && (
+                                                    {(!!initialGenre) && (
                                                         <span className="bg-black text-white text-[9px] sm:text-[10px] px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-lg border border-white/20 animate-in fade-in slide-in-from-left-4 duration-1000">
                                                             <Sparkles className="w-3 h-3 text-yellow-400" /> {initialGenre}
                                                         </span>
@@ -2486,20 +2487,29 @@ export default function VibeCatalogue({
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
                                         .filter(a => {
-                                            const isOngoing = ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED'].includes(a.status || '');
+                                            const isOngoing = ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED', 'REVISION_REQUESTED'].includes(a.status || '');
                                             const isFinalized = a.finalized || ['FINALIZED', 'COMPLETED'].includes(a.status || '');
                                             return isOngoing && !isFinalized;
                                         })
                                         .map((asset) => {
                                             const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
                                             const dateStr = asset.created_at ? new Date(asset.created_at).toISOString().split('T')[0] : '2024-03-01';
-                                            const src = asset.creator?.thumbnail_url || asset.creator?.avatar_url || null;
+                                            const src = (asset.creator?.thumbnail_url && asset.creator?.thumbnail_url !== '0') ? asset.creator.thumbnail_url : (asset.creator?.avatar_url && asset.creator?.avatar_url !== '0' ? asset.creator.avatar_url : null);
+                                            const isWaitingApproval = !!(asset.delivery_at || asset.status === 'DELIVERED' || asset.video_url) && !asset.finalized && asset.status !== 'REVISION_REQUESTED';
+                                            const isRevisionRequested = asset.status === 'REVISION_REQUESTED';
 
                                             const timeline: { label: string; date?: string | null; active: boolean; icon: React.ReactNode; isError?: boolean; description?: string }[] = [
                                                 { label: 'オファー送信済み', date: asset.created_at, active: true, icon: <Send size={10} /> },
                                                 { label: 'オファー承諾', date: asset.approved_at, active: !!asset.approved_at, icon: <CheckCircle size={10} /> },
                                                 { label: '撮影完了', date: asset.visit_at, active: !!asset.visit_at, icon: <Camera size={10} /> },
-                                                { label: '納品完了', date: asset.delivery_at || asset.delivered_at, active: !!(asset.delivery_at || asset.delivered_at), icon: <Video size={10} /> },
+                                                {
+                                                    label: '納品完了',
+                                                    date: asset.delivery_at || asset.delivered_at,
+                                                    active: !!(asset.delivery_at || asset.delivered_at || asset.video_url),
+                                                    icon: <Video size={10} />,
+                                                    description: (!!asset.video_url && !asset.finalized && !isRevisionRequested) ? "動画を確認して承認/修正依頼をして下さい" : (isRevisionRequested ? "修正内容を運営に送信済みです" : undefined)
+                                                },
+                                                { label: '修正依頼中', date: isRevisionRequested ? asset.updated_at : undefined, active: isRevisionRequested, icon: <RefreshCw size={10} />, isError: isRevisionRequested },
                                                 { label: '最終承認', date: asset.finalized ? (asset.updated_at || asset.created_at) : undefined, active: !!asset.finalized, icon: <CheckCircle size={10} /> },
                                             ];
 
@@ -2508,7 +2518,10 @@ export default function VibeCatalogue({
                                                 const [timeLeft, setTimeLeft] = React.useState<string>("");
                                                 React.useEffect(() => {
                                                     const timer = setInterval(() => {
-                                                        const target = new Date(new Date(targetDate).getTime() + 120 * 60 * 60 * 1000);
+                                                        const baseDate = new Date(targetDate);
+                                                        // 有効な日付でない場合は fallback として作成日などを使用
+                                                        const validBase = !isNaN(baseDate.getTime()) ? baseDate : new Date();
+                                                        const target = new Date(validBase.getTime() + 120 * 60 * 60 * 1000);
                                                         const now = new Date();
                                                         const diff = target.getTime() - now.getTime();
                                                         if (diff <= 0) {
@@ -2528,22 +2541,46 @@ export default function VibeCatalogue({
 
                                             return (
                                                 <div key={asset.id} className="w-full max-w-sm mx-auto bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col">
-                                                    <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
-                                                        {src ? (
+                                                    <div
+                                                        className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center cursor-pointer"
+                                                        onClick={() => {
+                                                            if ((isWaitingApproval || isRevisionRequested) && asset.video_url) {
+                                                                if (hoveredAssetId === asset.id) {
+                                                                    setSelectedVideo({ urls: [asset.video_url], name: creatorName });
+                                                                } else {
+                                                                    setHoveredAssetId(asset.id);
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        {(isWaitingApproval || isRevisionRequested) && asset.video_url ? (
+                                                            <video src={asset.video_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" autoPlay muted loop playsInline />
+                                                        ) : src ? (
                                                             <img src={src} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                                                         ) : (
                                                             <div className="w-full h-full bg-stone-100 flex items-center justify-center">
                                                                 <User className="w-12 h-12 text-stone-300" />
                                                             </div>
                                                         )}
-                                                        {asset.delivery_at && !asset.finalized && (
-                                                            <div className="absolute inset-0 bg-emerald-500/90 flex flex-col items-center justify-center text-white p-4 text-center">
-                                                                <p className="text-[10px] font-black uppercase tracking-widest mb-1">自動承認まで</p>
-                                                                <div className="text-2xl font-black"><CountdownTimer targetDate={asset.delivery_at} /></div>
+
+                                                        {(isWaitingApproval || isRevisionRequested) && (
+                                                            <div className={`absolute inset-0 bg-black/40 transition-opacity flex flex-col items-center justify-center text-white gap-2 ${hoveredAssetId === asset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                                <div 
+                                                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 mb-1 hover:bg-white/40 transition-all active:scale-90"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        asset.video_url && setSelectedVideo({ urls: [asset.video_url], name: creatorName });
+                                                                    }}
+                                                                >
+                                                                    <Play size={20} className="fill-white translate-x-0.5" />
+                                                                </div>
+                                                                <span className="text-[10px] font-black uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">動画データを確認する</span>
                                                             </div>
                                                         )}
-                                                        <div className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[9px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform">
-                                                            <RefreshCw className="w-3 h-3 animate-spin-slow" /> 進行中
+
+                                                        <div className={`absolute top-4 left-4 z-10 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 uppercase transition-transform ${isRevisionRequested ? 'bg-amber-500' : (isWaitingApproval ? 'bg-gradient-to-r from-violet-600 to-indigo-600' : 'bg-stone-900')}`}>
+                                                            {isRevisionRequested ? <RefreshCw size={10} className="animate-spin-slow" /> : (isWaitingApproval ? <Video size={10} className="animate-pulse" /> : <RefreshCw size={10} className="animate-spin-slow" />)}
+                                                            {isRevisionRequested ? '修正依頼中' : (isWaitingApproval ? '承認待ち' : '進行中')}
                                                         </div>
                                                     </div>
                                                     <div className="p-8 space-y-4 text-left flex-1 flex flex-col">
@@ -2552,7 +2589,7 @@ export default function VibeCatalogue({
                                                             <p className="text-[10px] font-black text-stone-400 font-mono tracking-widest uppercase">{dateStr}</p>
                                                         </div>
 
-                                                        {isTimelineOpen && (
+                                                        {!!isTimelineOpen && (
                                                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 py-4 border-t border-stone-50 mt-2">
                                                                 <p className="text-[9px] font-black text-stone-300 uppercase tracking-[0.3em] mb-4">Negotiation Timeline</p>
                                                                 <div className="space-y-4 relative">
@@ -2560,13 +2597,18 @@ export default function VibeCatalogue({
                                                                     {timeline.map((step, idx) => (
                                                                         <div key={idx} className="flex gap-4 items-start relative z-10">
                                                                             <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border-2 ${step.active ? 'bg-indigo-600 border-indigo-600 shadow-lg' : 'bg-white border-stone-100'}`}>
-                                                                                {step.active && <div className="text-white">{step.icon}</div>}
+                                                                                {!!step.active && <div className="text-white">{step.icon}</div>}
                                                                             </div>
                                                                             <div className="flex-1">
                                                                                 <p className={`text-[11px] font-black ${step.active ? 'text-stone-900' : 'text-stone-300'}`}>{step.label}</p>
-                                                                                {step.active && step.date && step.date !== '0' && (
+                                                                                {!!(step.active && step.date && step.date !== '0' && !isNaN(new Date(step.date).getTime()) && new Date(step.date).getTime() > 0) && (
                                                                                     <p className="text-[9px] font-bold font-mono text-stone-400">
                                                                                         {new Date(step.date).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                                                    </p>
+                                                                                )}
+                                                                                {!!(step.active && step.description) && (
+                                                                                    <p className="text-[9px] font-bold text-indigo-500 mt-1 flex items-center gap-1">
+                                                                                        <Sparkles size={8} /> {step.description}
                                                                                     </p>
                                                                                 )}
                                                                             </div>
@@ -2575,9 +2617,112 @@ export default function VibeCatalogue({
                                                                 </div>
                                                             </motion.div>
                                                         )}
+                                                        {isWaitingApproval && (
+                                                            <div className="space-y-4 py-4 border-t border-stone-50">
+                                                                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center text-emerald-700 shadow-sm mb-2">
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <Clock size={12} className="animate-pulse" />
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest">自動承認まで</span>
+                                                                    </div>
+                                                                    <div className="text-xl font-mono font-black tracking-tighter">
+                                                                        <CountdownTimer targetDate={asset.delivery_at || asset.created_at || new Date().toISOString()} />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex flex-col gap-2">
+                                                                    <div className="flex gap-2">
+                                                                        <button
+                                                                            onClick={async () => {
+                                                                                const { finalizeAsset } = await import('@/app/actions/creator');
+                                                                                await finalizeAsset(asset.id);
+                                                                                setCelebrationAssetId(asset.id);
+                                                                                setTimeout(() => setCelebrationAssetId(null), 5000);
+                                                                                fetchAssets();
+                                                                            }}
+                                                                            className="flex-1 py-4 bg-indigo-600 hover:bg-stone-900 text-white rounded-2xl text-[11px] font-black flex items-center justify-center gap-2 transition-all uppercase active:scale-95 shadow-lg shadow-indigo-200"
+                                                                        >
+                                                                            <CheckCircle size={14} /> 承認する
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                const revCount = asset.retake_remaining ?? 2;
+                                                                                if (revCount <= 0) {
+                                                                                    alert("修正依頼は上限（2回）に達しています。詳細は運営にお問い合わせください。");
+                                                                                    return;
+                                                                                }
+                                                                                setRevisionRequestId(revisionRequestId === asset.id ? null : asset.id);
+                                                                            }}
+                                                                            className="flex-1 py-4 bg-white border-2 border-stone-100 text-stone-600 hover:bg-stone-50 rounded-2xl text-[11px] font-black flex flex-col items-center justify-center gap-0.5 transition-all uppercase active:scale-95"
+                                                                        >
+                                                                            <div className="flex items-center gap-2">
+                                                                                <RefreshCw size={14} /> 修正依頼
+                                                                            </div>
+                                                                            <span className="text-[8px] opacity-60">残り{asset.retake_remaining ?? 2}回可能</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                {revisionRequestId === asset.id && (
+                                                                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-2 p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-3">
+                                                                        <textarea
+                                                                            placeholder="修正してほしい箇所を詳しく入力してください"
+                                                                            className="w-full bg-white border border-stone-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-stone-900 outline-none min-h-[80px]"
+                                                                            value={revisionMessage}
+                                                                            onChange={(e) => setRevisionMessage(e.target.value)}
+                                                                        />
+                                                                        <div className="flex gap-2">
+                                                                            <button onClick={() => setRevisionRequestId(null)} className="flex-1 py-2 text-[10px] font-black text-stone-400 bg-white border border-stone-100 rounded-lg">キャンセル</button>
+                                                                            <button
+                                                                                disabled={!revisionMessage}
+                                                                                onClick={async () => {
+                                                                                    const m = await import('@/app/actions/creator');
+                                                                                    const res = await m.requestAssetRevision(asset.id, revisionMessage);
+                                                                                    if (res.success) {
+                                                                                        setRevisionSuccessId(asset.id);
+                                                                                        setTimeout(() => setRevisionSuccessId(null), 3000);
+                                                                                        setRevisionRequestId(null);
+                                                                                        setRevisionMessage("");
+                                                                                        fetchAssets();
+                                                                                    }
+                                                                                }}
+                                                                                className="flex-1 py-2 text-[10px] font-black text-white bg-stone-900 rounded-lg disabled:opacity-30"
+                                                                            >送信する</button>
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                                <p className="text-[9px] text-stone-400 leading-tight text-center">
+                                                                    ※納品から120時間以内にアクションがない場合、自動で承認されます。
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {isRevisionRequested && (
+                                                            <div className="space-y-4 py-4 border-t border-stone-50">
+                                                                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-3">
+                                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-amber-500 shadow-sm border border-amber-100 mb-1">
+                                                                        <RefreshCw size={24} className="animate-spin-slow" />
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        <h4 className="text-[12px] font-black text-amber-900 uppercase tracking-widest">修正内容を確認中</h4>
+                                                                        <p className="text-[10px] font-bold text-amber-600/80 leading-relaxed">
+                                                                            修正依頼を運営に送信しました。<br />運営からの連絡をお待ちください。
+                                                                        </p>
+                                                                    </div>
+                                                                    {asset.rejection_reason && (
+                                                                        <div className="w-full bg-white/50 rounded-xl p-3 text-left border border-amber-100/50">
+                                                                            <p className="text-[8px] font-black text-amber-400 uppercase tracking-widest mb-1">送信内容</p>
+                                                                            <p className="text-[10px] font-bold text-amber-800 leading-relaxed">{asset.rejection_reason}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => handleOpenChat(asset)}
+                                                                    className="w-full py-4 bg-white border-2 border-stone-100 text-stone-600 hover:bg-stone-50 rounded-2xl text-[11px] font-black flex items-center justify-center gap-2 transition-all uppercase"
+                                                                >
+                                                                    <MessageCircle size={14} /> 運営にチャットで相談する
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                         <button
                                                             onClick={() => setShowDetails(isTimelineOpen ? null : asset.id)}
-                                                            className="w-full text-[11px] font-black border-2 border-stone-100 rounded-xl py-3.5 hover:border-stone-200 transition-all uppercase tracking-widest"
+                                                            className="w-full text-[11px] font-black border-2 border-stone-100 rounded-xl py-3.5 hover:border-stone-200 transition-all uppercase tracking-widest mt-auto"
                                                         >
                                                             {isTimelineOpen ? 'Close' : 'Timeline'}
                                                         </button>
@@ -2643,7 +2788,7 @@ export default function VibeCatalogue({
                                                                         <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] mb-4">Negotiation Timeline</p>
                                                                         <div className="space-y-6 relative">
                                                                             <div className="absolute left-[9px] top-2 bottom-2 w-px bg-stone-100" />
-                                                                            
+
                                                                             <div className="flex gap-4 relative z-10">
                                                                                 <div className="w-[18px] h-[18px] rounded-full bg-indigo-600 flex items-center justify-center shrink-0">
                                                                                     <Send className="w-2.5 h-2.5 text-white" />
@@ -2703,11 +2848,11 @@ export default function VibeCatalogue({
                                                                                 </p>
                                                                                 <div className="grid grid-cols-1 gap-3">
                                                                                     {initialCreators
-                                                                                        .filter(c => asset.suggested_creator_ids?.includes(c.id))
+                                                                                        .filter(c => asset.suggested_creator_ids?.map(String).includes(String(c.id)))
                                                                                         .slice(0, 3)
                                                                                         .map(altCreator => (
                                                                                             <div key={altCreator.id} className="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50 hover:border-indigo-200 transition-colors">
-                                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
+                                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-indigo-100 shadow-sm">
                                                                                                     {altCreator.thumbnail_url || altCreator.avatar_url ? (
                                                                                                         <img src={altCreator.thumbnail_url || altCreator.avatar_url!} className="w-full h-full object-cover" alt="" />
                                                                                                     ) : (
@@ -2716,13 +2861,12 @@ export default function VibeCatalogue({
                                                                                                 </div>
                                                                                                 <div className="flex-1 min-w-0">
                                                                                                     <p className="text-[11px] font-black truncate">@{altCreator.name}</p>
-                                                                                                    <p className="text-[9px] font-bold text-stone-500 uppercase tracking-tighter">{altCreator.genre}</p>
+                                                                                                    <p className="text-[9px] font-bold text-stone-500 uppercase tracking-tighter">{Array.isArray(altCreator.genre) ? altCreator.genre[0] : altCreator.genre}</p>
                                                                                                 </div>
                                                                                                 <div className="flex flex-col gap-1 shrink-0 ml-2">
                                                                                                     <button
                                                                                                         onClick={(e) => {
                                                                                                             e.stopPropagation();
-                                                                                                            // そのままオファーを再送する
                                                                                                             const combinedDetails = {
                                                                                                                 ...(typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : (asset.offer_details as any || {})),
                                                                                                                 barterDetails: asset.barter_details
@@ -2733,20 +2877,9 @@ export default function VibeCatalogue({
                                                                                                     >
                                                                                                         <Send size={10} /> 送信
                                                                                                     </button>
-                                                                                                    <button
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            setSelectedCreator(altCreator);
-                                                                                                            setIsModalOpen(true);
-                                                                                                        }}
-                                                                                                        className="bg-white text-indigo-600 border border-indigo-200 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 flex items-center justify-center gap-1"
-                                                                                                    >
-                                                                                                        <Edit3 size={10} /> 編集
-                                                                                                    </button>
                                                                                                 </div>
                                                                                             </div>
-                                                                                        ))
-                                                                                    }
+                                                                                        ))}
                                                                                 </div>
                                                                             </div>
                                                                         )}
@@ -2789,7 +2922,7 @@ export default function VibeCatalogue({
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
                                     {(localAssets.length > 0 ? localAssets : initialAssets)
-                                        .filter(a => a.status === 'DELIVERED' || a.status === 'COMPLETED' || a.status === 'FINALIZED' || (a.status === 'WORKING' && a.video_url))
+                                        .filter(a => !!a.finalized)
                                         .map((asset) => {
                                             const isConfirmed = !!asset.finalized;
                                             const isFullyFinalized = !!asset.finalized;
@@ -2800,8 +2933,8 @@ export default function VibeCatalogue({
                                                 <div key={asset.id} className="w-full bg-white rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-sm group hover:shadow-xl transition-all flex flex-col relative max-w-sm">
                                                     <div className="aspect-video bg-stone-50 relative overflow-hidden flex items-center justify-center">
                                                         {(() => {
-                                                            const thumbSrc = asset.creator?.thumbnail_url || asset.creator?.avatar_url;
-                                                            if (thumbSrc) {
+                                                            const thumbSrc = (asset.creator?.thumbnail_url && asset.creator?.thumbnail_url !== '0') ? asset.creator?.thumbnail_url : (asset.creator?.avatar_url && asset.creator?.avatar_url !== '0' ? asset.creator?.avatar_url : null);
+                                                            if (thumbSrc && thumbSrc !== '0') {
                                                                 return <img src={thumbSrc} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm scale-110" alt="" />;
                                                             } else {
                                                                 return <div className="absolute inset-0 w-full h-full bg-stone-100" />;
@@ -2831,7 +2964,7 @@ export default function VibeCatalogue({
                                                                                 動画が投稿されると本依頼は完了となります。<br />クリエイターの投稿対応をお待ちください。
                                                                             </p>
                                                                         )}
-                                                                        {asset.published_url && (
+                                                                        {(!!asset.published_url) && (
                                                                             <button
                                                                                 onClick={(e) => { e.stopPropagation(); setSelectedVideo({ urls: [asset.published_url!], name: asset.creator?.name || 'Ambassador' }); }}
                                                                                 className="max-w-[180px] w-full bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2.5 rounded-xl text-[10px] font-black flex items-center justify-center gap-2 transition-colors shadow-xl"
@@ -2919,7 +3052,7 @@ export default function VibeCatalogue({
 
                                                         {(!isConfirmed && !isFullyFinalized) ? (
                                                             <div className="space-y-4">
-                                                                {asset.delivery_at && (
+                                                                {(!!asset.delivery_at) && (
                                                                     <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center justify-center text-emerald-700 shadow-sm">
                                                                         <div className="flex items-center gap-2 mb-1">
                                                                             <Clock size={12} className="animate-pulse" />
@@ -3087,7 +3220,7 @@ export default function VibeCatalogue({
             {
                 isSent ? (
                     <AnimatePresence>
-                        {isModalOpen && (
+                        {(!!isModalOpen) && (
                             <motion.div
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                 className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center p-4"

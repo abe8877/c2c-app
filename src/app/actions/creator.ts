@@ -100,13 +100,14 @@ export async function requestAssetRevision(assetId: string, message: string) {
     const revisionNum = 3 - remaining;
     
     timeline.last_revision_request = new Date().toISOString();
+    timeline.last_revision_message = message;
     currentDetails.timeline = timeline;
 
-    // ステータスを WORKING に戻し、残り回数を減らす
+    // ステータスを REVISION_REQUESTED に変更し、残り回数を減らす
     const { error } = await supabase
         .from('assets')
         .update({ 
-            status: 'WORKING',
+            status: 'REVISION_REQUESTED',
             offer_details: currentDetails,
             retake_remaining: remaining - 1
         })
