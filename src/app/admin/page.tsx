@@ -713,6 +713,7 @@ function AdminDashboard() {
     const [filterDisplayStatus, setFilterDisplayStatus] = useState<string>('ALL');
     const [filterReviewStatus, setFilterReviewStatus] = useState<string>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<string>('created_at_desc');
     const [user, setUser] = useState<any>(null);
     const [expandedOfferId, setExpandedOfferId] = useState<string | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
@@ -790,6 +791,9 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     ethnicity: item.ethnicity || '-',
                     followers: item.followers || 0,
                     followersStr: (item.followers || 0).toLocaleString(),
+                    avg_views: item.avg_views || 0,
+                    engagement_rate: item.engagement_rate || 0,
+                    created_at: item.created_at || new Date().toISOString(),
                     tiktokUrl: item.tiktok_url || '',
                     vibeHint: item.vibe_tags?.[0] || ['Cinematic', 'Urban', 'Cafe', 'Retro'][index % 4],
                     vibeCluster: item.vibe_tags || [],
@@ -800,7 +804,8 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                     is_public: item.is_public || false,
                     is_system_hidden: isSystemHidden,
                     is_ai_recommended: !!item.is_ai_recommended,
-                    thumbnail_url: item.thumbnail_url || item.avatar_url || null
+                    thumbnail_url: item.thumbnail_url || item.avatar_url || null,
+                    raw_thumbnail_url: item.thumbnail_url || null
                 };
             });
             setCreators(formattedData);
@@ -846,11 +851,12 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
             const res = await updateCreatorField(id, field, value);
             if (!res.success) throw new Error(res.error || 'Unknown error');
 
-            // Trigger n8n webhook if making public and thumbnail is missing
-            if (field === 'is_public' && value === true) {
+            // Trigger n8n webhook if making public/approved and real thumbnail is missing
+            if ((field === 'is_public' && value === true) || (field === 'review_status' && value === 'approved')) {
                 const creator = creators.find(c => c.id === id);
-                if (creator && !creator.thumbnail_url) {
-                    triggerN8nWebhook(creator.id, creator.bestVideoUrl);
+                if (creator && !creator.raw_thumbnail_url && creator.bestVideoUrl) {
+                    console.log(`Triggering thumbnail generation for ${creator.name} (Field: ${field}, Value: ${value})`);
+                    await triggerN8nWebhook(creator.id, creator.bestVideoUrl);
                 }
             }
 
@@ -941,13 +947,27 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
         if (a.review_status === 'ai_recommended' && b.review_status !== 'ai_recommended') return -1;
         if (a.review_status !== 'ai_recommended' && b.review_status === 'ai_recommended') return 1;
 
-        // 優先順位 3: Tier Bタブの場合は AI Recommended をさらに優先（既に上記でカバーされているが念のため）
-        if (filterTier === 'B') {
-            if (a.is_ai_recommended && !b.is_ai_recommended) return -1;
-            if (!a.is_ai_recommended && b.is_ai_recommended) return 1;
+        // 優先順位 3: ユーザー指定のソート
+        switch (sortBy) {
+            case 'created_at_desc':
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            case 'created_at_asc':
+                return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            case 'followers_desc':
+                return (b.followers || 0) - (a.followers || 0);
+            case 'followers_asc':
+                return (a.followers || 0) - (b.followers || 0);
+            case 'avg_views_desc':
+                return (b.avg_views || 0) - (a.avg_views || 0);
+            case 'avg_views_asc':
+                return (a.avg_views || 0) - (b.avg_views || 0);
+            case 'engagement_rate_desc':
+                return (b.engagement_rate || 0) - (a.engagement_rate || 0);
+            case 'engagement_rate_asc':
+                return (a.engagement_rate || 0) - (b.engagement_rate || 0);
+            default:
+                return 0;
         }
-
-        return 0; // 同等の場合は現状維持（フォロワー順）
     });
 
     // ダミーログデータ
@@ -1240,6 +1260,25 @@ Requirement: Keep it short, respectful, and mention their specific vibe.
                                     <option value="ai_recommended">💎 AI Recommended</option>
                                 </select>
                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            </div>
+
+                            {/* Sort Filter */}
+                            <div className="relative">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+                                    className="appearance-none pl-4 pr-10 py-2.5 rounded-xl text-[13px] font-bold border border-slate-200 bg-indigo-500 text-white hover:bg-indigo-600 transition-colors cursor-pointer outline-none shadow-sm min-w-[160px]"
+                                >
+                                    <option value="created_at_desc">📅 追加日が新しい順</option>
+                                    <option value="created_at_asc">📅 追加日が古い順</option>
+                                    <option value="followers_desc">👥 フォロワー数が多い順</option>
+                                    <option value="followers_asc">👥 フォロワー数が少ない順</option>
+                                    <option value="avg_views_desc">📈 平均再生回数が多い順</option>
+                                    <option value="avg_views_asc">📈 平均再生回数が少ない順</option>
+                                    <option value="engagement_rate_desc">🔥 エンゲージメント率が高い順</option>
+                                    <option value="engagement_rate_asc">🔥 エンゲージメント率が低い順</option>
+                                </select>
+                                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none" />
                             </div>
                         </div>
 

@@ -51,9 +51,9 @@ export default function SettingsPage() {
                         notify_url: email
                     })
                     .eq('id', user.id);
-                
+
                 if (error) throw error;
-                
+
                 // Update local shop state as well
                 setShop((prev: any) => ({ ...prev, notify_url: email, email_notifications_enabled: enabled }));
             }
@@ -258,9 +258,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </div>
-                    {/* ↑ 【修正】ここで「サブスクリプション管理エリア」の枠を完全に閉じました */}
 
-                    {/* ▼▼ 独立させた法的情報・ヘルプセクション（枠の外側） ▼▼ */}
                     <div className="mt-12 mb-8 flex flex-col items-center justify-center text-center">
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500">
                             <Link href="/terms" target="_blank" className="hover:text-slate-900 transition-colors">

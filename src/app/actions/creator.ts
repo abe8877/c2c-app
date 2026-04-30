@@ -161,16 +161,31 @@ export async function triggerN8nWebhook(creatorId: string, portfolioUrl: string)
     // ユーザー指定のWebhook URL: https://nots.app.n8n.cloud/webhook/generate-thumbnail
     const webhookUrl = "https://nots.app.n8n.cloud/webhook/generate-thumbnail";
     
-    console.log("Triggering n8n webhook for thumbnail generation...", { creatorId, portfolioUrl });
+    console.log("🚀 [Webhook] Triggering n8n thumbnail generation...", { creatorId, portfolioUrl });
 
-    // Fire and forget, no await
-    fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ creatorId, portfolioUrl }),
-    }).catch(err => console.error("Webhook trigger failed:", err));
+    if (!portfolioUrl) {
+        console.warn("⚠️ [Webhook] portfolioUrl is empty. Webhook might not work as expected.");
+    }
 
-    return { success: true };
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ creatorId, portfolioUrl }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ [Webhook] Failed with status ${response.status}:`, errorText);
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log("✅ [Webhook] Successfully triggered n8n.");
+        return { success: true };
+    } catch (err) {
+        console.error("❌ [Webhook] Network or fetch error:", err);
+        return { success: false, error: String(err) };
+    }
 }
