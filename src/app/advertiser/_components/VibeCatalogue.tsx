@@ -1688,6 +1688,44 @@ export default function VibeCatalogue({
     const [revisionMessage, setRevisionMessage] = useState("");
     const [revisionSuccessId, setRevisionSuccessId] = useState<string | null>(null);
     const [tappedVideoCardId, setTappedVideoCardId] = useState<string | null>(null);
+    const [sentAltOfferCreatorIds, setSentAltOfferCreatorIds] = useState<string[]>([]);
+
+    // Recalculate stats reactive to localAssets
+    const derivedStats = React.useMemo(() => {
+        const postedAssets = localAssets.filter(a => !!a.finalized);
+        const completedCount = postedAssets.length;
+
+        let freshness = 0;
+        if (postedAssets.length > 0) {
+            let totalFreshness = 0;
+            let countWithDate = 0;
+            postedAssets.forEach(a => {
+                const referenceDateRaw = a.published_at || a.delivery_at || a.visit_at || a.created_at;
+                if (!referenceDateRaw || referenceDateRaw === '0') return;
+
+                const refTime = (typeof referenceDateRaw === 'number' && referenceDateRaw > 1000000000)
+                    ? referenceDateRaw * 1000
+                    : referenceDateRaw;
+
+                const dateObj = new Date(refTime);
+                if (isNaN(dateObj.getTime())) return;
+
+                const daysOld = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 3600 * 24));
+                if (daysOld < 0) return;
+
+                let assetFreshness = 100;
+                if (daysOld > 30) {
+                    const decayDays = daysOld - 30;
+                    const decayRate = (80 / 30);
+                    assetFreshness = Math.max(20, Math.round(100 - decayDays * decayRate));
+                }
+                totalFreshness += assetFreshness;
+                countWithDate++;
+            });
+            freshness = countWithDate > 0 ? Math.round(totalFreshness / countWithDate) : 0;
+        }
+        return { completedCount, freshness };
+    }, [localAssets]);
 
     const filteredCreators = initialCreators.filter(c => {
         const genreMatch = filterGenre === 'All' || filterGenre === 'ALL' || (c.genre && c.genre.includes(filterGenre.toUpperCase()));
@@ -2013,7 +2051,7 @@ export default function VibeCatalogue({
                                     >
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedFavIds(prev => [...prev, fav.creator.id]); }}
-                                            className="absolute top-2 right-2 p-1 text-indigo-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1 text-indigo-300 hover:text-indigo-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                         >
                                             <X size={12} />
                                         </button>
@@ -2033,7 +2071,7 @@ export default function VibeCatalogue({
                                         <div className="text-[10px] text-stone-500">{a.creator?.name}さんの動画が完成しました！Asset Hubで確認しましょう。</div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
-                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                         >
                                             <X size={12} />
                                         </button>
@@ -2045,7 +2083,7 @@ export default function VibeCatalogue({
                                         <div className="text-[10px] text-stone-500">{a.creator?.name}さんの代わりに、運営から新しいアンバサダーの提案が届きました。</div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
-                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                         >
                                             <X size={12} />
                                         </button>
@@ -2057,7 +2095,7 @@ export default function VibeCatalogue({
                                         <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんの動画が完成しました！Asset Hubで確認しましょう。</div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
-                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                         >
                                             <X size={12} />
                                         </button>
@@ -2066,10 +2104,10 @@ export default function VibeCatalogue({
                                 {activeNotifications.filter(a => a.status === 'DECLINED').map(a => (
                                     <div key={`notif-declined-${a.id}`} className="p-4 border-b border-stone-50 hover:bg-stone-50 transition cursor-pointer relative group" onClick={() => { setIsNotificationOpen(false); setActiveTab('assets'); }}>
                                         <div className="text-xs font-bold text-red-600 mb-1">⚠️ オファーが辞退されました</div>
-                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんが今回は案件を見送りました。別のクリエイターを探してみましょう。</div>
+                                        <div className="text-[10px] text-stone-500">{a.creator?.name || a.creator?.tiktok_handle}さんが今回は案件を見送りました。代替アンバサダーをチェックしてみましょう。</div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setDismissedNotifIds(prev => [...prev, a.id]); }}
-                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-2 right-2 p-1 text-stone-300 hover:text-stone-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                         >
                                             <X size={12} />
                                         </button>
@@ -2196,7 +2234,7 @@ export default function VibeCatalogue({
                                             Find your best<br />Inbound Ambassador!
                                         </h1>
                                         <p className="text-slate-500 font-bold max-w-[280px] sm:max-w-xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200 px-4">
-                                            GoogleマップまたはInstagramのURLを入力してください。<br className="hidden sm:block" />INSIDERS.が保有する1000組以上のデータベースから、貴社にピッタリのインバウンドクリエイターを即座にご紹介します。
+                                            GoogleマップまたはInstagramのURLを入力してください。<br className="hidden sm:block" />INSIDERS.が保有する1000組以上のデータベースから、<br className="hidden sm:block" />貴社にピッタリのアンバサダーを即座にご紹介します。
                                         </p>
                                     </div>
 
@@ -2313,7 +2351,7 @@ export default function VibeCatalogue({
                                         <div className="space-y-2 sm:space-y-1 text-left w-full sm:w-auto">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                                 <div className="order-2 sm:order-1">
-                                                    <h2 className="text-4xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Ambassador Catalog</h2>
+                                                    <h2 className="text-3xl sm:text-4xl font-black tracking-tighter whitespace-nowrap">Ambassador Catalog</h2>
                                                 </div>
                                                 <div className="order-1 sm:order-2 flex flex-wrap gap-2 mb-2 sm:mb-0">
                                                     {(!!initialGenre) && (
@@ -2424,6 +2462,13 @@ export default function VibeCatalogue({
                         transition={{ duration: 0.3 }}
                     >
                         <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-16">
+                            <header className="flex flex-col md:flex-row justify-between items-center md:items-end border-b border-stone-100 pb-8 gap-4 text-center md:text-left">
+                                <div className="space-y-1">
+                                    <h2 className="text-4xl font-black tracking-tighter uppercase italic">Asset Hub</h2>
+                                    <p className="text-stone-400 text-xs sm:text-sm font-black uppercase tracking-[0.2em]">動画を集客資産として管理</p>
+                                </div>
+                            </header>
+
                             {/* Stats */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 <motion.div
@@ -2434,7 +2479,7 @@ export default function VibeCatalogue({
                                     <div className="text-5xl font-black text-stone-900 group-hover:text-indigo-600 transition-colors">
                                         <AnimatedCounter value={localAssets.filter(a => a.status === 'OFFERED').length} />
                                     </div>
-                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">交渉中アンバサダー</p>
+                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">進行中アンバサダー</p>
                                 </motion.div>
 
                                 <motion.div
@@ -2444,7 +2489,7 @@ export default function VibeCatalogue({
                                     className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all"
                                 >
                                     <div className="text-5xl font-black text-stone-900 group-hover:text-emerald-500 transition-colors">
-                                        <AnimatedCounter value={completedCount} />
+                                        <AnimatedCounter value={derivedStats.completedCount} />
                                     </div>
                                     <p className="text-[10px] font-black text-stone-400 uppercase tracking-[0.3em]">獲得済み動画数</p>
                                 </motion.div>
@@ -2456,7 +2501,7 @@ export default function VibeCatalogue({
                                     className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center space-y-2 group hover:shadow-xl transition-all relative"
                                 >
                                     <div className="text-5xl font-black text-emerald-500 flex items-center gap-1 group-hover:scale-110 transition-transform">
-                                        <AnimatedCounter value={stats.freshness} />
+                                        <AnimatedCounter value={derivedStats.freshness} />
                                         <span className="text-2xl">%</span>
                                     </div>
                                     <p
@@ -2500,6 +2545,13 @@ export default function VibeCatalogue({
                                             const isOngoing = ['OFFERED', 'APPROVED', 'WORKING', 'DELIVERED', 'REVISION_REQUESTED'].includes(a.status || '');
                                             const isFinalized = a.finalized || ['FINALIZED', 'COMPLETED'].includes(a.status || '');
                                             return isOngoing && !isFinalized;
+                                        })
+                                        .sort((a, b) => {
+                                            const isWaitA = !!(a.delivery_at || a.status === 'DELIVERED' || a.video_url) && !a.finalized && a.status !== 'REVISION_REQUESTED';
+                                            const isWaitB = !!(b.delivery_at || b.status === 'DELIVERED' || b.video_url) && !b.finalized && b.status !== 'REVISION_REQUESTED';
+                                            if (isWaitA && !isWaitB) return -1;
+                                            if (!isWaitA && isWaitB) return 1;
+                                            return 0;
                                         })
                                         .map((asset) => {
                                             const creatorName = asset.creator?.name || asset.creator?.tiktok_handle || 'Unknown Creator';
@@ -2857,94 +2909,96 @@ export default function VibeCatalogue({
                                                                                     <Sparkles size={12} /> 代替アンバサダーの提案
                                                                                 </p>
                                                                                 <div className="grid grid-cols-3 gap-2">
-                                                                                    {Array.from(new Set(asset.suggested_creator_ids || [])).slice(0, 3).map(id => {
-                                                                                        const creatorId = String(id).trim();
-                                                                                        const menuKey = `${asset.id}-${creatorId}`;
+                                                                                    {Array.from(new Set(asset.suggested_creator_ids || []))
+                                                                                        .filter(id => !sentAltOfferCreatorIds.includes(String(id).trim()))
+                                                                                        .slice(0, 3).map(id => {
+                                                                                            const creatorId = String(id).trim();
+                                                                                            const menuKey = `${asset.id}-${creatorId}`;
 
-                                                                                        // 優先的に localAssets (ショップ関連アセット) からクリエイター情報を探す
-                                                                                        const assetWithCreator = localAssets.find(a => String(a.creator_id).trim() === creatorId && a.creator);
+                                                                                            // 優先的に localAssets (ショップ関連アセット) からクリエイター情報を探す
+                                                                                            const assetWithCreator = localAssets.find(a => String(a.creator_id).trim() === creatorId && a.creator);
 
-                                                                                        let c: any = null;
-                                                                                        if (assetWithCreator?.creator) {
-                                                                                            c = {
-                                                                                                id: creatorId,
-                                                                                                name: assetWithCreator.creator.name,
-                                                                                                thumbnail_url: assetWithCreator.creator.thumbnail_url || assetWithCreator.creator.avatar_url,
-                                                                                                avatar_url: assetWithCreator.creator.avatar_url,
-                                                                                            };
-                                                                                        } else {
-                                                                                            // なければ initialCreators から探す
-                                                                                            const found = initialCreators.find(item => String(item.id).trim() === creatorId);
-                                                                                            if (found) c = found;
-                                                                                        }
+                                                                                            let c: any = null;
+                                                                                            if (assetWithCreator?.creator) {
+                                                                                                c = {
+                                                                                                    id: creatorId,
+                                                                                                    name: assetWithCreator.creator.name,
+                                                                                                    thumbnail_url: assetWithCreator.creator.thumbnail_url || assetWithCreator.creator.avatar_url,
+                                                                                                    avatar_url: assetWithCreator.creator.avatar_url,
+                                                                                                };
+                                                                                            } else {
+                                                                                                // なければ initialCreators から探す
+                                                                                                const found = initialCreators.find(item => String(item.id).trim() === creatorId);
+                                                                                                if (found) c = found;
+                                                                                            }
 
-                                                                                        if (!c) return null;
+                                                                                            if (!c) return null;
 
-                                                                                        return (
-                                                                                            <div key={c.id} className="bg-indigo-50/50 rounded-xl border border-indigo-100/50 p-2 flex flex-col items-center text-center gap-1.5 hover:border-indigo-300 transition-all group relative overflow-visible">
-                                                                                                <div className="w-full aspect-square rounded-lg overflow-hidden bg-white border border-indigo-100 shadow-sm relative">
-                                                                                                    {c.thumbnail_url || c.avatar_url ? (
-                                                                                                        <img src={c.thumbnail_url || c.avatar_url!} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
-                                                                                                    ) : (
-                                                                                                        <User className="w-full h-full p-2 text-stone-300" />
-                                                                                                    )}
-                                                                                                </div>
-                                                                                                <p className="text-[9px] font-black truncate w-full">@{c.name}</p>
-
-                                                                                                <div className="relative w-full overflow-visible">
-                                                                                                    <button
-                                                                                                        onClick={(e) => {
-                                                                                                            e.stopPropagation();
-                                                                                                            setActiveAltMenu(activeAltMenu === menuKey ? null : menuKey);
-                                                                                                        }}
-                                                                                                        className="w-full bg-indigo-600 text-white py-1 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1"
-                                                                                                    >
-                                                                                                        オファー <ChevronDown size={10} />
-                                                                                                    </button>
-
-                                                                                                    <AnimatePresence>
-                                                                                                        {activeAltMenu === menuKey && (
-                                                                                                            <motion.div
-                                                                                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                                                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                                                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[140px] bg-white rounded-xl shadow-2xl border border-indigo-100 p-1.5 z-[100] flex flex-col gap-1 overflow-hidden"
-                                                                                                                onClick={(e) => e.stopPropagation()}
-                                                                                                            >
-                                                                                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-indigo-100 rotate-45" />
-                                                                                                                <button
-                                                                                                                    onClick={async () => {
-                                                                                                                        const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
-                                                                                                                        const res = await handleOfferSent(originalDetails, c);
-                                                                                                                        setActiveAltMenu(null);
-                                                                                                                        if (res?.success) {
-                                                                                                                            setQuickSuccessCreator(c.name);
-                                                                                                                            setTimeout(() => setQuickSuccessCreator(null), 3000);
-                                                                                                                        }
-                                                                                                                    }}
-                                                                                                                    className="w-full text-left px-2 py-1.5 hover:bg-indigo-50 rounded-lg transition-colors relative z-10"
-                                                                                                                >
-                                                                                                                    <p className="text-[9px] font-black text-indigo-600">そのまま送信</p>
-                                                                                                                    <p className="text-[7px] text-stone-400 font-bold leading-tight">以前の条件でオファーを送る</p>
-                                                                                                                </button>
-                                                                                                                <button
-                                                                                                                    onClick={() => {
-                                                                                                                        const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
-                                                                                                                        openInviteModal(c, originalDetails);
-                                                                                                                        setActiveAltMenu(null);
-                                                                                                                    }}
-                                                                                                                    className="w-full text-left px-2 py-1.5 hover:bg-emerald-50 rounded-lg transition-colors relative z-10"
-                                                                                                                >
-                                                                                                                    <p className="text-[9px] font-black text-emerald-600">条件を編集</p>
-                                                                                                                    <p className="text-[7px] text-stone-400 font-bold leading-tight">条件を調整してオファーを送る</p>
-                                                                                                                </button>
-                                                                                                            </motion.div>
+                                                                                            return (
+                                                                                                <div key={c.id} className="bg-indigo-50/50 rounded-xl border border-indigo-100/50 p-2 flex flex-col items-center text-center gap-1.5 hover:border-indigo-300 transition-all group relative overflow-visible">
+                                                                                                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-white border border-indigo-100 shadow-sm relative">
+                                                                                                        {c.thumbnail_url || c.avatar_url ? (
+                                                                                                            <img src={c.thumbnail_url || c.avatar_url!} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                                                                                                        ) : (
+                                                                                                            <User className="w-full h-full p-2 text-stone-300" />
                                                                                                         )}
-                                                                                                    </AnimatePresence>
+                                                                                                    </div>
+                                                                                                    <p className="text-[9px] font-black truncate w-full">@{c.name}</p>
+
+                                                                                                    <div className="relative w-full overflow-visible">
+                                                                                                        <button
+                                                                                                            onClick={(e) => {
+                                                                                                                e.stopPropagation();
+                                                                                                                setActiveAltMenu(activeAltMenu === menuKey ? null : menuKey);
+                                                                                                            }}
+                                                                                                            className="w-full bg-indigo-600 text-white py-1 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1"
+                                                                                                        >
+                                                                                                            オファー <ChevronDown size={10} />
+                                                                                                        </button>
+
+                                                                                                        <AnimatePresence>
+                                                                                                            {activeAltMenu === menuKey && (
+                                                                                                                <motion.div
+                                                                                                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                                                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                                                                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[140px] bg-white rounded-xl shadow-2xl border border-indigo-100 p-1.5 z-[100] flex flex-col gap-1 overflow-hidden"
+                                                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                                                >
+                                                                                                                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-indigo-100 rotate-45" />
+                                                                                                                    <button
+                                                                                                                        onClick={async () => {
+                                                                                                                            const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
+                                                                                                                            const res = await handleOfferSent(originalDetails, c);
+                                                                                                                            setActiveAltMenu(null);
+                                                                                                                            if (res?.success) {
+                                                                                                                                setQuickSuccessCreator(c.name);
+                                                                                                                                setTimeout(() => setQuickSuccessCreator(null), 3000);
+                                                                                                                            }
+                                                                                                                        }}
+                                                                                                                        className="w-full text-left px-2 py-1.5 hover:bg-indigo-50 rounded-lg transition-colors relative z-10"
+                                                                                                                    >
+                                                                                                                        <p className="text-[9px] font-black text-indigo-600">そのまま送信</p>
+                                                                                                                        <p className="text-[7px] text-stone-400 font-bold leading-tight">以前の条件でオファーを送る</p>
+                                                                                                                    </button>
+                                                                                                                    <button
+                                                                                                                        onClick={() => {
+                                                                                                                            const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
+                                                                                                                            openInviteModal(c, originalDetails);
+                                                                                                                            setActiveAltMenu(null);
+                                                                                                                        }}
+                                                                                                                        className="w-full text-left px-2 py-1.5 hover:bg-emerald-50 rounded-lg transition-colors relative z-10"
+                                                                                                                    >
+                                                                                                                        <p className="text-[9px] font-black text-emerald-600">条件を編集</p>
+                                                                                                                        <p className="text-[7px] text-stone-400 font-bold leading-tight">条件を調整してオファーを送る</p>
+                                                                                                                    </button>
+                                                                                                                </motion.div>
+                                                                                                            )}
+                                                                                                        </AnimatePresence>
+                                                                                                    </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        );
-                                                                                    })}
+                                                                                            );
+                                                                                        })}
                                                                                 </div>
                                                                             </div>
                                                                         )}

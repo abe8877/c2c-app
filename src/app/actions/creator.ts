@@ -109,6 +109,7 @@ export async function requestAssetRevision(assetId: string, message: string) {
         .update({ 
             status: 'REVISION_REQUESTED',
             offer_details: currentDetails,
+            rejection_reason: message,
             retake_remaining: remaining - 1
         })
         .eq('id', assetId);
