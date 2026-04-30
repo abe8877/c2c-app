@@ -827,7 +827,7 @@ const ChatSheet = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
     );
 };
 
-const OfferModal = ({ isOpen, onClose, creator, onSend, shop }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void; shop: any }) => {
+const OfferModal = ({ isOpen, onClose, creator, onSend, shop, initialDetails }: { isOpen: boolean; onClose: () => void; creator: Creator | null; onSend: (details: any) => void; shop: any, initialDetails?: any }) => {
     const creatorName = creator?.name || '';
     const isHot = !!creator?.is_hot;
     const followers = typeof creator?.followers === 'string'
@@ -839,21 +839,21 @@ const OfferModal = ({ isOpen, onClose, creator, onSend, shop }: { isOpen: boolea
     const followersNum = parseInt(followersStr.replace(/,/g, '')) || 0;
     const isHighDemand = followersNum >= 50000 || (creator?.offer_count ?? 0) >= 10;
 
-    const [plan, setPlan] = useState<'barter' | 'paid'>('barter');
-    const [amount, setAmount] = useState<number>(15000);
-    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['Instagram Reels']);
+    const [plan, setPlan] = useState<'barter' | 'paid'>((initialDetails?.plan === 'paid' || (initialDetails?.rewardAmount || initialDetails?.amount) > 0) ? 'paid' : 'barter');
+    const [amount, setAmount] = useState<number>(initialDetails?.rewardAmount || initialDetails?.amount || 15000);
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(initialDetails?.selectedPlatforms || initialDetails?.platforms || ['Instagram Reels']);
     // Preset: 盛り込んでほしい要素
-    const [selectedTags, setSelectedTags] = useState<string[]>(shop?.requirements || ['看板メニュー', '店内の雰囲気']);
+    const [selectedTags, setSelectedTags] = useState<string[]>(initialDetails?.selectedTags || initialDetails?.tags || shop?.requirements || ['看板メニュー', '店内の雰囲気']);
     // Preset: 提供サービス
-    const [barterDetails, setBarterDetails] = useState(shop?.preset_menu_en || '');
-    const [invitationMessage, setInvitationMessage] = useState('');
-    const [isManualMessage, setIsManualMessage] = useState(false);
+    const [barterDetails, setBarterDetails] = useState(initialDetails?.barterDetails || initialDetails?.barter_details || shop?.preset_menu_en || '');
+    const [invitationMessage, setInvitationMessage] = useState(initialDetails?.invitationMessage || initialDetails?.message || '');
+    const [isManualMessage, setIsManualMessage] = useState(!!(initialDetails?.invitationMessage || initialDetails?.message));
     const [isTranslating, setIsTranslating] = useState<string | null>(null);
 
     // 移植項目: 撮影条件 & NG事項 (Presets applied)
-    const [shootingTime, setShootingTime] = useState(shop?.preferred_shoot_time || 'Flexible');
-    const [staffAppearance, setStaffAppearance] = useState(shop?.staff_appearance || 'OK');
-    const [ngItems, setNgItems] = useState(shop?.shoot_rules_en || '');
+    const [shootingTime, setShootingTime] = useState(initialDetails?.shootingTime || initialDetails?.shooting_time || shop?.preferred_shoot_time || 'Flexible');
+    const [staffAppearance, setStaffAppearance] = useState(initialDetails?.staffAppearance || initialDetails?.staff_appearance || shop?.staff_appearance || 'OK');
+    const [ngItems, setNgItems] = useState(initialDetails?.ngItems || initialDetails?.ng_items || shop?.shoot_rules_en || '');
 
 
     // 同意事項
@@ -1812,8 +1812,13 @@ export default function VibeCatalogue({
         });
     };
 
-    const openInviteModal = (creator: Creator) => {
+    const [activeAltMenu, setActiveAltMenu] = useState<string | null>(null);
+    const [inviteInitialDetails, setInviteInitialDetails] = useState<any>(null);
+    const [quickSuccessCreator, setQuickSuccessCreator] = useState<string | null>(null);
+
+    const openInviteModal = (creator: Creator, initialDetails?: any) => {
         setSelectedCreator(creator);
+        setInviteInitialDetails(initialDetails || null);
         if (freeOffers > 0) {
             setIsModalOpen(true);
         } else if (!isPremium) {
@@ -1878,21 +1883,26 @@ export default function VibeCatalogue({
                 setTimeout(() => {
                     setIsModalOpen(false);
                     setIsSent(false);
+                    setInviteInitialDetails(null); // 追加
                     // 修正: 自動でチャットを開かずにヒントを表示
                     setAssetHubHint("オファーの進行状況はここからチェックできます");
                     // 3秒後にヒントを表示
                     setTimeout(() => setAssetHubHint(null), 3000);
                 }, 3000);
+                return res; // 追加
             } else if (res.error === 'PAYWALL_REQUIRED') {
                 setShowPaywall(true);
                 setIsModalOpen(false);
+                return res; // 追加
             } else {
                 // 🌟 追加: 無言で失敗せず、何のエラーか画面に表示させる
                 alert(`オファー送信エラー: ${res.error}`);
+                return res; // 追加
             }
         } catch (error) {
             console.error("Offer failed", error);
             alert("予期せぬエラーが発生しました。");
+            return { success: false, error: "Unexpected error" }; // 追加
         }
     };
 
@@ -2565,7 +2575,7 @@ export default function VibeCatalogue({
 
                                                         {(isWaitingApproval || isRevisionRequested) && (
                                                             <div className={`absolute inset-0 bg-black/40 transition-opacity flex flex-col items-center justify-center text-white gap-2 ${hoveredAssetId === asset.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                                                <div 
+                                                                <div
                                                                     className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 mb-1 hover:bg-white/40 transition-all active:scale-90"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
@@ -2842,47 +2852,120 @@ export default function VibeCatalogue({
                                                                 ) : (
                                                                     <>
                                                                         {asset.suggested_creator_ids && asset.suggested_creator_ids.length > 0 && (
-                                                                            <div className="space-y-4 py-4 border-t border-stone-50 mt-2">
+                                                                            <div className="space-y-3 py-4 border-t border-stone-50 mt-2">
                                                                                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
                                                                                     <Sparkles size={12} /> 代替アンバサダーの提案
                                                                                 </p>
-                                                                                <div className="grid grid-cols-1 gap-3">
-                                                                                    {initialCreators
-                                                                                        .filter(c => asset.suggested_creator_ids?.map(String).includes(String(c.id)))
-                                                                                        .slice(0, 3)
-                                                                                        .map(altCreator => (
-                                                                                            <div key={altCreator.id} className="flex items-center gap-3 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100/50 hover:border-indigo-200 transition-colors">
-                                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-indigo-100 shadow-sm">
-                                                                                                    {altCreator.thumbnail_url || altCreator.avatar_url ? (
-                                                                                                        <img src={altCreator.thumbnail_url || altCreator.avatar_url!} className="w-full h-full object-cover" alt="" />
+                                                                                <div className="grid grid-cols-3 gap-2">
+                                                                                    {Array.from(new Set(asset.suggested_creator_ids || [])).slice(0, 3).map(id => {
+                                                                                        const creatorId = String(id).trim();
+                                                                                        const menuKey = `${asset.id}-${creatorId}`;
+
+                                                                                        // 優先的に localAssets (ショップ関連アセット) からクリエイター情報を探す
+                                                                                        const assetWithCreator = localAssets.find(a => String(a.creator_id).trim() === creatorId && a.creator);
+
+                                                                                        let c: any = null;
+                                                                                        if (assetWithCreator?.creator) {
+                                                                                            c = {
+                                                                                                id: creatorId,
+                                                                                                name: assetWithCreator.creator.name,
+                                                                                                thumbnail_url: assetWithCreator.creator.thumbnail_url || assetWithCreator.creator.avatar_url,
+                                                                                                avatar_url: assetWithCreator.creator.avatar_url,
+                                                                                            };
+                                                                                        } else {
+                                                                                            // なければ initialCreators から探す
+                                                                                            const found = initialCreators.find(item => String(item.id).trim() === creatorId);
+                                                                                            if (found) c = found;
+                                                                                        }
+
+                                                                                        if (!c) return null;
+
+                                                                                        return (
+                                                                                            <div key={c.id} className="bg-indigo-50/50 rounded-xl border border-indigo-100/50 p-2 flex flex-col items-center text-center gap-1.5 hover:border-indigo-300 transition-all group relative overflow-visible">
+                                                                                                <div className="w-full aspect-square rounded-lg overflow-hidden bg-white border border-indigo-100 shadow-sm relative">
+                                                                                                    {c.thumbnail_url || c.avatar_url ? (
+                                                                                                        <img src={c.thumbnail_url || c.avatar_url!} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
                                                                                                     ) : (
                                                                                                         <User className="w-full h-full p-2 text-stone-300" />
                                                                                                     )}
                                                                                                 </div>
-                                                                                                <div className="flex-1 min-w-0">
-                                                                                                    <p className="text-[11px] font-black truncate">@{altCreator.name}</p>
-                                                                                                    <p className="text-[9px] font-bold text-stone-500 uppercase tracking-tighter">{Array.isArray(altCreator.genre) ? altCreator.genre[0] : altCreator.genre}</p>
-                                                                                                </div>
-                                                                                                <div className="flex flex-col gap-1 shrink-0 ml-2">
+                                                                                                <p className="text-[9px] font-black truncate w-full">@{c.name}</p>
+
+                                                                                                <div className="relative w-full overflow-visible">
                                                                                                     <button
                                                                                                         onClick={(e) => {
                                                                                                             e.stopPropagation();
-                                                                                                            const combinedDetails = {
-                                                                                                                ...(typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : (asset.offer_details as any || {})),
-                                                                                                                barterDetails: asset.barter_details
-                                                                                                            };
-                                                                                                            handleOfferSent(combinedDetails, altCreator);
+                                                                                                            setActiveAltMenu(activeAltMenu === menuKey ? null : menuKey);
                                                                                                         }}
-                                                                                                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1"
+                                                                                                        className="w-full bg-indigo-600 text-white py-1 rounded-md text-[8px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1"
                                                                                                     >
-                                                                                                        <Send size={10} /> 送信
+                                                                                                        オファー <ChevronDown size={10} />
                                                                                                     </button>
+
+                                                                                                    <AnimatePresence>
+                                                                                                        {activeAltMenu === menuKey && (
+                                                                                                            <motion.div
+                                                                                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                                                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-[140px] bg-white rounded-xl shadow-2xl border border-indigo-100 p-1.5 z-[100] flex flex-col gap-1 overflow-hidden"
+                                                                                                                onClick={(e) => e.stopPropagation()}
+                                                                                                            >
+                                                                                                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-indigo-100 rotate-45" />
+                                                                                                                <button
+                                                                                                                    onClick={async () => {
+                                                                                                                        const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
+                                                                                                                        const res = await handleOfferSent(originalDetails, c);
+                                                                                                                        setActiveAltMenu(null);
+                                                                                                                        if (res?.success) {
+                                                                                                                            setQuickSuccessCreator(c.name);
+                                                                                                                            setTimeout(() => setQuickSuccessCreator(null), 3000);
+                                                                                                                        }
+                                                                                                                    }}
+                                                                                                                    className="w-full text-left px-2 py-1.5 hover:bg-indigo-50 rounded-lg transition-colors relative z-10"
+                                                                                                                >
+                                                                                                                    <p className="text-[9px] font-black text-indigo-600">そのまま送信</p>
+                                                                                                                    <p className="text-[7px] text-stone-400 font-bold leading-tight">以前の条件でオファーを送る</p>
+                                                                                                                </button>
+                                                                                                                <button
+                                                                                                                    onClick={() => {
+                                                                                                                        const originalDetails = typeof asset.offer_details === 'string' ? JSON.parse(asset.offer_details) : asset.offer_details;
+                                                                                                                        openInviteModal(c, originalDetails);
+                                                                                                                        setActiveAltMenu(null);
+                                                                                                                    }}
+                                                                                                                    className="w-full text-left px-2 py-1.5 hover:bg-emerald-50 rounded-lg transition-colors relative z-10"
+                                                                                                                >
+                                                                                                                    <p className="text-[9px] font-black text-emerald-600">条件を編集</p>
+                                                                                                                    <p className="text-[7px] text-stone-400 font-bold leading-tight">条件を調整してオファーを送る</p>
+                                                                                                                </button>
+                                                                                                            </motion.div>
+                                                                                                        )}
+                                                                                                    </AnimatePresence>
                                                                                                 </div>
                                                                                             </div>
-                                                                                        ))}
+                                                                                        );
+                                                                                    })}
                                                                                 </div>
                                                                             </div>
                                                                         )}
+
+                                                                        {/* Quick Success Flow Overlay */}
+                                                                        <AnimatePresence>
+                                                                            {quickSuccessCreator && (
+                                                                                <motion.div
+                                                                                    initial={{ opacity: 0 }}
+                                                                                    animate={{ opacity: 1 }}
+                                                                                    exit={{ opacity: 0 }}
+                                                                                    className="absolute inset-0 z-[110] bg-white rounded-[40px] flex flex-col items-center justify-center p-6 text-center"
+                                                                                >
+                                                                                    <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 border-[4px] border-white shadow-xl">
+                                                                                        <Check className="w-8 h-8 text-emerald-500" strokeWidth={4} />
+                                                                                    </div>
+                                                                                    <h3 className="text-xl font-black text-slate-900 mb-1 uppercase tracking-tighter">オファー送信！</h3>
+                                                                                    <p className="text-[10px] text-slate-400 font-bold">Offer Sent to @{quickSuccessCreator}</p>
+                                                                                </motion.div>
+                                                                            )}
+                                                                        </AnimatePresence>
                                                                     </>
                                                                 )}
                                                             </AnimatePresence>
@@ -3236,10 +3319,14 @@ export default function VibeCatalogue({
                 ) : (
                     <OfferModal
                         isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
+                        onClose={() => {
+                            setIsModalOpen(false);
+                            setInviteInitialDetails(null);
+                        }}
                         creator={selectedCreator}
                         onSend={handleOfferSent}
                         shop={shop}
+                        initialDetails={inviteInitialDetails}
                     />
                 )
             }

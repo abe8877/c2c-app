@@ -219,12 +219,14 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
                 >
                     <div className="flex flex-col items-start">
                         <span className="opacity-60">{label}</span>
-                        {value && value !== '0' && !isNaN(new Date(value).getTime()) && new Date(value).getTime() > 0 ? (
+                        {value && value !== '0' && !isNaN(new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).getTime()) && new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).getTime() > 0 ? (
                             <span className="text-[9px] tabular-nums">
-                                {new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                {new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                             </span>
-                        ) : (!!currentVideoUrl && (
+                        ) : (!!currentVideoUrl ? (
                             <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Delivered</span>
+                        ) : (
+                            <span className="text-[9px] opacity-20">-</span>
                         ))}
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -520,11 +522,13 @@ const TimelineButton = ({ label, assetId, field, currentValue, currentStatus, on
         >
             <div className="flex flex-col items-start">
                 <span className="opacity-60">{label}</span>
-                {value && value !== '0' && !isNaN(new Date(value).getTime()) && new Date(value).getTime() > 0 ? (
-                    <span className="text-[9px] tabular-nums">{new Date(value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                {value && value !== '0' && !isNaN(new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).getTime()) && new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).getTime() > 0 ? (
+                    <span className="text-[9px] tabular-nums">{new Date(Number(value) > 1000000000 ? Number(value) * 1000 : value).toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                 ) : (field === 'reward_deposit' && value ? (
                     <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Deposited</span>
-                ) : null)}
+                ) : (
+                    <span className="text-[9px] opacity-20">-</span>
+                ))}
             </div>
             <div className="flex items-center gap-1.5">
                 {value ? (

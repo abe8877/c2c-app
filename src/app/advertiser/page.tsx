@@ -106,11 +106,11 @@ export default async function AdvertiserPage() {
         freshness: 0
     };
 
-    if (clientTag) {
+    if (session.user.id) {
         const { data: allAssets } = await supabase
             .from('assets')
             .select('status, created_at, published_at, delivery_at, visit_at')
-            .eq('client_tag', clientTag);
+            .eq('shop_id', session.user.id);
 
         if (allAssets) {
             stats.offeredCount = allAssets.filter(a => a.status === 'OFFERED').length;
@@ -120,19 +120,32 @@ export default async function AdvertiserPage() {
             const completedAssets = allAssets.filter(a => ['COMPLETED', 'DELIVERED', 'FINALIZED', 'APPROVED'].includes(a.status));
             if (completedAssets.length > 0) {
                 let totalFreshness = 0;
+                let countWithDate = 0;
                 completedAssets.forEach(a => {
-                    const referenceDate = a.published_at || a.delivery_at || a.visit_at || a.created_at;
-                    const daysOld = referenceDate ? Math.floor((Date.now() - new Date(referenceDate).getTime()) / (1000 * 3600 * 24)) : 0;
+                    const referenceDateRaw = a.published_at || a.delivery_at || a.visit_at || a.created_at;
+                    // 数値の0や無効な値をスキップ
+                    if (!referenceDateRaw || referenceDateRaw === '0' || referenceDateRaw === 0) return;
+
+                    const refTime = (typeof referenceDateRaw === 'number' && referenceDateRaw > 1000000000) 
+                        ? referenceDateRaw * 1000 
+                        : referenceDateRaw;
+                    
+                    const dateObj = new Date(refTime);
+                    if (isNaN(dateObj.getTime())) return;
+
+                    const daysOld = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 3600 * 24));
+                    if (daysOld < 0) return; // 未来の日付は無視
+
                     let assetFreshness = 100;
                     if (daysOld > 30) {
-                        // 30日〜60日の30日間で100%→20%へ線形減衰（最低20%）
                         const decayDays = daysOld - 30;
                         const decayRate = (80 / 30); 
                         assetFreshness = Math.max(20, Math.round(100 - decayDays * decayRate));
                     }
                     totalFreshness += assetFreshness;
+                    countWithDate++;
                 });
-                stats.freshness = Math.round(totalFreshness / completedAssets.length);
+                stats.freshness = countWithDate > 0 ? Math.round(totalFreshness / countWithDate) : 0;
             } else {
                 stats.freshness = 0;
             }

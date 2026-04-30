@@ -26,21 +26,6 @@ export const FloatingActionBar = ({
             )}
             style={{ zIndex: 100 }} // Increased z-index
         >
-            <AnimatePresence>
-                {hintedLink && hintMessage && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-4 py-2 bg-indigo-600 text-white text-[11px] font-black rounded-xl shadow-2xl whitespace-nowrap z-[110] flex items-center gap-2"
-                    >
-                        <Sparkles className="w-3 h-3 text-yellow-400" />
-                        {hintMessage}
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-indigo-600" />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             <motion.div
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -50,7 +35,22 @@ export const FloatingActionBar = ({
                 {items.map((item, idx) => {
                     const isHinted = hintedLink === item.link;
                     const content = (
-                        <>
+                        <div className="relative">
+                            <AnimatePresence>
+                                {isHinted && hintMessage && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-6 px-4 py-2 bg-indigo-600 text-white text-[11px] font-black rounded-xl shadow-2xl whitespace-nowrap z-[110] flex items-center gap-2"
+                                    >
+                                        <Sparkles className="w-3 h-3 text-yellow-400" />
+                                        {hintMessage}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-indigo-600" />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            
                             <span className={cn(
                                 "text-white/70 group-hover:text-white transition-colors text-[11px] sm:text-sm font-bold flex items-center gap-1 sm:gap-2 whitespace-nowrap",
                                 (activeLink === item.link || isHinted) && "text-white"
@@ -64,7 +64,7 @@ export const FloatingActionBar = ({
                                 activeLink === item.link ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100",
                                 isHinted && "bg-yellow-400"
                             )} />
-                        </>
+                        </div>
                     );
 
                     if (item.onClick) {

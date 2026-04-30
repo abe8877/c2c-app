@@ -61,18 +61,47 @@ export async function offerCreator({
     }
 
     // 4. assets テーブルにオファー情報を記録 (Admin権限でRLSをバイパス)
-    const { data: asset, error: assetError } = await supabaseAdmin
+    // 🌟 修正: すでに SUGGESTED（代替案提示中）のレコードがある場合は、それを更新する
+    const { data: existingSuggested } = await supabaseAdmin
         .from('assets')
-        .insert({
-            shop_id: shopId,
-            creator_id: creatorId,
-            status: 'OFFERED',
-            offer_details: offerDetails,
-            barter_details: barterDetails ?? null,
-            client_tag: shop.name, // 必須項目を補完
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('shop_id', shopId)
+        .eq('creator_id', creatorId)
+        .eq('status', 'SUGGESTED')
+        .maybeSingle();
+
+    let asset, assetError;
+
+    if (existingSuggested) {
+        const { data, error } = await supabaseAdmin
+            .from('assets')
+            .update({
+                status: 'OFFERED',
+                offer_details: offerDetails,
+                barter_details: barterDetails ?? null,
+                created_at: new Date().toISOString() // 進行中リストの先頭に来るように時間を更新
+            })
+            .eq('id', existingSuggested.id)
+            .select()
+            .single();
+        asset = data;
+        assetError = error;
+    } else {
+        const { data, error } = await supabaseAdmin
+            .from('assets')
+            .insert({
+                shop_id: shopId,
+                creator_id: creatorId,
+                status: 'OFFERED',
+                offer_details: offerDetails,
+                barter_details: barterDetails ?? null,
+                client_tag: shop.name,
+            })
+            .select()
+            .single();
+        asset = data;
+        assetError = error;
+    }
 
     if (assetError) {
         console.error("🔥 [DEBUG] Asset Insert Error:", assetError);

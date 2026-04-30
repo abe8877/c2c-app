@@ -549,7 +549,7 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
         const { error: updateError } = await supabaseAdmin
             .from('assets')
             .update({
-                status: 'DECLINED', // もしくは 'SUGGESTING_ALTERNATIVES'
+                status: 'DECLINED',
                 rejection_reason: originalAsset.rejection_reason || '希望条件の不一致',
                 suggested_creator_ids: newSuggestedIds
             })
@@ -557,14 +557,29 @@ export async function proposeAlternativeAmbassador(assetId: string, alternativeC
 
         if (updateError) return { success: false, error: `Update old asset failed: ${updateError.message}` };
 
-        // 通知対象の案件IDは元のものをそのまま使う
-        const targetAssetId = assetId;
+        // 🌟 修正: 代替アンバサダーごとに新規の SUGGESTED レコードを生成する（広告主がオファーを送るまで進行中には出さない）
+        const { data: newAsset, error: insertError } = await supabaseAdmin
+            .from('assets')
+            .insert({
+                shop_id: originalAsset.shop_id,
+                creator_id: alternativeCreatorId,
+                status: 'SUGGESTED',
+                offer_details: originalAsset.offer_details,
+                barter_details: originalAsset.barter_details,
+                client_tag: originalAsset.client_tag
+            })
+            .select()
+            .single();
+
+        if (insertError) return { success: false, error: `Create new asset failed: ${insertError.message}` };
 
         // 通知
         try {
-            // 代替案が最初の1名だった場合のみ通知を飛ばす（ユーザー体験を損ねないため）
+            // 代替案が最初の1名だった場合のみ通知を飛ばす
             if (currentSuggestedIds.length === 0) {
-                await sendAssetNotification(targetAssetId, 'SUGGESTING_ALTERNATIVES', { 
+                // 通知対象は元の案件ID（不成立カードのある方）にするか、新規にするか
+                // 広告主に「代替案が届きました」と知らせるため SUGGESTING_ALTERNATIVES を送る
+                await sendAssetNotification(assetId, 'SUGGESTING_ALTERNATIVES', { 
                     rejectionReason: originalAsset.rejection_reason || '希望条件の不一致' 
                 });
             }
